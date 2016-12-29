@@ -110,6 +110,8 @@ function context (createElement, arrayFragment) {
                 if (typeof (o = attr_val[s]) === 'function')
                   add_event(e, s, o, true)
             }
+          } else if (k === 'html') {
+            e.innerHTML = attr_val
           } else if (k === 's' || k === 'style') {
             if (typeof attr_val === 'string') {
               e.style.cssText = attr_val
@@ -150,7 +152,7 @@ function context (createElement, arrayFragment) {
             //   // },0)
             } else {
               // e[k] = attr_val
-              console.log('set-attribute', k, attr_val)
+              // console.log('set-attribute', k, attr_val)
               e.setAttribute(k, attr_val)
             }
           }

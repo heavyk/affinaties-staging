@@ -58,7 +58,6 @@ meatr = ({config, G, set_config, set_data}) ->
       return
         * s \g.top-bar, ->
           * s \rect width: G.width, height: 70, fill: '#f44'
-          * s \rect width:
           * s \image,
               'xlink:href': 'https://secure.gravatar.com/avatar/89c1e54a9703125168e40d22316d2b49?s=200&r=pg&d=https%3A%2F%2Fdeveloper.cdn.mozilla.net%2Fmedia%2Fimg%2Favatar.png'
               width: img_width

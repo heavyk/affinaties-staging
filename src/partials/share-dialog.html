@@ -87,39 +87,9 @@ li.active {
 <script>
 import Validator from '../validator'
 import truncate from '../lib/lodash/truncate'
+import load_sdk from '../lib/load-sdk'
 
 var euc = encodeURIComponent
-var doc = document
-function load_sdk (_id, cb) {
-  var js,
-    s = 'script',
-    id = _id+'-sdk',
-    done = false,
-    fjs = doc.getElementsByTagName(s)[0],
-    p = /^http:/.test(doc.location) ? 'http' : 'https'
-
-  if (doc.getElementById(id)) cb()
-  else {
-    js = doc.createElement(s)
-    js.id = id
-    js.onload = js.onreadystatechange = function () {
-      if (!done && (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete')) {
-        done = true
-        cb()
-
-        // Handle memory leak in IE
-        // js.onload = js.onreadystatechange = null
-        // if ( head && js.parentNode ) {
-        //     head.removeChild( js )
-        // }
-      }
-    }
-    if (_id === 'tw') js.src = p + '://platform.twitter.com/widgets.js'
-    // else if (id === 'facebook-sdk') js.src = p + '://connect.facebook.net/en_US/sdk.js'
-    else if (_id === 'fb') js.src = p + '://connect.facebook.net/es_ES/sdk.js'
-    fjs.parentNode.insertBefore(js, fjs)
-  }
-}
 
 
 component.exports = {

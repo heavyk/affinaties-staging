@@ -34,7 +34,7 @@ export function vertele_id (url) {
 }
 
 export function iframe_src (txt) {
-  var url, i, u, v
+  var url, i
   if (~(i = txt.indexOf('src="'))) {
     url = txt.substring(i+5)
     url = url.substr(0, url.indexOf('"'))
