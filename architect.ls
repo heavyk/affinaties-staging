@@ -210,112 +210,112 @@ src_watcher.on \unlinkDir, (path) !->
   dest = Path.join tmp_dir, path
   Fs.rmdir dest, ->
 
-src_watcher.on \ready !->
-  console.log \src-ready
+<-! src_watcher.on \ready
+console.log \src-ready
 
-  # =======================
-  # =======================
+# =======================
+# =======================
 
-  out_watcher = chokidar.watch out_dir, {
-    ignore-initial: true
-    # ignored: /[\/\\]\./
-    cwd: out_dir
-    # always-stat: true
+out_watcher = chokidar.watch out_dir, {
+  ignore-initial: true
+  # ignored: /[\/\\]\./
+  cwd: out_dir
+  # always-stat: true
+}
+
+out_watcher.on \change, (path) !->
+  console.log \out.change, path
+
+out_watcher.on \add, (path) !->
+  console.log \out.add, path
+
+out_watcher.on \unlink, (path) !->
+  console.log \out.unlink, path
+
+out_watcher.on \addDir, (path) !->
+  console.log \out.addDir, path
+
+out_watcher.on \unlinkDir, (path) !->
+  console.log \out.unlinkDir, path
+
+
+tmp_watcher = chokidar.watch tmp_dir, {
+  # ignore-initial: true
+  # ignored: /[\/\\]\./
+  cwd: tmp_dir
+  # always-stat: true
+}
+
+rollup_cache = {}
+rollup_opts =
+  format: \umd
+  plugins: [ rollup-plugin-buble jsx: \h ]
+  source-map: true
+  module-context: {}
+
+# resolve stupid rollup wanring with lodash: invalid use of 'this' at the root level
+rollup_opts.module-context[Path.join tmp_dir, 'lib/lodash/_root.js'] = 'window'
+
+
+
+process_poem = (path) !->
+  if not (poem = poems[path]) or poem.processing
+    return # console.log "could not process #{path}"
+  poem.processing = true
+  console.log \process_poem, path
+  src = Path.join tmp_dir, path
+  dest = Path.join out_dir, poem.dest
+  cache = rollup_cache[path]
+  opts = {} <<< rollup_opts <<< {
+    entry: src
+    cache: cache
+    dest: dest
   }
 
-  out_watcher.on \change, (path) !->
-    console.log \out.change, path
+  rollup.rollup opts
+    .then (bundle) ->
+      rollup_cache[path] = bundle
+      console.log \poem, dest
+      console.log \mods, bundle.modules.length
+      # for m in bundle.modules
+      #   console.log m.id
 
-  out_watcher.on \add, (path) !->
-    console.log \out.add, path
+      output = bundle.generate opts
+      map = output.map
+      code = output.code + "\n//# sourceMappingURL=#{Path.basename dest}.map\n"
+      # code = output.code + "\n//# sourceMappingURL=#{map.toUrl!}\n"
 
-  out_watcher.on \unlink, (path) !->
-    console.log \out.unlink, path
+      Promise.all [
+        sander.write-file dest, code
+        sander.write-file "#{dest}.map", map.to-string!
+      ]
+      # Fs.mkdir (Path.dirname dest), (err) !->
+      #   if err and err.code isnt \EEXIST
+      #     throw err
+      #   Fs.write-file-sync "#{dest}.map", map.to-string!
+      #   Fs.write-file-sync dest, code
+    .catch (e) ->
+      # console.log \catch, e.message.substr 0, 1000
+      console.log \catch, e.stack
+      poem.processing = false
+    .then !->
+      console.log "bundle written:", dest#, &
+      console.log " - TODO emit event"
+      poem.processing = false
 
-  out_watcher.on \addDir, (path) !->
-    console.log \out.addDir, path
+tmp_watcher.on \change, (path) !->
+  # console.log \tmp.change, path
+  process_poem path
 
-  out_watcher.on \unlinkDir, (path) !->
-    console.log \out.unlinkDir, path
+tmp_watcher.on \add, (path) !->
+  # console.log \tmp.add, path
+  process_poem path
 
+tmp_watcher.on \unlink, (path) !->
+  console.log \tmp.unlink, path
 
-  tmp_watcher = chokidar.watch tmp_dir, {
-    # ignore-initial: true
-    # ignored: /[\/\\]\./
-    cwd: tmp_dir
-    # always-stat: true
-  }
+tmp_watcher.on \addDir, (path) !->
+  console.log \tmp.addDir, path
 
-  rollup_cache = {}
-  rollup_opts =
-    format: \umd
-    plugins: [ rollup-plugin-buble jsx: \h ]
-    source-map: true
-    module-context: {}
-
-  # resolve stupid rollup wanring with lodash: invalid use of 'this' at the root level
-  rollup_opts.module-context[Path.join tmp_dir, 'lib/lodash/_root.js'] = 'window'
-
-
-
-  process_poem = (path) !->
-    if not (poem = poems[path]) or poem.processing
-      return # console.log "could not process #{path}"
-    poem.processing = true
-    console.log \process_poem, path
-    src = Path.join tmp_dir, path
-    dest = Path.join out_dir, poem.dest
-    cache = rollup_cache[path]
-    opts = {} <<< rollup_opts <<< {
-      entry: src
-      cache: cache
-      dest: dest
-    }
-
-    rollup.rollup opts
-      .then (bundle) ->
-        rollup_cache[path] = bundle
-        console.log \poem, dest
-        console.log \mods, bundle.modules.length
-        # for m in bundle.modules
-        #   console.log m.id
-
-        output = bundle.generate opts
-        map = output.map
-        code = output.code + "\n//# sourceMappingURL=#{Path.basename dest}.map\n"
-        # code = output.code + "\n//# sourceMappingURL=#{map.toUrl!}\n"
-
-        Promise.all [
-          sander.write-file dest, code
-          sander.write-file "#{dest}.map", map.to-string!
-        ]
-        # Fs.mkdir (Path.dirname dest), (err) !->
-        #   if err and err.code isnt \EEXIST
-        #     throw err
-        #   Fs.write-file-sync "#{dest}.map", map.to-string!
-        #   Fs.write-file-sync dest, code
-      .catch (e) ->
-        # console.log \catch, e.message.substr 0, 1000
-        console.log \catch, e.stack
-        poem.processing = false
-      .then !->
-        console.log "bundle written:", dest#, &
-        console.log " - TODO emit event"
-        poem.processing = false
-
-  tmp_watcher.on \change, (path) !->
-    # console.log \tmp.change, path
-    process_poem path
-
-  tmp_watcher.on \add, (path) !->
-    # console.log \tmp.add, path
-    process_poem path
-
-  tmp_watcher.on \unlink, (path) !->
-    console.log \tmp.unlink, path
-
-  tmp_watcher.on \addDir, (path) !->
-    console.log \tmp.addDir, path
-
-  tmp_watcher.on \unlinkDir, (path) !->
-    console.log \tmp.unlinkDir, path
+tmp_watcher.on \unlinkDir, (path) !->
+  console.log \tmp.unlinkDir, path
