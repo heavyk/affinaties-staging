@@ -4,7 +4,7 @@
 // also took some inspiration from https://github.com/Raynos/mercury
 
 import ClassList from './class-list.js'
-// import observable from './observable.js'
+import { attribute, hover, focus, select, event } from './observable.js'
 var doc = window.document
 
 /*
@@ -12,7 +12,7 @@ TODO ITEMS:
  * extract out the attribute setting function and make it available to the attribute observable so setting attributes will work properyly for shortcut syntax
 */
 
-function txt (t) {
+export function txt (t) {
   return doc.createTextNode(t)
 }
 
@@ -42,7 +42,7 @@ function context (createElement, arrayFragment) {
         forEach(m, function (v) {
           if (typeof v === 'string' && (i = v.length)) {
             if (!e) {
-              e = createElement(v)
+              e = createElement(v, args)
             } else {
               s = v.substring(1, i)
               if (v[0] === '.') {
@@ -72,7 +72,6 @@ function context (createElement, arrayFragment) {
       } else if (isNode(l) || l instanceof window.Text) {
         e.appendChild(r = l)
       } else if (typeof l === 'object') {
-        // each(l, function (attr_val, k) {
         for (var k in l) (function (attr_val, k) {
           if (typeof attr_val === 'function') {
             // TODO: not sure which one is faster: regex or substr test
@@ -81,9 +80,11 @@ function context (createElement, arrayFragment) {
               add_event(e, k.substr(2), attr_val, false)
             } else {
               // observable
-              e.setAttribute(k, attr_val())
+              // console.log('set-attribute', k, attr_val())
+              // if (attr_val() == null) debugger
+              if ((s = attr_val()) != null) e.setAttribute(k, s)
               cleanupFuncs.push(attr_val(function (v) {
-                e.setAttribute(k, v)
+                if (v != null) e.setAttribute(k, v)
                 // console.log('set attribute', k, '->', v)
               }))
             }
@@ -112,6 +113,34 @@ function context (createElement, arrayFragment) {
             }
           } else if (k === 'html') {
             e.innerHTML = attr_val
+          // ------------------ testing ---------------
+          } else if (k === 'observe') {
+            setTimeout((function (attr_val, e) {
+              for (s in attr_val) (function (s, v) {
+                // observable
+                switch (s) {
+                  case 'input':
+                    cleanupFuncs.push(attribute(e, attr_val[s+'.attr'], attr_val[s+'.on'])(v))
+                    break
+                  case 'hover':
+                    cleanupFuncs.push(hover(e)(v))
+                    break
+                  case 'focus':
+                    cleanupFuncs.push(focus(e)(v))
+                    break
+                  case 'select':
+                    cleanupFuncs.push(select(e)(v))
+                    break
+                  default:
+                  // case 'keyup':
+                  // case 'keydown':
+                  // case 'touchstart':
+                  // case 'touchend':
+                    cleanupFuncs.push(event(e, attr_val[s+'.attr'], attr_val[s+'.on'] || s, attr_val[s+'.event'])(v))
+                }
+              })(s, attr_val[s])
+            }).bind(e, attr_val, e), 0)
+          // ------------------ testing ---------------
           } else if (k === 's' || k === 'style') {
             if (typeof attr_val === 'string') {
               e.style.cssText = attr_val
@@ -219,7 +248,7 @@ export function forEachReverse (arr, fn) {
   for (var i = arr.length - 1; i >= 0; i--) fn(arr[i], i)
 }
 
-function arrayFragment(e, arr, cleanupFuncs) {
+export function arrayFragment(e, arr, cleanupFuncs) {
   var frag = doc.createDocumentFragment()
   var first = e.childNodes.length
   forEach(arr, function (_v) {
@@ -252,9 +281,10 @@ function arrayFragment(e, arr, cleanupFuncs) {
   })
 
   var last = first + arr.length
-  if (typeof arr.on === 'function') {
+  // if (typeof arr.on === 'function') {
+  if (arr.observable === 'array') {
     // if it's an EE, then it's likely an observable-array (like) Array,
-    arr.on('change', function (ev) {
+    function onchange (ev) {
       var i, j, o
       switch (ev.type) {
       case 'unshift':
@@ -313,7 +343,9 @@ function arrayFragment(e, arr, cleanupFuncs) {
       default:
         console.log('unknown event', ev)
       }
-    })
+    }
+    arr.on('change', onchange)
+    cleanupFuncs.push(function () { arr.off('change', onchange) })
   }
   return frag
 }
@@ -352,7 +384,7 @@ export function svgArrayFragment(e, arr, cleanupFuncs) {
   if (typeof arr.on === 'function') {
     var last = first + arr.length
     // if it's an EE, then it's likely an observable-array (like) Array,
-    arr.on('change', function (ev) {
+    function onchange (ev) {
       var i, j, o
       switch (ev.type) {
       case 'unshift':
@@ -411,13 +443,21 @@ export function svgArrayFragment(e, arr, cleanupFuncs) {
       default:
         debugger
       }
-    })
+    }
+    arr.on('change', onchange)
+    cleanupFuncs.push(function () { arr.off('change', onchange) })
   }
 }
 
+var special_elements = ['poem']
+
 export function dom_context () {
-  return context(function (el) {
-    return doc.createElement(el)
+  return context(function (el, args) {
+    var i
+
+    return !~(i = el.indexOf('-')) ? doc.createElement(el)
+      : ~special_elements.indexOf(el.substr(0, i)) ? new (customElements.get(el))(args.shift(), args.shift())
+      : new (customElements.get(el))
   }, arrayFragment)
 }
 
@@ -433,5 +473,11 @@ export function svg_context () {
 var s = svg_context()
 s.context = svg_context
 
-export { s }
+HTMLElement.prototype.aC = function (v) {
+  var self = this
+  if (Array.isArray(v)) forEach(v, function (e) { self.appendChild(e) })
+  else self.appendChild(isNode(v) ? v : txt(v))
+}
+
+export { s, h }
 export default h

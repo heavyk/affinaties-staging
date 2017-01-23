@@ -37,13 +37,13 @@ function remove(ary, item) {
 }
 
 // register a listener
-function on(emitter, event, listener) {
+export function on(emitter, event, listener) {
   (emitter.on || emitter.addEventListener)
     .call(emitter, event, listener, false)
 }
 
 // unregister a listener
-function off(emitter, event, listener) {
+export function off(emitter, event, listener) {
   (emitter.removeListener || emitter.removeEventListener || emitter.off)
     .call(emitter, event, listener, false)
 }
@@ -60,7 +60,7 @@ export function value (initialValue) {
   function observable(val) {
     return (
       val === undefined ? _val                                                     /* getter */
-    : 'function' !== typeof val ? all(listeners, _val = val)                       /* setter */
+    : typeof val !== 'function' ? all(listeners, _val = val)                       /* setter */
     : (listeners.push(val), (_val === undefined ? _val : val(_val)), function () { /* listener */
         remove(listeners, val)
       })
@@ -80,9 +80,9 @@ export function property (model, key) {
 
   function observable (val) {
     return (
-      val === undefined ? model.get(key) :
-      'function' !== typeof val ? model.set(key, val) :
-      (on(model, 'change:'+key, val), val(model.get(key)), function () {
+      val === undefined ? model.get(key)
+    : typeof val !== 'function' ? model.set(key, val)
+    : (on(model, 'change:'+key, val), val(model.get(key)), function () {
         off(model, 'change:'+key, val)
       })
     )
@@ -91,7 +91,7 @@ export function property (model, key) {
 
 export function transform (in_observable, down, up) {
   if(typeof in_observable !== 'function')
-    throw new Error('transform expects an observable')
+    error('transform expects an observable')
 
   observable.observable = 'value'
   return observable
@@ -99,7 +99,7 @@ export function transform (in_observable, down, up) {
   function observable (val) {
     return (
       val === undefined ? down(in_observable())
-    : 'function' !== typeof val ? in_observable((up || down)(val))
+    : typeof val !== 'function' ? in_observable((up || down)(val))
     : in_observable(function (_val) { val(down(_val)) })
     )
   }
@@ -109,7 +109,7 @@ export function not(observable) {
   return transform(observable, function (v) { return !v })
 }
 
-function listen (element, event, attr, listener) {
+export function listen (element, event, attr, listener) {
   function onEvent () {
     listener(typeof attr === 'function' ? attr() : element[attr])
   }
@@ -122,15 +122,15 @@ function listen (element, event, attr, listener) {
 
 //observe html element - aliased as `input`
 export function attribute(element, _attr, _event) {
-  var attr = _attr || 'value'
-  var event = _event || 'input'
+  var attr = _attr !== void 0 ? _attr : 'value'
+  var event = _event !== void 0 ? _event : 'input'
   observable.observable = 'attribute'
   return observable
 
   function observable (val) {
     return (
       val === undefined ? element[attr]
-    : 'function' !== typeof val ? element[attr] = val
+    : typeof val !== 'function' ? element[attr] = val
     : listen(element, event, attr, val)
     )
   }
@@ -152,15 +152,19 @@ export function select(element) {
   function observable (val) {
     return (
       val === undefined ? element.options[element.selectedIndex].value
-    : 'function' !== typeof val ? _set(val)
+    : typeof val !== 'function' ? _set(val)
     : listen(element, 'change', _attr, val)
-    )}
+    )
+  }
 }
 
 //toggle based on an event, like mouseover, mouseout
 export function toggle (el, up, down) {
   var i = false
-  return function (val) {
+  observable.observable = 'toggle'
+  return observable
+
+  function observable (val) {
     function onUp() {
       i || val(i = true)
     }
@@ -169,16 +173,19 @@ export function toggle (el, up, down) {
     }
     return (
       val === undefined ? i
-    : 'function' !== typeof val ? undefined //read only
+    : typeof val !== 'function' ? undefined //read only
     : (on(el, up, onUp), on(el, down || up, onDown), val(i), function () {
-      off(el, up, onUp); off(el, down || up, onDown)
-    })
-  )}}
+        off(el, up, onUp); off(el, down || up, onDown)
+      })
+    )
+  }
+}
 
-function error (message) {
+export function error (message) {
   throw new Error(message)
 }
 
+// OPTIMIZATION: use new Function to compose new observables which call each of the observables (faster than a loop)
 export function compute (observables, compute) {
   var init = true
   var cur = new Array(observables.length)
@@ -217,7 +224,7 @@ export function signal () {
   return function (val) {
     return (
       val === undefined ? _val
-        : 'function' !== typeof val ? (!(_val === val) ? all(listeners, _val = val) : "")
+        : typeof val !== 'function' ? (!(_val === val) ? all(listeners, _val = val) : '')
         : (listeners.push(val), val(_val), function () {
            remove(listeners, val)
         })
@@ -225,6 +232,24 @@ export function signal () {
   }
 }
 
+export function event (element, attr, event, truthy) {
+  event = event || 'keyup'
+  truthy = truthy || function (ev) { return ev.which === 13 && !ev.shiftKey }
+  attr = attr || 'value'
+  observable.observable = 'event'
+  return observable
+
+  function observable (val) {
+    function listener (ev) { if (truthy(ev)) val(element[attr], ev) }
+    return (
+      val === undefined ? val
+    : typeof val !== 'function' ? undefined //read only
+    : (on(element, event, listener), function () {
+        off(element, event, listener)
+      })
+    )
+  }
+}
 
 export function hover (e) { return toggle(e, 'mouseover', 'mouseout')}
 export function focus (e) { return toggle(e, 'focus', 'blur')}
