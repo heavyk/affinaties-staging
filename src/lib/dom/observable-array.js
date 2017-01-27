@@ -1,11 +1,9 @@
-import EE from '../drip/emitter'
+import { MixinEmitter } from '../drip/emitter'
 import eq from '../lodash/isEqual'
 
-export class ObservableArray extends Array {
+export class ObservableArray extends MixinEmitter(Array) {
   constructor (...v) {
     super(...v)
-    // fix this by pre mixing in the EE proto, then calling EE.setupEmitter()
-    EE(this)
     this.observable = 'array'
   }
 

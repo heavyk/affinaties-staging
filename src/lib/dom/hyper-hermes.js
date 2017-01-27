@@ -247,10 +247,10 @@ export function forEachReverse (arr, fn) {
 
 export function arrayFragment(e, arr, cleanupFuncs) {
   var frag = doc.createDocumentFragment()
-  var first = e.childNodes.length
   function activeElement(o) {
     return o === (e.activeElement || doc.activeElement)
   }
+
   forEach(arr, function (_v) {
     var i, v = _v
     if (typeof v === 'function') {
@@ -268,10 +268,8 @@ export function arrayFragment(e, arr, cleanupFuncs) {
       if (i === 1) {
         // assume it's an observable!
         cleanupFuncs.push(_v(function (__v) {
-          // console.log(v)
           if (isNode(__v) && v.parentElement) {
             v.parentElement.replaceChild(__v, v), v = __v
-          // TODO: observable-array cleanup
           } else {
             v.textContent = __v
           }
@@ -280,23 +278,18 @@ export function arrayFragment(e, arr, cleanupFuncs) {
     }
   })
 
-  // if (typeof arr.on === 'function') {
   if (arr.observable === 'array') {
-    var last = first + arr.length
     function onchange (ev) {
-      // TODO: remove dependence on first,last
       var i, j, o, oo
-      console.log('onchange', ev.type, ev)
+      // console.log('onchange', ev.type, ev)
       switch (ev.type) {
       case 'unshift':
-        for (i = ev.values.length - 1; i >= 0; i--) {
+        for (i = ev.values.length - 1; i >= 0; i--)
           e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[0])
-        }
       break
       case 'push':
-        for (i = 0; i > ev.values.length; i++) {
+        for (i = 0; i > ev.values.length; i++)
           e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[arr.length-1])
-        }
         break
       case 'pop':
         e.removeChild(arr[arr.length-1])
@@ -306,12 +299,10 @@ export function arrayFragment(e, arr, cleanupFuncs) {
         break
       case 'splice':
         j = ev.idx
-        if (ev.remove) for (i = 0; i < ev.remove; i++) {
+        if (ev.remove) for (i = 0; i < ev.remove; i++)
           e.removeChild(arr[j + i])
-        }
-        if (ev.add) for (i = 0; i < ev.add.length; i++) {
+        if (ev.add) for (i = 0; i < ev.add.length; i++)
           e.insertBefore(isNode(o = ev.add[i]) ? o : txt(o), arr[j])
-        }
         break
       case 'sort':
         // technically no longer used, but still exists mainly for comparison purposes
@@ -323,7 +314,6 @@ export function arrayFragment(e, arr, cleanupFuncs) {
           }
         }
         break
-
       case 'replace':
         o = ev.val
         oo = ev.old
