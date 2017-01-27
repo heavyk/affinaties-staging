@@ -342,8 +342,8 @@ export function arrayFragment(e, arr, cleanupFuncs) {
         if (i === 1) o.focus()
         break
       case 'swap':
-        ev.j = h('div.swap')
-        ev.k = h('div.swap')
+        ev.j = h('div.swap', o = {s: {display: 'none'}})
+        ev.k = h('div.swap', o)
         oo = arr[ev.from]
         o = arr[ev.to]
         if (activeElement(o)) i = 1
