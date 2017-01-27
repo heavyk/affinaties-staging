@@ -46,7 +46,6 @@ function mixin (obj) {
 
 EnhancedEmitter.prototype.on = EnhancedEmitter.prototype.addListener = function (ev, fn) {
   var map = this._events || (this._events = {})
-  // if (ev === 'auth') debugger
   var evs = Array.isArray(ev) ? ev.slice(0) : ev.split(this._drip.delimeter)
   var store = this._events || (this._events = {})
 

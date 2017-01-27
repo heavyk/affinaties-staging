@@ -3,46 +3,39 @@ import eq from '../lodash/isEqual'
 
 export class ObservableArray extends Array {
   constructor (...v) {
-    // apply(null, arguments)
     super(...v)
-    // console.log('ObservableArray', v)
-    // debugger
+    // fix this by pre mixing in the EE proto, then calling EE.setupEmitter()
     EE(this)
     this.observable = 'array'
   }
 
   pop () {
     if (!this.length) return
+    this.emit('change', { type: 'pop' })
     element = super.pop()
-    this.emit('change', {
-      type: 'pop',
-      value: element
-    })
     return element
   }
 
   push (...items) {
     if (!items.length) return this.length
+    this.emit('change', { type: 'push', values: items })
     var result = super.push(...items)
-    this.emit('change', {
-      type: 'push',
-      values: arguments
-    })
     return result
   }
 
   reverse () {
     if (this.length <= 1) return this
-    var tmp = Array.from(this)
+    for(var i = 0, l = +(this.length / 2); i < l; i++) {
+      this.emit('change', {type: 'swap', from: i, to: this.length - i - 1 })
+    }
     super.reverse()
-    if (!isCopy.call(this, tmp)) this.emit('change', { type: 'reverse' })
     return this
   }
 
   shift () {
     if (!this.length) return
-    var element = super.shift()
     this.emit('change', { type: 'shift', value: element })
+    var element = super.shift()
     return element
   }
 
@@ -51,59 +44,93 @@ export class ObservableArray extends Array {
     var tmp = Array.from(this)
     super.sort(compare)
     if (!isCopy.call(this, tmp)) {
-      this.emit('change', {
-        type: 'sort',
-        compare: compare,
-        orig: tmp,
-      })
+      this.emit('change', { type: 'sort', compare: compare, orig: tmp })
     }
     return this
   }
 
-  // empty () {
-  //   var len = this.length
-  //   if (!len) return
-  //   this.emit('change', { type: 'empty' })
-  //   return this.splice(0, len)
-  // }
+  quiksort (compare) {
+    // DJ quiksort :D
+    // ripped from http://stackoverflow.com/questions/5185864/javascript-quicksort
+    // slight speed tradeoff. another way: copy the array, use native sort, and compare the results to re-order the elements
+    var _quikSort = (t, s, e, sp, ep) => {
+      if (s >= e) return
+      while (sp < ep && compare(t[sp], t[e]) < 0) sp++
+      if (sp === e) _quikSort(t, s, e - 1, s, e - 1)
+      else {
+        while (compare(t[ep], t[e]) >= 0 && sp < ep) ep--
+        var temp
+        if (sp === ep) {
+          this.emit('change', {type: 'swap', from: sp, to: e })
+          temp = t[sp]
+          t[sp] = t[e]
+          t[e] = temp
+          if (s !== sp) _quikSort(t, s, sp - 1, s, sp - 1)
+          _quikSort(t, sp + 1, e, sp + 1, e)
+        } else {
+          this.emit('change', {type: 'swap', from: sp, to: ep })
+          temp = t[sp]
+          t[sp] = t[ep]
+          t[ep] = temp
+          _quikSort(t, s, e, sp + 1, ep)
+        }
+      }
+    }
+
+    _quikSort(this, 0, this.length-1, 0, this.length-1)
+    return this
+  }
 
   empty () {
-    this.length = 0
     this.emit('change', { type: 'empty' })
+    this.length = 0
     return this
   }
 
-  // splice (start, deleteCount /*, …items*/) {
-  splice (start, deleteCount, ...items) {
-    var result, l = arguments.length
-    if (!l || (l <= 2 && (+start >= this.length || +deleteCount <= 0))) return []
-    result = super.splice(start, deleteCount, ...items)
-    if ((!items && result.length) || !isCopy.call(items, result)) {
-      this.emit('change', { type: 'splice', arguments: arguments, removed: result })
-    }
-    return result
+  replace (idx, val) {
+    this.emit('change', { type: 'replace', val, idx, old: this[idx] })
+    super.splice(idx, 1, val)
+    return this
   }
 
-  unshift (item /*, …items*/) {
-    var result
-    if (!arguments.length) return this.length
-    result = unshift.apply(this, arguments)
-    this.emit('change', { type: 'unshift', values: arguments })
-    return result
+  move (from_idx, to_idx) {
+    this.emit('change', { type: 'move', from: from_idx, to: to_idx })
+    var el = super.splice(from_idx, 1)
+    super.splice(to_idx, 0, el[0])
+    return this
   }
 
-  set (index, value) {
-    var had, old, event
-    index = index >>> 0
-    if (this.hasOwnProperty(index)) {
-      had = true
-      old = this[index]
-      if (eq(old, value)) return
-    }
-    this[index] = value
-    event = { type: 'set', index: index }
-    if (had) event.oldValue = old
-    this.emit('change', event)
+  insert (idx, val) {
+    this.emit('change', { type: 'insert', val, idx })
+    super.splice(idx, 0, val)
+    return this
+  }
+
+  remove (idx) {
+    this.emit('change', { type: 'remove', idx })
+    super.splice(idx, 1)
+    return this
+  }
+
+  splice (idx, remove, ...add) {
+    var l = arguments.length
+    if (!l || (l <= 2 && (+idx >= this.length || +remove <= 0))) return []
+    this.emit('change', { type: 'splice', idx, remove, add })
+    return super.splice(idx, remove, ...add)
+  }
+
+  unshift (...items) {
+    if (!items.length) return this.length
+    this.emit('change', { type: 'unshift', values: items })
+    return unshift.apply(this, items)
+  }
+
+  set (idx, value) {
+    idx = idx >>> 0
+    if (eq(this[idx], value)) return
+    this.emit('change', { type: 'set', idx, value })
+    this[idx] = value
+    return this
   }
 }
 

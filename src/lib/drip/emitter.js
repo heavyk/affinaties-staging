@@ -19,8 +19,10 @@ function EventEmitter (obj) {
  */
 
 function mixin (obj) {
-  for (var key in EventEmitter.prototype) {
-    obj[key] = EventEmitter.prototype[key]
+  var P = EventEmitter.prototype
+  var proto = Object.getPrototypeOf(obj)
+  for (var key in P) {
+    proto[key] = P[key]
   }
 
   return obj

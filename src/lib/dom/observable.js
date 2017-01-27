@@ -37,15 +37,15 @@ function remove(ary, item) {
 }
 
 // register a listener
-export function on(emitter, event, listener) {
+export function on(emitter, event, listener, opts = false) {
   (emitter.on || emitter.addEventListener)
-    .call(emitter, event, listener, false)
+    .call(emitter, event, listener, opts)
 }
 
 // unregister a listener
-export function off(emitter, event, listener) {
+export function off(emitter, event, listener, opts = false) {
   (emitter.removeListener || emitter.removeEventListener || emitter.off)
-    .call(emitter, event, listener, false)
+    .call(emitter, event, listener, opts)
 }
 
 // An observable that stores a value.

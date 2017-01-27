@@ -4,12 +4,13 @@
 // also took some inspiration from https://github.com/Raynos/mercury
 
 import ClassList from './class-list.js'
-import { attribute, hover, focus, select, event } from './observable.js'
+import { attribute, hover, focus, select, event, on, off } from './observable.js'
 var doc = window.document
 
 /*
 TODO ITEMS:
  * extract out the attribute setting function and make it available to the attribute observable so setting attributes will work properyly for shortcut syntax
+ * test all the observable-array events to make sure there's no element smashing
 */
 
 export function txt (t) {
@@ -21,13 +22,9 @@ function context (createElement, arrayFragment) {
   var cleanupFuncs = []
 
   function add_event (e, event, listener, opts) {
-    (e.on || e.addEventListener)
-      .call(e, event, listener, opts)
-
+    on(e, event, listener, opts)
     cleanupFuncs.push(function () {
-      // copied from observable
-      (e.removeListener || e.removeEventListener || e.off)
-        .call(e, event, listener, opts)
+      off(e, event, listener, opts)
     })
   }
 
@@ -251,6 +248,9 @@ export function forEachReverse (arr, fn) {
 export function arrayFragment(e, arr, cleanupFuncs) {
   var frag = doc.createDocumentFragment()
   var first = e.childNodes.length
+  function activeElement(o) {
+    return o === (e.activeElement || doc.activeElement)
+  }
   forEach(arr, function (_v) {
     var i, v = _v
     if (typeof v === 'function') {
@@ -280,65 +280,87 @@ export function arrayFragment(e, arr, cleanupFuncs) {
     }
   })
 
-  var last = first + arr.length
   // if (typeof arr.on === 'function') {
   if (arr.observable === 'array') {
-    // if it's an EE, then it's likely an observable-array (like) Array,
+    var last = first + arr.length
     function onchange (ev) {
-      var i, j, o
+      // TODO: remove dependence on first,last
+      var i, j, o, oo
+      console.log('onchange', ev.type, ev)
       switch (ev.type) {
       case 'unshift':
-        forEachReverse(ev.values, function (o) {
-          e.insertBefore(isNode(o) ? o : txt(o), e.childNodes[first])
-          last++
-        })
+        for (i = ev.values.length - 1; i >= 0; i--) {
+          e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[0])
+        }
       break
       case 'push':
-        forEach(ev.values, function (o) {
-          e.insertBefore(isNode(o) ? o : txt(o), e.childNodes[last])
-          last++
-        })
+        for (i = 0; i > ev.values.length; i++) {
+          e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[arr.length-1])
+        }
         break
       case 'pop':
-        e.removeChild(e.childNodes[--last])
+        e.removeChild(arr[arr.length-1])
         break
       case 'shift':
-        e.removeChild(e.childNodes[first])
-        last--
+        e.removeChild(arr[0])
         break
       case 'splice':
-        if (ev.removed) forEach(ev.removed, function (v) {
-          e.removeChild(v)
-          last--
-        })
-        j = ev.arguments.length
-        if (j > 2) {
-          for (i = 2; i < j; i++) {
-            o = ev.arguments[i]
-            e.insertBefore(isNode(o) ? o : txt(o), e.childNodes[last])
-          }
+        j = ev.idx
+        if (ev.remove) for (i = 0; i < ev.remove; i++) {
+          e.removeChild(arr[j + i])
+        }
+        if (ev.add) for (i = 0; i < ev.add.length; i++) {
+          e.insertBefore(isNode(o = ev.add[i]) ? o : txt(o), arr[j])
         }
         break
       case 'sort':
-        i = 0
-        for (var orig = ev.orig; i < orig.length; i++) {
-          o = orig[i]
-          if (i !== (j = arr.indexOf(o))) {
+        // technically no longer used, but still exists mainly for comparison purposes
+        for (i = 0, oo = ev.orig; i < arr.length; i++) {
+          o = arr[i]
+          if (i !== (j = oo.indexOf(o))) {
             e.removeChild(o)
-            e.insertBefore(arr[j], e.childNodes[j])
+            e.insertBefore(o, arr[i - 1])
           }
         }
         break
-      case 'empty':
-        while (o = e.childNodes[first])
-          e.removeChild(o)
+
+      case 'replace':
+        o = ev.val
+        oo = ev.old
+        if (activeElement(o) || o.focused === 1) i = 1
+        if (activeElement(oo)) oo.focused = 1
+        e.replaceChild(o, oo)
+        if (i === 1) o.focus(), o.focused = 0
         break
-      case 'reverse':
-        // this can potentially be optimized...
-        while (o = e.childNodes[0])
-          e.removeChild(o)
+      case 'insert':
+        e.insertBefore(ev.val, arr[ev.idx])
+        break
+      case 'move':
+        o = arr[ev.from]
+        if (activeElement(o)) i = 1
+        e.insertBefore(o, arr[ev.to])
+        if (i === 1) o.focus()
+        break
+      case 'swap':
+        ev.j = h('div.swap')
+        ev.k = h('div.swap')
+        oo = arr[ev.from]
+        o = arr[ev.to]
+        if (activeElement(o)) i = 1
+        else if (activeElement(oo)) i = 2
+        e.replaceChild(ev.j, oo)
+        e.replaceChild(ev.k, o)
+        e.replaceChild(o, ev.j)
+        e.replaceChild(oo, ev.k)
+        if (i === 1) o.focus()
+        else if (i === 2) oo.focus()
+        break
+      case 'remove':
+        e.removeChild(arr[ev.idx])
+        break
+      case 'empty':
         for (i = 0; i < arr.length; i++)
-          e.appendChild(arr[i])
+          e.removeChild(arr[i])
         break
       default:
         console.log('unknown event', ev)
@@ -348,6 +370,12 @@ export function arrayFragment(e, arr, cleanupFuncs) {
     cleanupFuncs.push(function () { arr.off('change', onchange) })
   }
   return frag
+}
+
+export function offsetOf (child) {
+  var i = 0
+  while ((child = child.previousSibling) != null) i++
+  return i
 }
 
 export function svgArrayFragment(e, arr, cleanupFuncs) {
@@ -430,11 +458,19 @@ export function svgArrayFragment(e, arr, cleanupFuncs) {
         }
         break
       case 'empty':
-        while (o = e.childNodes[first])
-          e.removeChild(o)
+        // while (o = e.childNodes[first])
+        //   e.removeChild(o)
+        for (i = last; i >= first; i--)
+          e.removeChild(e.childNodes[i])
         break
       case 'reverse':
         // this can potentially be optimized...
+        // FIXME: broken when first != 0 or when last != length-1
+        // for (i = last; i >= first; i--)
+        //   e.removeChild(e.childNodes[i])
+        // for (i = 0; i < arr.length; i++)
+        //   e.insertBefore(arr[i], e.childNodes[first+i+1])
+        // END/FIXME
         while (o = e.childNodes[0])
           e.removeChild(o)
         for (i = 0; i < arr.length; i++)

@@ -11,7 +11,7 @@ import assign from '../../lodash/assign'
 
 class Ambition extends EventEmitter {
   constructor (topic, options) {
-    super({delimeter: '.'})
+    super({delimeter: '/'})
     var self = this
     var type, args1
 
@@ -20,8 +20,8 @@ class Ambition extends EventEmitter {
     if (typeof options === 'object') { assign(this, options) }
     if (self.insightQue === void 9) { self.insightQue = [] }
     // if (self.namespace === void 9) { self.namespace = name }
-    if (self.situations === void 9) { self.situations = {} }
-    if (self.startingSituation === void 9) { self.startingSituation = 'unsituated' }
+    if (self.states === void 9) { self.states = {} }
+    if (self.startingState === void 9) { self.startingState = 'unsituated' }
     if (typeof self.eventListeners === 'object') {
       for (var i in self.eventListeners) {
         self.on(i, self.eventListeners[i])
@@ -37,11 +37,11 @@ class Ambition extends EventEmitter {
 
     var init = function () {
       self.emit('created')
-      if (!self.situation && self.startingSituation !== false) {
-        self._debug('starting-situation: ' + self.startingSituation)
-        self.now(self.startingSituation, topic, options)
+      if (!self.state && self.startingState !== false) {
+        self._debug('starting-state: ' + self.startingState)
+        self.now(self.startingState, topic, options)
       } else {
-        self._debug('waiting to transition to %s', self.startingSituation)
+        self._debug('waiting to transition to %s', self.startingState)
       }
     }
 
@@ -59,7 +59,7 @@ class Ambition extends EventEmitter {
   emerge (cb) {
     throw new Error('not implemented yet')
   }
-  // emerge should be (situation, cb) ->
+  // emerge should be (state, cb) ->
   // it should wait for a state before emerging
   // this should give our progams a new sense of progress and improvement
   // emergence, if you will :)
@@ -71,7 +71,7 @@ class Ambition extends EventEmitter {
       } else {
         this.insightQue.push({
           type: 'emerge',
-          notSituation: this.startingSituation,
+          notState: this.startingState,
           cb: cb
         })
       }
@@ -90,32 +90,32 @@ class Ambition extends EventEmitter {
   // }
 
   reset () {
-    this.situation = void 9
+    this.state = void 9
     if (typeof this.pregage === 'function') {
       this.pregage.call(this)
     }
-    if (this.startingSituation) {
-      return this.soon(this.startingSituation)
+    if (this.startingState) {
+      return this.soon(this.startingState)
     }
   }
 
-  blunder (err) {
-    var situations, recovery
-    situations = this.situations
-    if (typeof (recovery = situations[this.situation].recovery) === 'function') {
+  error (err) {
+    var states, recovery
+    states = this.states
+    if (typeof (recovery = states[this.state].recovery) === 'function') {
       return recovery.call(this, err)
     }
-    return this.emit('blunder', err)
+    return this.emit('error', err)
   }
 
   respond (cmd) {
-    var situation, situations, response, do_response, fn, p, obj
+    var state, states, response, do_response, fn, p, obj
     var self = this
     var args = slice.call(arguments, 0)
     var responded = 0
-    this._debug('response: ' + cmd + ' in ' + this.situation)
-    if (!this.exitStageLeft && (situation = this.situation)) {
-      situations = this.situations
+    this._debug('response: ' + cmd + ' in ' + this.state)
+    if (!this.exitStageLeft && (state = this.state)) {
+      states = this.states
       response = cmd
       do_response = function (fn, response, path) {
         var args1, emitObj, ret
@@ -139,22 +139,22 @@ class Ambition extends EventEmitter {
         }
         responded++
       }
-      if (typeof (fn = situations[situation][response]) === 'string') {
+      if (typeof (fn = states[state][response]) === 'string') {
         response = fn
       }
-      if (typeof (fn = situations[situation]['*']) === 'function') {
-        do_response(fn, '*', '/situations/' + situation + '/' + response)
+      if (typeof (fn = states[state]['*']) === 'function') {
+        do_response(fn, '*', '/states/' + state + '/' + response)
       }
       this._debug('response ' + response)
       if ((p = this.cmds) && typeof (fn = p[response]) === 'function') {
         do_response(fn, response, '/cmds/' + response)
       }
-      if (typeof (fn = situations[situation][response]) === 'function') {
-        do_response(fn, response, '/situations/' + situation + '/' + response)
+      if (typeof (fn = states[state][response]) === 'function') {
+        do_response(fn, response, '/states/' + state + '/' + response)
       }
     }
     if (responded === 0) {
-      this._debug("response: '" + cmd + "' next now (in situation:" + this.situation)
+      this._debug("response: '" + cmd + "' next now (in state:" + this.state)
       obj = {
         type: 'next-now',
         cmd: cmd,
@@ -204,13 +204,13 @@ class Ambition extends EventEmitter {
       : typeof it === 'function' ? Promise.try(it).then(next) : next())
   }
 
-  nowPrepared (lastSituation, nextSituation, prepared, args) {
+  nowPrepared (lastState, nextState, prepared, args) {
     var self = this
-    self._debug('post-now %s -> %s', lastSituation, nextSituation)
-    self.emit.apply(self, ['situation:' + nextSituation].concat(prepared).concat(args))
+    self._debug('post-now %s -> %s', lastState, nextState)
+    self.emit.apply(self, ['state:' + nextState].concat(prepared).concat(args))
     self.emit.call(self, 'now', {
-      from: lastSituation,
-      to: nextSituation,
+      from: lastState,
+      to: nextState,
       prepared: prepared,
       args: args
     })
@@ -218,66 +218,66 @@ class Ambition extends EventEmitter {
       self.followThrough.call(self, 'next-now')
       self.followThrough.call(self, 'deferred')
     }
-    if (!self._emerged && nextSituation[0] === '/') {
-      self._debug('initialzed! in %s', nextSituation)
+    if (!self._emerged && nextState[0] === '/') {
+      self._debug('initialzed! in %s', nextState)
       self.followThrough.call(self, 'emerge')
-      self._emerged = nextSituation
+      self._emerged = nextState
     }
     self.inTransition = null
   }
 
-  now (nextSituation) {
+  now (nextState) {
     var self = this
-    var lastSituation, args1
-    if (typeof nextSituation !== 'string') {
-      nextSituation = nextSituation + ''
+    var lastState, args1
+    if (typeof nextState !== 'string') {
+      nextState = nextState + ''
     }
     // disactivated because I don't remember how to transition out of a transition state
-    // if (self.situation && self.situation[0] !== '/' && self.situation !== self.startingSituation) {
-    //   self._debug('WARNING ' + self.namespace + ' is trying to now while already in a now situation: ' + self.situation + ' -> ' + nextSituation)
+    // if (self.state && self.state[0] !== '/' && self.state !== self.startingState) {
+    //   self._debug('WARNING ' + self.namespace + ' is trying to now while already in a now state: ' + self.state + ' -> ' + nextState)
     //   debugger
     //   return self.soon.apply(self, arguments)
     // }
     if (self.inTransition) {
       return self.soon.apply(self, arguments)
     }
-    self._debug('[%s]{now}  -> %s', self.situation, nextSituation)
-    if (!self.exitStageLeft && nextSituation !== self.situation) {
+    self._debug('[%s]{now}  -> %s', self.state, nextState)
+    if (!self.exitStageLeft && nextState !== self.state) {
       args1 = slice.call(arguments, 1)
-      if (self.situations[nextSituation]) {
-        self.inTransition = nextSituation
-        self.priorSituation = self.situation
-        self.situation = nextSituation
-        if ((lastSituation = self.priorSituation)) {
-          if (self.situations[lastSituation] && self.situations[lastSituation]['<']) {
+      if (self.states[nextState]) {
+        self.inTransition = nextState
+        self.priorState = self.state
+        self.state = nextState
+        if ((lastState = self.priorState)) {
+          if (self.states[lastState] && self.states[lastState]['<']) {
             self.exitStageLeft = true
-            self.situations[lastSituation]['<'].apply(self, args1)
+            self.states[lastState]['<'].apply(self, args1)
             self.exitStageLeft = false
           }
         }
         // I want to add a periodic table of symbols, to allow for structure to state entrance
         // eg. '>' is when entering. '>>' would run before the former
         // many possibilites to be explored ... etc.
-        if (self.situations[nextSituation]['>']) {
+        if (self.states[nextState]['>']) {
           // process.nextTick(function () {
-            self._debug('[%s]{>}{:_resolve} %o', nextSituation, args1)
-            self._resolve(self.situations[nextSituation]['>'].apply(self, args1), function (prepared) {
-              self._debug('[%s]{>}{_resolve:}', nextSituation)
-              self.nowPrepared.call(self, lastSituation, nextSituation, prepared, args1)
+            self._debug('[%s]{>}{:_resolve} %o', nextState, args1)
+            self._resolve(self.states[nextState]['>'].apply(self, args1), function (prepared) {
+              self._debug('[%s]{>}{_resolve:}', nextState)
+              self.nowPrepared.call(self, lastState, nextState, prepared, args1)
             })
           // })
         } else {
-          self.nowPrepared.call(self, lastSituation, nextSituation, prepared, args1)
+          self.nowPrepared.call(self, lastState, nextState, prepared, args1)
         }
-        if (self.insightQue.length && self.situation[0] === '/') {
+        if (self.insightQue.length && self.state[0] === '/') {
           self.followThrough.call(self, 'next-now')
           self.followThrough.call(self, 'deferred')
         }
       } else {
-        self._debug('attempted to now to an invalid situation: %s', nextSituation)
-        self.emit.call(self, 'missing-situation', {
-          from: self.situation,
-          to: nextSituation,
+        self._debug('attempted to now to an invalid state: %s', nextState)
+        self.emit.call(self, 'missing-state', {
+          from: self.state,
+          to: nextState,
           args: args1
         })
       }
@@ -286,7 +286,7 @@ class Ambition extends EventEmitter {
 
   followThrough (type) {
     var self = this
-    if (type === 'deferred' && (!this.situation || (typeof this.situation === 'string' && this.situation[0] !== '/'))) {
+    if (type === 'deferred' && (!this.state || (typeof this.state === 'string' && this.state[0] !== '/'))) {
       return
     }
     var filterFn = type === 'next-now'
@@ -295,11 +295,11 @@ class Ambition extends EventEmitter {
       }
     : type === 'emerge'
       ? function (item, i) {
-        return item.type === 'emerge' && (!self._emerged && item.notSituation !== self.situation && self.situation && self.situation[0] === '/')
+        return item.type === 'emerge' && (!self._emerged && item.notState !== self.state && self.state && self.state[0] === '/')
       }
     : type === 'deferred'
       ? function (item, i) {
-        return item.type === 'deferred' && ((item.untilSituation && item.untilSituation === self.situation) || (item.notSituation && item.notSituation !== self.situation))
+        return item.type === 'deferred' && ((item.untilState && item.untilState === self.state) || (item.notState && item.notState !== self.state))
       }
     : function (item) {
       return item.type === 'next-response'
@@ -329,7 +329,7 @@ class Ambition extends EventEmitter {
       var filter
       if (type === 'next-now') {
         filter = function (evnt) {
-          return evnt.type === 'next-now' && (name ? evnt.untilSituation === name : true)
+          return evnt.type === 'next-now' && (name ? evnt.untilState === name : true)
         }
       } else if (type === 'next-response') {
         filter = function (evnt) {
@@ -340,15 +340,15 @@ class Ambition extends EventEmitter {
     }
   }
 
-  until (situationName, cb) {
+  until (stateName, cb) {
     var args, queued
     args = slice.call(arguments, 2)
-    if (this.situation === situationName) {
+    if (this.state === stateName) {
       return cb.apply(this, args)
     } else {
       queued = {
         type: 'deferred',
-        untilSituation: situationName,
+        untilState: stateName,
         cb: cb,
         args: args
       }
@@ -383,13 +383,13 @@ class Ambition extends EventEmitter {
 //     if (self._debug.online) {
 //       switch (insightName) {
 //       case 'responding':
-//         self._debug("responding: (%s:%s)", self.situation, args[1].response)
+//         self._debug("responding: (%s:%s)", self.state, args[1].response)
 //         break
 //       case 'responded':
-//         self._debug("responded: (%s:%s)", self.situation, args[1].response)
+//         self._debug("responded: (%s:%s)", self.state, args[1].response)
 //         break
-//       case 'missing-situation':
-//         self._debug.blunder("bad now: (%s !-> %s)", args[1].situation, args[1].attempted)
+//       case 'missing-state':
+//         self._debug.error("bad now: (%s !-> %s)", args[1].state, args[1].attempted)
 //         break
 //       case 'now':
 //         self._debug("now: (%s -> %s)", args[1].from, args[1].to)
@@ -441,7 +441,7 @@ class Ambition extends EventEmitter {
 //     this.insightListeners[insightName] = [listeners]
 //   }
 //   this.insightListeners[insightName].push(callback)
-//   if (insightName.substr(0, 6) === "situation:" && this.situation === insightName.substr(6)) {
+//   if (insightName.substr(0, 6) === "state:" && this.state === insightName.substr(6)) {
 //     process.nextTick(function(){
 //       return callback.call(self)
 //     })
