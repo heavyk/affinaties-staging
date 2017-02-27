@@ -9,8 +9,10 @@ import { forEach } from './hyper-hermes'
 // * remove utility functions (micro-optimization, reduces readability)
 // * change from object traversal to arrays
 //  * change all() from `for (var k in ary) ary[k](val)` -> `for (var i = 0; i < ary.length; i++) ary[i](val)`
-//  * in remove() use `.splice` instead of `delete`, however, to avoid the case that a listener is removed inside of a listener, I will instead splice inside of a setTimeout
+//  * then, in remove() use `.splice` instead of `delete`. however, to avoid the case that a listener is removed inside of a listener, I instead splice inside of a setTimeout (crappy solution, I know...)
+//  °-> this can potentially be improved. I'll have to look into it a bit better. perhaps using a `Map` or a linked list?
 // * add .observable property to all returned functions (necessary for hyper-hermes to know that it's an observable instead of a context)
+// * changed `value` to only propagate when the value has actually changed. to force all liseners to receive the current value, `call observable.set()` or `observable.set(observable())`
 // (TODO) use isEqual function to compare values before setting the observable (and remove `signal`)
 // (TODO) add better documentation for each function
 
@@ -22,7 +24,7 @@ export function bind1(a, b) {
 
 //bind a to b and b to a -- Two Way Binding
 export function bind2(a, b) {
-  b(a()); a(b); b(a);
+  b(a()); a(b); b(a)
 }
 
 //trigger all listeners
@@ -52,16 +54,17 @@ export function off(emitter, event, listener, opts = false) {
 export function value (initialValue) {
   var _val = initialValue, listeners = []
   observable.set = function (val) {
-    all(listeners, _val = val)
+    all(listeners, _val = val === undefined ? _val : val)
   }
   observable.observable = 'value'
   return observable
 
   function observable(val) {
     return (
-      val === undefined ? _val                                                     /* getter */
-    : typeof val !== 'function' ? all(listeners, _val = val)                       /* setter */
-    : (listeners.push(val), (_val === undefined ? _val : val(_val)), function () { /* listener */
+      val === undefined ? _val                                                        // getter
+    // : typeof val !== 'function' ? all(listeners, _val = val)                       // this is the old way.. it'll always emit, even if the value is the same
+    : typeof val !== 'function' ? (!(_val === val) ? all(listeners, _val = val) : '') // setter (the new way - only sets if the value has changed)
+    : (listeners.push(val), (_val === undefined ? _val : val(_val)), function () {    // listener
         remove(listeners, val)
       })
     )
@@ -159,7 +162,7 @@ export function select(element) {
 }
 
 //toggle based on an event, like mouseover, mouseout
-export function toggle (el, up, down) {
+export function toggle (el, up_event, down_event) {
   var i = false
   observable.observable = 'toggle'
   return observable
@@ -174,8 +177,8 @@ export function toggle (el, up, down) {
     return (
       val === undefined ? i
     : typeof val !== 'function' ? undefined //read only
-    : (on(el, up, onUp), on(el, down || up, onDown), val(i), function () {
-        off(el, up, onUp); off(el, down || up, onDown)
+    : (on(el, up_event, onUp), on(el, down_event || up_event, onDown), val(i), function () {
+        off(el, up_event, onUp); off(el, down_event || up_event, onDown)
       })
     )
   }
@@ -252,6 +255,7 @@ export function event (element, attr, event, truthy) {
 }
 
 export function hover (e) { return toggle(e, 'mouseover', 'mouseout')}
+export function touch (e) { return toggle(e, 'touchstart', 'touchend')}
 export function focus (e) { return toggle(e, 'focus', 'blur')}
 
 export { attribute as input }

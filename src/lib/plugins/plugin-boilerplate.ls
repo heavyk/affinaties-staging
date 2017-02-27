@@ -59,6 +59,13 @@ plugin-boilerplate = (frame, id, _config, _data, DEFAULT_CONFIG, _onload) ->
 
   # TODO: get device orientation
   # https://crosswalk-project.org/documentation/tutorials/screens.html
+  # https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model/Managing_screen_orientation
+  G.orientation = value (screen.orientation.type.split '-').concat screen.orientation.angle
+  screen.orientation.onchange = (e) !->
+    t = e.target
+    G.orientation (t.type.split '-').concat t.angle
+    # console.log 'orient', t.angle, t.type
+
   G.width = value _width = frame.client-width || config.width || 300
   G.height = value _height = frame.client-height || config.height || 300
 

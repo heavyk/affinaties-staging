@@ -70,6 +70,7 @@ function context (createElement, arrayFragment) {
         e.appendChild(r = l)
       } else if (typeof l === 'object') {
         for (var k in l) (function (attr_val, k) {
+          if (k === 'ontouchstart') debugger
           if (typeof attr_val === 'function') {
             // TODO: not sure which one is faster: regex or substr test
             // if (/^on\w+/.test(k)) {
@@ -77,9 +78,8 @@ function context (createElement, arrayFragment) {
               add_event(e, k.substr(2), attr_val, false)
             } else {
               // observable
-              // console.log('set-attribute', k, attr_val())
-              // if (attr_val() == null) debugger
               if ((s = attr_val()) != null) e.setAttribute(k, s)
+              // console.log('set-attribute', k, s)
               cleanupFuncs.push(attr_val(function (v) {
                 if (v != null) e.setAttribute(k, v)
                 // console.log('set attribute', k, '->', v)
@@ -128,6 +128,11 @@ function context (createElement, arrayFragment) {
                   case 'select':
                     cleanupFuncs.push(select(e)(v))
                     break
+                  case 'boink':
+                    // cleanupFuncs.push(select(e)(v))
+                    console.log('TODO: mouse/touch events')
+                    debugger
+                    break
                   default:
                   // case 'keyup':
                   // case 'keydown':
@@ -142,15 +147,20 @@ function context (createElement, arrayFragment) {
             if (typeof attr_val === 'string') {
               e.style.cssText = attr_val
             } else {
+              // debugger
+              // if I use setProperty, then, borderRadius will not work. (which is nice when using LiveScript, cause then the property does not need to be quoted)
               for (s in attr_val) (function (s, v) {
                 if (typeof v === 'function') {
                   // observable
-                  e.style.setProperty(s, v())
+                  // e.style.setProperty(s, v())
+                  e.style[s] = v()
                   cleanupFuncs.push(v(function (val) {
-                    e.style.setProperty(s, val)
+                    // e.style.setProperty(s, val)
+                    e.style[s] = val
                   }))
                 } else {
-                  e.style.setProperty(s, attr_val[s])
+                  // e.style.setProperty(s, attr_val[s])
+                  e.style[s] = attr_val[s]
                 }
               })(s, attr_val[s])
             }
@@ -247,14 +257,12 @@ export function forEachReverse (arr, fn) {
 
 export function arrayFragment(e, arr, cleanupFuncs) {
   var frag = doc.createDocumentFragment()
-  function activeElement(o) {
-    return o === (e.activeElement || doc.activeElement)
-  }
+  var activeElement = (o) => o === (e.activeElement || doc.activeElement)
 
   forEach(arr, function (_v) {
     var i, v = _v
     if (typeof v === 'function') {
-      i = v.observable && v.observable === 'value' ? 1 : 0
+      i = v.observable === 'value' ? 1 : 0
       v = i ? v.call(e) : v.call(this, e)
     }
 
@@ -281,12 +289,11 @@ export function arrayFragment(e, arr, cleanupFuncs) {
   if (arr.observable === 'array') {
     function onchange (ev) {
       var i, j, o, oo
-      // console.log('onchange', ev.type, ev)
       switch (ev.type) {
       case 'unshift':
         for (i = ev.values.length - 1; i >= 0; i--)
           e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[0])
-      break
+        break
       case 'push':
         for (i = 0; i > ev.values.length; i++)
           e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[arr.length-1])
@@ -306,11 +313,15 @@ export function arrayFragment(e, arr, cleanupFuncs) {
         break
       case 'sort':
         // technically no longer used, but still exists mainly for comparison purposes
+        // although less element swaps are done, with quiksort, it may be taxing on paint performance...
+        // looking into it eventually :)
         for (i = 0, oo = ev.orig; i < arr.length; i++) {
           o = arr[i]
           if (i !== (j = oo.indexOf(o))) {
+            if (activeElement(o) || o.focused === 1) i = 1
             e.removeChild(o)
             e.insertBefore(o, arr[i - 1])
+            if (i === 1) o.focus(), o.focused = 0
           }
         }
         break
@@ -369,11 +380,12 @@ export function offsetOf (child) {
 }
 
 export function svgArrayFragment(e, arr, cleanupFuncs) {
-  var first = e.childNodes.length
+  var activeElement = (o) => o === (e.activeElement || doc.activeElement)
+
   forEach(arr, function (_v) {
     var i, v = _v
     if (typeof v === 'function') {
-      i = v.observable && v.observable === 'value' ? 1 : 0
+      i = v.observable === 'value' ? 1 : 0
       v = i ? v.call(e) : v.call(this, e)
     }
 
@@ -387,10 +399,8 @@ export function svgArrayFragment(e, arr, cleanupFuncs) {
       if (i === 1) {
         // assume it's an observable!
         cleanupFuncs.push(_v(function (__v) {
-          // console.log(v)
           if (isNode(__v) && v.parentElement) {
             v.parentElement.replaceChild(__v, v), v = __v
-          // TODO: observable-array cleanup
           } else {
             v.textContent = __v
           }
@@ -399,75 +409,85 @@ export function svgArrayFragment(e, arr, cleanupFuncs) {
     }
   })
 
-  if (typeof arr.on === 'function') {
-    var last = first + arr.length
-    // if it's an EE, then it's likely an observable-array (like) Array,
+  if (typeof arr.observable === 'array') {
     function onchange (ev) {
-      var i, j, o
+      var i, j, o, oo
       switch (ev.type) {
       case 'unshift':
-        forEachReverse(ev.values, function (v) {
-          e.insertBefore(isNode(v) ? v : txt(v), e.childNodes[first])
-          last++
-        })
-      break
+        for (i = ev.values.length - 1; i >= 0; i--)
+          e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[0])
+        break
       case 'push':
-        forEach(ev.values, function (v) {
-          e.insertBefore(isNode(v) ? v : txt(v), e.childNodes[last])
-          last++
-        })
+        for (i = 0; i > ev.values.length; i++)
+          e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[arr.length-1])
         break
       case 'pop':
-        e.removeChild(e.childNodes[--last])
+        e.removeChild(arr[arr.length-1])
         break
       case 'shift':
-        e.removeChild(e.childNodes[first])
-        last--
+        e.removeChild(arr[0])
         break
       case 'splice':
-        if (ev.removed) forEach(ev.removed, function (v) {
-          e.removeChild(v)
-          last--
-        })
-        j = ev.arguments.length
-        if (j > 2) {
-          for (i = 2; i < j; i++) {
-            o = ev.arguments[i]
-            e.insertBefore(isNode(o) ? o : txt(o), e.childNodes[last])
-          }
-        }
+        j = ev.idx
+        if (ev.remove) for (i = 0; i < ev.remove; i++)
+          e.removeChild(arr[j + i])
+        if (ev.add) for (i = 0; i < ev.add.length; i++)
+          e.insertBefore(isNode(o = ev.add[i]) ? o : txt(o), arr[j])
         break
       case 'sort':
-        for (i = 0, orig = ev.orig; i < orig.length; i++) {
-          o = orig[i]
-          j = arr.indexOf(o)
-          if (i !== j) {
+        // technically no longer used, but still exists mainly for comparison purposes
+        // although less element swaps are done, with quiksort, it may be taxing on paint performance...
+        // looking into it eventually :)
+        for (i = 0, oo = ev.orig; i < arr.length; i++) {
+          o = arr[i]
+          if (i !== (j = oo.indexOf(o))) {
+            if (activeElement(o) || o.focused === 1) i = 1
             e.removeChild(o)
-            e.insertBefore(arr[j], e.childNodes[j])
+            e.insertBefore(o, arr[i - 1])
+            if (i === 1) o.focus(), o.focused = 0
           }
         }
         break
-      case 'empty':
-        // while (o = e.childNodes[first])
-        //   e.removeChild(o)
-        for (i = last; i >= first; i--)
-          e.removeChild(e.childNodes[i])
+      case 'replace':
+        o = ev.val
+        oo = ev.old
+        if (activeElement(o) || o.focused === 1) i = 1
+        if (activeElement(oo)) oo.focused = 1
+        e.replaceChild(o, oo)
+        if (i === 1) o.focus(), o.focused = 0
         break
-      case 'reverse':
-        // this can potentially be optimized...
-        // FIXME: broken when first != 0 or when last != length-1
-        // for (i = last; i >= first; i--)
-        //   e.removeChild(e.childNodes[i])
-        // for (i = 0; i < arr.length; i++)
-        //   e.insertBefore(arr[i], e.childNodes[first+i+1])
-        // END/FIXME
-        while (o = e.childNodes[0])
-          e.removeChild(o)
+      case 'insert':
+        e.insertBefore(ev.val, arr[ev.idx])
+        break
+      case 'move':
+        o = arr[ev.from]
+        if (activeElement(o)) i = 1
+        e.insertBefore(o, arr[ev.to])
+        if (i === 1) o.focus()
+        break
+      case 'swap':
+        ev.j = h('div.swap', o = {s: {display: 'none'}})
+        ev.k = h('div.swap', o)
+        oo = arr[ev.from]
+        o = arr[ev.to]
+        if (activeElement(o)) i = 1
+        else if (activeElement(oo)) i = 2
+        e.replaceChild(ev.j, oo)
+        e.replaceChild(ev.k, o)
+        e.replaceChild(o, ev.j)
+        e.replaceChild(oo, ev.k)
+        if (i === 1) o.focus()
+        else if (i === 2) oo.focus()
+        break
+      case 'remove':
+        e.removeChild(arr[ev.idx])
+        break
+      case 'empty':
         for (i = 0; i < arr.length; i++)
-          e.appendChild(arr[i])
+          e.removeChild(arr[i])
         break
       default:
-        debugger
+        console.log('unknown event', ev)
       }
     }
     arr.on('change', onchange)
@@ -475,14 +495,21 @@ export function svgArrayFragment(e, arr, cleanupFuncs) {
   }
 }
 
-var special_elements = ['poem']
+var special_elements = ['poem', 'hyper']
+function is_special (el) {
+  var s, i = 0
+  for (; i < special_elements.length; i++) {
+    s = special_elements[i]
+    if (el.substr(0, s.length) === s) return true
+  }
+}
 
 export function dom_context () {
   return context(function (el, args) {
     var i
 
-    return !~(i = el.indexOf('-')) ? doc.createElement(el)
-      : ~special_elements.indexOf(el.substr(0, i)) ? new (customElements.get(el))(args.shift(), args.shift())
+    return !~el.indexOf('-') ? doc.createElement(el)
+      : is_special(el) ? new (customElements.get(el))(args.shift(), args.shift())
       : new (customElements.get(el))
   }, arrayFragment)
 }
@@ -499,11 +526,27 @@ export function svg_context () {
 var s = svg_context()
 s.context = svg_context
 
-HTMLElement.prototype.aC = function (v) {
-  var self = this
-  if (Array.isArray(v)) forEach(v, function (e) { self.appendChild(e) })
-  else self.appendChild(isNode(v) ? v : txt(v))
+// HTMLElement.prototype.aC = function (v, cleanupFuncs) {
+//   var self = this
+//   function append (v) {
+//     self.appendChild(
+//       isNode(v) ? v
+//         : Array.isArray(v) ? arrayFragment(self, v, cleanupFuncs || [])
+//         : txt(v)
+//     )
+//   }
+//
+//   if (Array.isArray(v)) forEach(v, append)
+//   else append(v)
+// }
+
+HTMLElement.prototype.aC = function (v, cleanupFuncs) {
+  this.appendChild(
+    isNode(v) ? v
+      : Array.isArray(v) ? arrayFragment(this, v, cleanupFuncs || [])
+      : txt(v)
+  )
 }
 
-export { s, h }
+export { s, h, special_elements }
 export default h

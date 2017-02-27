@@ -2,6 +2,8 @@ import { MixinEmitter } from '../drip/emitter'
 import eq from '../lodash/isEqual'
 
 export class ObservableArray extends MixinEmitter(Array) {
+  // this is so all derived objects are of type Array, instead of ObservableArray
+  static get [Symbol.species]() { return Array }
   constructor (...v) {
     super(...v)
     this.observable = 'array'
@@ -10,15 +12,13 @@ export class ObservableArray extends MixinEmitter(Array) {
   pop () {
     if (!this.length) return
     this.emit('change', { type: 'pop' })
-    element = super.pop()
-    return element
+    return super.pop()
   }
 
   push (...items) {
     if (!items.length) return this.length
     this.emit('change', { type: 'push', values: items })
-    var result = super.push(...items)
-    return result
+    return super.push(...items)
   }
 
   reverse () {
@@ -33,8 +33,7 @@ export class ObservableArray extends MixinEmitter(Array) {
   shift () {
     if (!this.length) return
     this.emit('change', { type: 'shift', value: element })
-    var element = super.shift()
-    return element
+    return super.shift()
   }
 
   sort (compare) {
@@ -131,6 +130,54 @@ export class ObservableArray extends MixinEmitter(Array) {
     return this
   }
 }
+
+// not yet decided on this one, because every time something is added, the function is called.
+// so, that means I'll need to create a context for each function call so I can clean up the observables when the item is removed
+// that brings me to another point which I'm not sure about: it may be a lot more efficient to convert hyper-hermes to store its context in `this` instead of a closure
+// the advantage of that might be easier access to the context for better management of them
+// ----
+// in other news, I also need an easy way of making new G objects (probably make it into a class)... horray for class abuse!
+import { value } from './observable'
+
+export class RenderingArray extends ObservableArray {
+  constructor (fn) {
+    super()
+    this.fn = fn
+    var fl = this.fl = fn.length
+    if (fl > 1) {
+
+    }
+    // where we store the id/data which gets passed to the rendering function
+    this._d = []
+    // where we store the contexts used for each rendering function
+    this._ctx = []
+
+    this.on('change', (e) => {
+      switch (e.type) {
+        case 'swap':
+
+      }
+    })
+  }
+
+  fn_call (d, idx) {
+    var fl = this.fl, fn = this.fn
+    if (fl === 0) fn()
+    if (fl === 1) fn(d)
+    else {
+      var ctx = context()
+      if (fl === 2) fn(d, ctx)
+      else { //if (fl === 3) {
+        // TODO: check to see if this observable needs to be cleaned up (I don't think so, anyway, but maybe I'm wrong)
+        fn(d, value(idx), ctx)
+      }
+    }
+  }
+}
+
+// ==========================================
+// older, stinkier cacas (delete me)
+// ==========================================
 
 export function isCopy (other) {
   var i, l = this.length
