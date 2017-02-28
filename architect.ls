@@ -6,26 +6,32 @@ tmp_dir = Path.join __dirname, \priv \build
 out_dir = Path.join __dirname, \priv \static
 
 poems =
-  'plugins/booble-bobble.js':
-    dest: 'plugins/booble-bobble.js'
-    webpack:
-      stuff: true
-  'plugins/zibble-zabble.js':
-    dest: 'plugins/zibble-zabble.js'
-  'plugins/mastering-the-zodiac.js':
-    dest: 'plugins/mastering-the-zodiac.js'
-  'plugins/juego-x.js':
-    dest: 'plugins/juego-x.js'
-  'plugins/vertele.js':
-    dest: 'plugins/vertele.js'
-  'plugins/vertele-portada.js':
-    dest: 'plugins/vertele-portada.js'
-  'plugins/test-jsx.js':
-    dest: 'plugins/test-jsx.js'
+  # 'plugins/booble-bobble.js':
+  #   dest: 'plugins/booble-bobble.js'
+  #   webpack:
+  #     stuff: true
+  # 'plugins/zibble-zabble.js':
+  #   dest: 'plugins/zibble-zabble.js'
+  # 'plugins/mastering-the-zodiac.js':
+  #   dest: 'plugins/mastering-the-zodiac.js'
+  # 'plugins/juego-x.js':
+  #   dest: 'plugins/juego-x.js'
+  # 'plugins/vertele.js':
+  #   dest: 'plugins/vertele.js'
+  # 'plugins/vertele-portada.js':
+  #   dest: 'plugins/vertele-portada.js'
+  # 'plugins/test-jsx.js':
+  #   dest: 'plugins/test-jsx.js'
   'plugins/affinaties.js':
     dest: 'plugins/affinaties.js'
-  'plugins/meatr.js':
-    dest: 'plugins/meatr.js'
+  'plugins/mop-great-again.js':
+    dest: 'plugins/mop-great-again.js'
+    css: 'plugins/mop-great-again.css'
+  'plugins/poke-her-starz.js':
+    dest: 'plugins/poke-her-starz.js'
+    css: 'plugins/poke-her-starz.css'
+  # 'plugins/meatr.js':
+  #   dest: 'plugins/meatr.js'
 
 
 
@@ -38,6 +44,7 @@ require! \rollup
 require! \rollup-plugin-buble
 require! \chokidar
 require! \webpack
+require! \postcss
 EE = require \events .EventEmitter
 
 
@@ -68,6 +75,60 @@ emitter = new EE
 
 # class Architect extends EE
 
+rollup_cache = {}
+rollup_opts =
+  format: \umd
+  plugins: [ rollup-plugin-buble {
+    jsx: \h
+    transforms:
+      # for now we are going to use all ES6 features
+      arrow: false
+      classes: false
+      collections: false
+      computedProperty: false
+      conciseMethodProperty: false
+      constLoop: false
+      dangerousForOf: false
+      dangerousTaggedTemplateString: false
+      defaultParameter: false
+      destructuring: false
+      forOf: false
+      generator: false
+      letConst: false
+      modules: false
+      numericLiteral: false
+      parameterDestructuring: false
+      reservedProperties: false
+      spreadRest: false
+      stickyRegExp: false
+      templateString: false
+      unicodeRegExp: false
+  } ]
+  source-map: true
+  module-context: {}
+
+webpack_compilers = {}
+webpack_opts =
+  context: __dirname
+  # devtool: \source-map
+  # devtool: \inline-source-map
+  # devtool: \cheap-source-map
+  # devtool: \eval
+  devtool: false
+  performance:
+    max-asset-size: 500_000
+    max-entrypoint-size: 500_000
+    # asset-filter: (file) !->
+    #   console.log "asset:", file
+  module:
+    rules:
+      * test: /.js$/
+        loader: \source-map-loader
+      ...
+
+# resolve stupid rollup wanring with lodash: invalid use of 'this' at the root level
+rollup_opts.module-context[Path.join tmp_dir, 'lib/lodash/_root.js'] = 'window'
+
 
 get-opts = (opts) ->
   outfile = file = Path.basename opts.path
@@ -97,7 +158,7 @@ get-opts = (opts) ->
       | otherwise =>
         ext = ext.replace /(?:(\.\w+)?\.\w+)?$/, (r, ex) ->
           if ex is \.json then opts.json = true
-          return ex or if opts.json then \.json else \.js
+          return ex or if opts.json or opts.lang is \json then \.json else if opts.lang then '.js' else ext
 
       if ext isnt \.js and opts.result isnt false
         opts.result = true
@@ -153,23 +214,124 @@ process_src = (path) !->
     throw new Error "coffee-script not yet implemented"
 
   | otherwise =>
-    console.log "#{opts.lang} not yet implemented"
+    # console.log "#{opts.lang} not yet implemented"
+    # console.log opts
     output = txt
 
   # if opts.result
-	# 	opts.ast.makeReturn!
+  #   opts.ast.makeReturn!
   #
-	# opts.output = opts.ast.compileRoot options
-	# if opts.result
-	# 	process.chdir Path.dirname opts.path
-	# 	opts.output = LiveScript.run opts.output, options, true
-	# 	process.chdir CWD
+  # opts.output = opts.ast.compileRoot options
+  # if opts.result
+  #   process.chdir Path.dirname opts.path
+  #   opts.output = LiveScript.run opts.output, options, true
+  #   process.chdir CWD
 
   if output
     # console.log "writing:", dest
-    Fs.writeFile dest, output, \utf-8, (err) !->
-      if err => throw err
-      # else console.log 'written...', output.length, dest
+    Fs.write-file-sync dest, output, \utf-8
+
+process_css = (path) !->
+  # NEEEDS IMPROVEMENT!!!
+  switch ext = Path.extname path
+  | \.css =>
+    console.log \process_css, path
+    # prolly should do some postcss magic or something... I hate this build shit so much!
+    src = Path.join tmp_dir, path
+    dest = Path.join out_dir, path
+    sander.write-file dest, (Fs.read-file-sync src)
+
+process_poem = (path) !->
+  if not (poem = poems[path]) or poem.processing
+    return # process_css path # console.log "could not process #{path}"
+  poem.processing = true
+  console.log \process_poem, path
+  # src_dir = Path.dirname Path.join src_dir, path
+  src = Path.join tmp_dir, path
+  webpack_src = Path.join tmp_dir, '.' + path
+  dest = Path.join out_dir, poem.dest
+
+  # -------
+
+  cache = rollup_cache[path]
+  opts = {} <<< rollup_opts <<< {
+    entry: src
+    cache: cache
+    dest: webpack_src
+  }
+
+  rollup.rollup opts
+    .then (bundle) ->
+      rollup_cache[path] = bundle
+      # console.log \poem, dest
+      console.log \mods, bundle.modules.length
+      # for m in bundle.modules
+      #   console.log m.id
+
+      output = bundle.generate opts
+      map = output.map
+      code = output.code + "\n//# sourceMappingURL=#{Path.basename dest}.map\n"
+      # code = output.code + "\n//# sourceMappingURL=#{map.toUrl!}\n"
+
+      Promise.all [
+        sander.write-file webpack_src, code
+        sander.write-file "#{webpack_src}.map", map.to-string!
+      ]
+    .then !->
+      opts = {} <<< webpack_opts <<< {
+        # entry: src
+        # context: Path.dirname Path.join src_dir, path
+        entry: webpack_src
+        # resolve:
+        #   # extensions: <[.js .json]>
+        #   modules:
+        #     * \node_modules
+        #     * Path.dirname src
+        #     * Path.dirname Path.join src_dir, path
+        output:
+          path: Path.dirname dest
+          filename: Path.basename dest
+      }
+      # console.log "resolve:", opts.resolve
+      # console.log "context:", opts.context
+
+      compiler = webpack opts
+      compiler.run (err, stats) !->
+        # poem.processing = false
+        if err => throw err
+        console.log stats.to-string {
+          colors: true
+          version: false
+          chunks: false
+        }
+        # console.log stats#.compilation.modules
+        # if stats.has-errors!
+        #   console.error dest
+        #   console.error "compile error", err
+        # if stats.has-warnings!
+        #   console.warn ''
+        #   console.log "wrote:", stats
+    .catch (e) ->
+      # console.log \catch, e.message.substr 0, 1000
+      console.log \catch, if e.to-string => e.to-string! else e.stack
+      poem.processing = false
+    .then ->
+      if path = poem.css
+        POSTCSS_PLUGINS = [
+          require 'postcss-import'
+          require 'precss'
+          require 'postcss-color-function'
+          (require 'autoprefixer')(browsers: ['last 2 versions'])
+        ]
+        src = Path.join tmp_dir, path
+        postcss POSTCSS_PLUGINS .process (Fs.read-file-sync src)
+          .then (res) ->
+            dest = Path.join out_dir, path
+            sander.write-file dest, res.css
+    .then !->
+      console.log "poem written:", dest
+      poem.processing = false
+
 
 
 src_watcher = chokidar.watch src_dir, {
@@ -182,12 +344,21 @@ src_watcher = chokidar.watch src_dir, {
 src_watcher.on \change, (path) !->
   console.log \src.change, path
   process_src path
+  tmp_dir_path = Path.join tmp_dir, path
+  for p, poem of poems
+    if poem.css is path
+      process_poem p
+
+  for p, bundle of rollup_cache
+    for m in bundle.modules
+      if m.id is tmp_dir_path and poems[p]
+        process_poem p
   # readFile
   # if length or sha1 contents are different, process it
   # sander.copyFile
 
 src_watcher.on \add, (path) !->
-  console.log \src.add, path
+  # console.log \src.add, path
   process_src path
 
 src_watcher.on \unlink, (path) !->
@@ -246,62 +417,6 @@ tmp_watcher = chokidar.watch tmp_dir, {
   # always-stat: true
 }
 
-rollup_cache = {}
-rollup_opts =
-  format: \umd
-  plugins: [ rollup-plugin-buble jsx: \h ]
-  source-map: true
-  module-context: {}
-
-# resolve stupid rollup wanring with lodash: invalid use of 'this' at the root level
-rollup_opts.module-context[Path.join tmp_dir, 'lib/lodash/_root.js'] = 'window'
-
-
-
-process_poem = (path) !->
-  if not (poem = poems[path]) or poem.processing
-    return # console.log "could not process #{path}"
-  poem.processing = true
-  console.log \process_poem, path
-  src = Path.join tmp_dir, path
-  dest = Path.join out_dir, poem.dest
-  cache = rollup_cache[path]
-  opts = {} <<< rollup_opts <<< {
-    entry: src
-    cache: cache
-    dest: dest
-  }
-
-  rollup.rollup opts
-    .then (bundle) ->
-      rollup_cache[path] = bundle
-      console.log \poem, dest
-      console.log \mods, bundle.modules.length
-      # for m in bundle.modules
-      #   console.log m.id
-
-      output = bundle.generate opts
-      map = output.map
-      code = output.code + "\n//# sourceMappingURL=#{Path.basename dest}.map\n"
-      # code = output.code + "\n//# sourceMappingURL=#{map.toUrl!}\n"
-
-      Promise.all [
-        sander.write-file dest, code
-        sander.write-file "#{dest}.map", map.to-string!
-      ]
-      # Fs.mkdir (Path.dirname dest), (err) !->
-      #   if err and err.code isnt \EEXIST
-      #     throw err
-      #   Fs.write-file-sync "#{dest}.map", map.to-string!
-      #   Fs.write-file-sync dest, code
-    .catch (e) ->
-      # console.log \catch, e.message.substr 0, 1000
-      console.log \catch, e.stack
-      poem.processing = false
-    .then !->
-      console.log "bundle written:", dest#, &
-      console.log " - TODO emit event"
-      poem.processing = false
 
 tmp_watcher.on \change, (path) !->
   # console.log \tmp.change, path
