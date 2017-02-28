@@ -108,8 +108,13 @@ export function transform (in_observable, down, up) {
   }
 }
 
+export const _not = (v) => !v
 export function not(observable) {
-  return transform(observable, function (v) { return !v })
+  return transform(observable, _not)
+}
+
+export function px(observable) {
+  return transform(observable, (v) => v + 'px')
 }
 
 export function listen (element, event, attr, listener) {
@@ -256,6 +261,7 @@ export function event (element, attr, event, truthy) {
 
 export function hover (e) { return toggle(e, 'mouseover', 'mouseout')}
 export function touch (e) { return toggle(e, 'touchstart', 'touchend')}
+export function mousedown (e) { return toggle(e, 'mousedown', 'mouseup')}
 export function focus (e) { return toggle(e, 'focus', 'blur')}
 
 export { attribute as input }

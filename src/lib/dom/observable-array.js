@@ -23,17 +23,20 @@ export class ObservableArray extends MixinEmitter(Array) {
 
   reverse () {
     if (this.length <= 1) return this
-    for(var i = 0, l = +(this.length / 2); i < l; i++) {
-      this.emit('change', {type: 'swap', from: i, to: this.length - i - 1 })
-    }
-    super.reverse()
-    return this
+    this.emit('change', { type: 'reverse' })
+    return super.reverse()
   }
 
   shift () {
     if (!this.length) return
-    this.emit('change', { type: 'shift', value: element })
+    this.emit('change', { type: 'shift' })
     return super.shift()
+  }
+
+  swap (from_idx, to_idx) {
+    this.emit('change', {type: 'swap', from: from_idx, to: to_idx })
+    var el = super.splice(from_idx, 1)
+    super.splice(to_idx, 0, el[0])
   }
 
   sort (compare) {
@@ -119,14 +122,14 @@ export class ObservableArray extends MixinEmitter(Array) {
   unshift (...items) {
     if (!items.length) return this.length
     this.emit('change', { type: 'unshift', values: items })
-    return unshift.apply(this, items)
+    return super.unshift(...items)
   }
 
-  set (idx, value) {
+  set (idx, val) {
     idx = idx >>> 0
-    if (eq(this[idx], value)) return
-    this.emit('change', { type: 'set', idx, value })
-    this[idx] = value
+    if (eq(this[idx], val)) return
+    this.emit('change', { type: 'set', idx, val })
+    this[idx] = val
     return this
   }
 }
@@ -139,37 +142,124 @@ export class ObservableArray extends MixinEmitter(Array) {
 // in other news, I also need an easy way of making new G objects (probably make it into a class)... horray for class abuse!
 import { value } from './observable'
 
+function ObservableArrayApply (oarr, ...arr) {
+  oarr.on('change', (e) => {
+    var a, t
+    switch (e.type) {
+      case 'swap':
+        for (a of arr) {
+          t = a[e.to]
+          a[e.to] = a[e.from]
+          a[e.from] = t
+        }
+        break
+      case 'move':
+        for (a of arr) {
+          t = a.splice(e.from, 1)
+          a.splice(e.to, 0, t[0])
+        }
+        break
+      case 'set':
+        for (a of arr) a[e.idx] = e.val
+        break
+      case 'unshift':
+        for (a of arr) a.unshift(...e.values)
+        break
+      case 'push':
+        for (a of arr) a.push(...e.values)
+        break
+      case 'splice':
+        for (a of arr) a.splice(e.idx, e.remove, ...e.add)
+        break
+      case 'remove':
+        for (a of arr) a.splice(e.idx, 1)
+        break
+      case 'replace':
+        for (a of arr) a.splice(e.idx, 1, e.val)
+        break
+      case 'insert':
+        for (a of arr) a.splice(e.idx, 0, e.val)
+        break
+      case 'sort':
+        for (a of arr) a.sort(e.compare)
+        break
+      case 'empty':
+        for (a of arr) a.length = 0
+        break
+      // no args
+      case 'pop':
+      case 'reverse':
+      case 'shift':
+        for (a of arr) a[e.type]()
+        break
+    }
+  })
+}
+
+function context (G) {
+  var ctx = {}
+  Object.defineProperties((ctx = {}), {
+    h: define_val(() => ctx._h || (ctx._h = h.context())),
+    s: define_val(() => ctx._s || (ctx._s = s.context())),
+  })
+  return Object.create(G, ctx)
+  // return (Object.defineProperties((ctx = {}), {
+  //   h: d(() => self._h || (self._h = h.context())),
+  //   s: d(() => self._s || (self._s = s.context())),
+  // }), self._ctx = ctx)
+}
+
 export class RenderingArray extends ObservableArray {
-  constructor (fn) {
+  constructor (G, fn) {
     super()
     this.fn = fn
+    this.G = G
+    this.d = new ObservableArray
     var fl = this.fl = fn.length
-    if (fl > 1) {
 
-    }
     // where we store the id/data which gets passed to the rendering function
-    this._d = []
-    // where we store the contexts used for each rendering function
-    this._ctx = []
+    if (fl >= 1) this._d = []
+    if (fl >= 2) this._ctx = []
+    if (fl >= 3) this._idx = []
 
-    this.on('change', (e) => {
+    this.d.on('change', (e) => {
+      var l, len = this.length, fl = this.fl
       switch (e.type) {
-        case 'swap':
-
+        case 'push':
+          for (var v of e.values) {
+            l = len++
+            // make space in storage arrays
+            if (fl >= 1) this._d.length = len
+            if (fl >= 2) this._ctx.length = len
+            if (fl >= 3) this._idx.length = len
+            this.push(this.fn_call(v, l))
+          }
+          break
+        // no args
+        case 'pop':
+        case 'reverse':
+        case 'shift':
+          this._d[e.type]()
+          this._ctx[e.type]()
+          break
       }
     })
   }
 
   fn_call (d, idx) {
-    var fl = this.fl, fn = this.fn
-    if (fl === 0) fn()
-    if (fl === 1) fn(d)
+    var fl = this.fl, fn = this.fn, ret
+    if (fl === 0) return fn()
     else {
-      var ctx = context()
-      if (fl === 2) fn(d, ctx)
-      else { //if (fl === 3) {
-        // TODO: check to see if this observable needs to be cleaned up (I don't think so, anyway, but maybe I'm wrong)
-        fn(d, value(idx), ctx)
+      var _d = this._d[idx] || (this._d[idx] = value(d))
+      if (fl === 1) return fn(_d)
+      else {
+        var _ctx = this._ctx[idx] || (this._ctx[idx] = context(this.G))
+        if (fl === 2) return fn(_d, _ctx)
+        else { //if (fl === 3) {
+          // TODO: check to see if this observable needs to be cleaned up (I don't think so, anyway, but maybe I'm wrong)
+          var _idx = this._idx[idx] || (this._idx[idx] = value(idx))
+          return fn(_d, _idx, _ctx)
+        }
       }
     }
   }
@@ -189,125 +279,11 @@ export function isCopy (other) {
   return true
 }
 
-function d (fn) {
+function define_val (fn) {
   return {
     configurable: true, enumerable: false, writable: true,
     value: fn
   }
-}
-
-export function ObservArray (_v) {
-  var arr = _v && typeof _v.on === 'function' ? _v : new EE(_v || [])
-  var proto = Object.getPrototypeOf(arr)
-
-  var pop = proto.pop
-  var push = proto.push
-  var reverse = proto.reverse
-  var shift = proto.shift
-  var sort = proto.sort
-  var splice = proto.splice
-  var slice = proto.slice
-  var unshift = proto.unshift
-
-  Object.defineProperties(arr, {
-    observable: d('array'),
-    pop: d(function () {
-      var element
-      if (!this.length) return
-      element = pop.call(this)
-      this.emit('change', {
-        type: 'pop',
-        value: element
-      })
-      return element
-    }),
-    push: d(function (item /*, …items*/) {
-      var result
-      if (!arguments.length) return this.length
-      result = push.apply(this, arguments)
-      this.emit('change', {
-        type: 'push',
-        values: arguments
-      })
-      return result
-    }),
-    reverse: d(function () {
-      var tmp
-      if (this.length <= 1) return this
-      tmp = Array.from(this)
-      reverse.call(this)
-      if (!isCopy.call(this, tmp)) this.emit('change', { type: 'reverse' })
-      return this
-    }),
-    shift: d(function () {
-      var element
-      if (!this.length) return
-      element = shift.call(this)
-      this.emit('change', { type: 'shift', value: element })
-      return element
-    }),
-    sort: d(function (compare) {
-      var tmp
-      if (this.length <= 1) return this
-      tmp = Array.from(this)
-      sort.call(this, compare)
-      if (!isCopy.call(this, tmp)) {
-        this.emit('change', {
-          type: 'sort',
-          compare: compare,
-          orig: tmp,
-        })
-      }
-      return this
-    }),
-    // empty: d(function () {
-    //   var len = this.length
-    //   if (!len) return
-    //   return this.splice(0, len)
-    // }),
-    empty: d(function () {
-      arr.length = 0
-			this.emit('change', { type: 'empty' })
-      return this
-    }),
-    splice: d(function (start, deleteCount /*, …items*/) {
-      var result, l = arguments.length, items
-      if (!l) return []
-      if (l <= 2) {
-        if (+start >= this.length) return []
-        if (+deleteCount <= 0) return []
-      } else {
-        items = slice.call(arguments, 2)
-      }
-      result = splice.apply(this, arguments)
-      if ((!items && result.length) || !isCopy.call(items, result)) {
-        this.emit('change', { type: 'splice', arguments: arguments, removed: result })
-      }
-      return result
-    }),
-    unshift: d(function (item /*, …items*/) {
-      var result
-      if (!arguments.length) return this.length
-      result = unshift.apply(this, arguments)
-      this.emit('change', { type: 'unshift', values: arguments })
-      return result
-    }),
-    set: d(function (index, value) {
-      var had, old, event
-      index = index >>> 0
-      if (this.hasOwnProperty(index)) {
-        had = true
-        old = this[index]
-        if (eq(old, value)) return
-      }
-      this[index] = value
-      event = { type: 'set', index: index }
-      if (had) event.oldValue = old
-      this.emit('change', event)
-    })
-  })
-
-  return arr
 }
 
 export default ObservArray

@@ -1,6 +1,6 @@
 
-import { value } from '../lib/dom/observable'
-import { ObservArray, ObservableArray } from '../lib/dom/observable-array'
+import { value, transform, event } from '../lib/dom/observable'
+import { ObservableArray } from '../lib/dom/observable-array'
 import { h, s, isNode, forEach, txt, arrayFragment } from '../lib/dom/hyper-hermes'
 // import EventEmitter from '../../drip/enhanced'
 
@@ -10,7 +10,7 @@ var _observables = new WeakMap
 import common from '../lib/drip/common'
 import concat from '../lib/drip/concat'
 
-var URIEmitter = Base => class extends Base {
+var PathEmitter = Base => class extends Base {
   setupEmitter (opts, _ctx) {
     opts = opts || {}
     let ctx = _ctx || this
@@ -270,20 +270,12 @@ function d (fn) {
   }
 }
 
+// TODO: move this (and other functions like it) into a lib file, to remove duplication
 function camelize (k) {
   return ~k.indexOf('-') ? k.replace(/[-_]+(.)?/g, (tmp, c) => (c || '').toUpperCase()) : k
 }
 
-export default class StateMachine extends URIEmitter(HTMLElement) {
-  // static get observedAttributes () { return ['x', 'y'] }
-  // attributeChangedCallback (attr, old, v) {
-  //   var o = _observables.get(this)[attr]
-  //   console.log('attr! changed', attr, '=', old, '->', v)
-  //   if (old && v == null) debugger
-  //   // if (o) o(v)
-  //   // if (o && Math.random() > 0.9) o(v)
-  // }
-
+export default class StateMachine extends PathEmitter(HTMLElement) {
   disconnectedCallback () {
     var done = () => {
       if (this._els) this._els.empty(), this._els = null
@@ -291,24 +283,30 @@ export default class StateMachine extends URIEmitter(HTMLElement) {
       if (this._s) this._s = this._s.cleanup()
     }
     // TODO: save the state
-    this.now('disconnected').then(done, done)
+    if (this.states.disconnected) this.now('disconnected').then(done, done)
+    else done()
   }
 
   connectedCallback () {
     var self = this, fn = this.body
     if (typeof fn === 'function') self.states = fn.call(self, self.context())
     // TODO: save the state (observables will retain their values until element is destroyed, I guess)
-    self.now('connected')
+    self.now('/')
+  }
+
+  reset () {
+    this.disconnectedCallback()
+    this.connectedCallback()
   }
 
   constructor (opts, fn) {
     super()
-    setupEmitter()
     var observables = {}, self = this
     var i, k, keys = typeof opts === 'object' ? Object.keys(opts) : [] //.concat(StateMachine.observedAttributes)
 
+    self.setupEmitter()
     self.body = fn
-    self._opts = opts
+    self._opts = opts || {}
 
     for (i = 0; i < keys.length; i++) (function(k, v) {
       // console.log('observ:', k, v)
@@ -329,10 +327,10 @@ export default class StateMachine extends URIEmitter(HTMLElement) {
   }
 
   now (nextState) {
-    nextState = camelize(nextState)
+    if (nextState[0] !== '/') nextState = camelize(nextState)
     console.log(this.localName, this.state, '->', nextState)
     return new Promise((resolve, reject) => {
-      var fn, els, loading_els, shadow, state
+      var fn, els, loading_els, state
       if (typeof this.state === 'string' && typeof (fn = this.states[this.state + '.exit']) === 'function') {
         console.log('exit state', this.state + '.exit')
         fn.call(this)
@@ -347,7 +345,7 @@ export default class StateMachine extends URIEmitter(HTMLElement) {
 
         if (!this._els) {
           this._els = new ObservableArray(...els)
-          shadow.appendChild(arrayFragment(shadow, this._els, this._h.cleanupFuncs))
+          shadow.appendChild(arrayFragment(shadow, this._els, this._ctx.h.cleanupFuncs))
         } else {
           // DESIRE: do some sort of intelligent dom diffing instead of this hack
           if (this._els.length !== els.length) for (j = 0; j < this._els.length; j++) {
@@ -403,6 +401,7 @@ export default class StateMachine extends URIEmitter(HTMLElement) {
           resolve(els)
         }
       } else {
+        console.error('state', nextState, 'does not exist')
         reject()
       }
     })
@@ -426,10 +425,18 @@ export default class StateMachine extends URIEmitter(HTMLElement) {
     return o
   }
 
+  attr_transform (k, fn) {
+    return transform(typeof k === 'string' ? this.attr(k) : k, fn)
+  }
+
+  observe (event, attr, fn) {
+    cleanupFuncs.push(event(this, attr, event)(fn))
+  }
+
   style (txt) {
-    var shadow
+    var shadow = this.shadow
     var ctx = this.context()
-    if (!(shadow = this.shadow)) {
+    if (!shadow) {
       shadow = this.shadow = this.attachShadow({mode: 'open'})
     }
     shadow.appendChild(ctx.h('style', txt + ''))
@@ -449,5 +456,12 @@ export default class StateMachine extends URIEmitter(HTMLElement) {
 
   set observables (v) {
     _observables.set(this, v)
+  }
+}
+
+export class Modal extends StateMachine {
+  // static get
+  constructor (opts, fn) {
+    super(opts, fn)
   }
 }

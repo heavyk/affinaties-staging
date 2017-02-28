@@ -3,26 +3,26 @@
 # ``import load_sdk from '../lib/load-sdk-h'``
 ``import { s, h, special_elements } from '../lib/dom/hyper-hermes'``
 ``import { ObservableArray, RenderingArray} from '../lib/dom/observable-array'``
-``import { value, transform, compute } from '../lib/dom/observable'``
+``import { value, transform, compute, px } from '../lib/dom/observable'``
 ``import polarToCartesian from '../lib/calc/polarToCartesian'``
 # ``import xhr from '../lib/xhr'``
-``import { Table, rankHand } from '../lib/game/texas-holdem'``
+``import { Table, Player, rankHand } from '../lib/game/texas-holdem'``
 # ``import { rand, rand2, randomId, randomEl, randomIds, randomPos, randomDate, randomCharactor, between, lipsum, word, obj } from '../lib/random'``
 
 # ``import StateMachine from '../elements/state-machine'``
 # ``import { Modal } from '../elements/state-machine'``
-``import Card from '../elements/svg/poke-her-card'``
+``import '../elements/svg/poke-her-card'``
+# ``import '../elements/svg/poke-her-playa'``
 
-special_elements.push 'poke-her'
+# special_elements['poke-her-card'] = 2 # opts, fn
 # window.custom-elements.define \poem-state-machine, StateMachine
 # window.custom-elements.define \poem-modal, Modal
-window.custom-elements.define \poke-her-card, Card
+# window.custom-elements.define \poke-her-card, Card
 
 const doc = document
 const IS_LOCAL = ~doc.location.host.index-of 'localhost'
 
 const HALF_PI = Math.PI / 180
-const px = (observable) -> transform observable, (v) -> "#{v}px"
 const DEFAULT_CONFIG =
   lala: 1155
 
@@ -103,8 +103,8 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   table-margin-sides = transform G.width, (v) -> v / S1
   table-margin-top = transform G.height, (v) -> v / S3
-  table-middle-x = compute [table-margin-sides, middle-area-rx], (tm, rx) -> tm + rx
-  table-middle-y = compute [table-margin-top, middle-area-ry], (tm, ry) -> tm + ry
+  table-middle-x = compute [table-margin-sides, middle-area-rx], (tm, rx) -> tm + rx #- TABLE_PADDING
+  table-middle-y = compute [table-margin-top, middle-area-ry], (tm, ry) -> tm + ry #- TABLE_PADDING
 
   hand-pos-x = (n) ->
     compute [G.width, middle-area-card-width], (w, cw) -> (w * 0.49) - (cw / 2) + ((cw / 5) * n)
@@ -112,14 +112,14 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
     compute [G.height, middle-area-card-height], (h, ch) -> h - (ch * 0.2)
 
   card-pos-x = (n) ->
-    compute [table-margin-sides, middle-area-card-width, middle-area-card-margin, n], (tm, cw, cm, n) -> TABLE_PADDING + tm + (cw * n) + (cm * n) + 3
+    compute [table-margin-sides, middle-area-card-width, middle-area-card-margin, n], (tm, cw, cm, n) -> TABLE_STROKE + TABLE_PADDING + tm + (cw * n) + (cm * n) + 3
   card-pos-y = (n) ->
-    compute [table-margin-top, middle-area-height, middle-area-card-height, n], (tm, mh, ch, n) -> TABLE_PADDING + tm + ((mh - ch - TABLE_PADDING2) / 2)
+    compute [table-margin-top, middle-area-height, middle-area-card-height, n], (tm, mh, ch, n) -> TABLE_STROKE + TABLE_PADDING + tm + ((mh - ch - TABLE_PADDING2) / 2)
 
   space-pos-x = (n) ->
-    compute [middle-area-space-width, middle-area-space-margin], (cw, cm) -> TABLE_PADDING + (cw * n) + (cm * n) # - 3
+    compute [middle-area-space-width, middle-area-space-margin], (cw, cm) -> TABLE_STROKE + TABLE_PADDING + (cw * n) + (cm * n) # - 3
   space-pos-y = (n) ->
-    compute [middle-area-height, middle-area-space-height], (mh, ch) -> TABLE_PADDING + ((mh - ch - TABLE_PADDING2) / 2)
+    compute [middle-area-height, middle-area-space-height], (mh, ch) -> TABLE_STROKE + TABLE_PADDING + ((mh - ch - TABLE_PADDING2) / 2)
 
   first-playa-angle = 200
   last-playa-angle = 340
@@ -128,9 +128,12 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   cards_down = value true
 
-  cards = new RenderingArray (id, idx, {h}) ->
+  window.cards =\
+  cards = new RenderingArray G, (id, idx, {h}) ->
     # one way to get around all of the problems with movement in the array (like swapping, reversing, or sorting) will be to make idx into an observable
     h \poke-her-card, id, { width: middle-area-card-width, x: (card-pos-x idx), y: (card-pos-y idx) }
+
+  cards.d.push \AH, \2H, \3H #, \4H, \5H
 
   G.E.frame.aC [
 
@@ -153,10 +156,11 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       for i til 5
         s \rect x: (space-pos-x i), y: (space-pos-y i), width: middle-area-space-width, height: middle-area-space-height, rx: 5, ry: 5, 'stroke-width': 0.5, stroke: '#fff', fill: 'none'
 
-    window.card =\
-    for i til 5
-      idx = value i
-      h \poke-her-card, \AH, { width: middle-area-card-width, x: (card-pos-x idx), y: (card-pos-y idx) }
+    # window.card =\
+    # for i til 5
+    #   idx = value i
+    #   h \poke-her-card, \AH, { width: middle-area-card-width, x: (card-pos-x idx), y: (card-pos-y idx) }
+    cards
 
     window.hand =\
     for i til 2

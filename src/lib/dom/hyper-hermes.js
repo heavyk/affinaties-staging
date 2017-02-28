@@ -255,7 +255,7 @@ export function forEachReverse (arr, fn) {
   for (var i = arr.length - 1; i >= 0; i--) fn(arr[i], i)
 }
 
-export function arrayFragment(e, arr, cleanupFuncs) {
+export function arrayFragment (e, arr, cleanupFuncs) {
   var frag = doc.createDocumentFragment()
   var activeElement = (o) => o === (e.activeElement || doc.activeElement)
 
@@ -269,7 +269,7 @@ export function arrayFragment(e, arr, cleanupFuncs) {
     if (v) {
       frag.appendChild(
         isNode(v) ? v
-          : Array.isArray(v) ? arrayFragment(frag, v, cleanupFuncs)
+          : Array.isArray(v) ? arrayFragment(e, v, cleanupFuncs)
           : txt(v)
       )
 
@@ -295,8 +295,8 @@ export function arrayFragment(e, arr, cleanupFuncs) {
           e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[0])
         break
       case 'push':
-        for (i = 0; i > ev.values.length; i++)
-          e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[arr.length-1])
+        for (i = 0; i < ev.values.length; i++)
+          e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[arr.length + ev.values.length - i - 1])
         break
       case 'pop':
         e.removeChild(arr[arr.length-1])
@@ -336,6 +336,10 @@ export function arrayFragment(e, arr, cleanupFuncs) {
       case 'insert':
         e.insertBefore(ev.val, arr[ev.idx])
         break
+      case 'reverse':
+        for (i = 0, j = +(arr.length / 2); i < j; i++)
+          arr.emit('change', {type: 'swap', from: i, to: arr.length - i - 1 })
+        break
       case 'move':
         o = arr[ev.from]
         if (activeElement(o)) i = 1
@@ -359,6 +363,9 @@ export function arrayFragment(e, arr, cleanupFuncs) {
       case 'remove':
         e.removeChild(arr[ev.idx])
         break
+      case 'set':
+        e.replaceChild(ev.val, arr[ev.idx])
+        break
       case 'empty':
         for (i = 0; i < arr.length; i++)
           e.removeChild(arr[i])
@@ -379,7 +386,7 @@ export function offsetOf (child) {
   return i
 }
 
-export function svgArrayFragment(e, arr, cleanupFuncs) {
+export function svgArrayFragment (e, arr, cleanupFuncs) {
   var activeElement = (o) => o === (e.activeElement || doc.activeElement)
 
   forEach(arr, function (_v) {
@@ -418,8 +425,8 @@ export function svgArrayFragment(e, arr, cleanupFuncs) {
           e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[0])
         break
       case 'push':
-        for (i = 0; i > ev.values.length; i++)
-          e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[arr.length-1])
+        for (i = 0; i < ev.values.length; i++)
+          e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[arr.length + ev.values.length - i - 1])
         break
       case 'pop':
         e.removeChild(arr[arr.length-1])
@@ -459,6 +466,10 @@ export function svgArrayFragment(e, arr, cleanupFuncs) {
       case 'insert':
         e.insertBefore(ev.val, arr[ev.idx])
         break
+      case 'reverse':
+        for (i = 0, j = +(arr.length / 2); i < j; i++)
+          arr.emit('change', {type: 'swap', from: i, to: arr.length - i - 1 })
+        break
       case 'move':
         o = arr[ev.from]
         if (activeElement(o)) i = 1
@@ -482,6 +493,9 @@ export function svgArrayFragment(e, arr, cleanupFuncs) {
       case 'remove':
         e.removeChild(arr[ev.idx])
         break
+      case 'set':
+        e.replaceChild(ev.val, arr[ev.idx])
+        break
       case 'empty':
         for (i = 0; i < arr.length; i++)
           e.removeChild(arr[i])
@@ -495,26 +509,28 @@ export function svgArrayFragment(e, arr, cleanupFuncs) {
   }
 }
 
-var special_elements = ['poem', 'hyper']
-function is_special (el) {
-  var s, i = 0
-  for (; i < special_elements.length; i++) {
-    s = special_elements[i]
-    if (el.substr(0, s.length) === s) return true
-  }
-}
+export var special_elements = {}
+// var special_elements = ['poem', 'hyper']
+// function is_special (el) {
+//   var s, i = 0
+//   for (; i < special_elements.length; i++) {
+//     s = special_elements[i]
+//     if (el.substr(0, s.length) === s) return true
+//   }
+// }
 
 export function dom_context () {
   return context(function (el, args) {
     var i
 
     return !~el.indexOf('-') ? doc.createElement(el)
-      : is_special(el) ? new (customElements.get(el))(args.shift(), args.shift())
+      // : is_special(el) ? new (customElements.get(el))(args.shift(), args.shift())
+      : (i = special_elements[el]) !== undefined ? new (customElements.get(el))(...args.splice(0, i || 2)) // 2 is default? I can't think of a good reason why it shouldn't be 1 or 0 ...
       : new (customElements.get(el))
   }, arrayFragment)
 }
 
-var h = dom_context()
+export var h = dom_context()
 h.context = dom_context
 
 export function svg_context () {
@@ -523,23 +539,10 @@ export function svg_context () {
   }, svgArrayFragment)
 }
 
-var s = svg_context()
+export var s = svg_context()
 s.context = svg_context
 
-// HTMLElement.prototype.aC = function (v, cleanupFuncs) {
-//   var self = this
-//   function append (v) {
-//     self.appendChild(
-//       isNode(v) ? v
-//         : Array.isArray(v) ? arrayFragment(self, v, cleanupFuncs || [])
-//         : txt(v)
-//     )
-//   }
-//
-//   if (Array.isArray(v)) forEach(v, append)
-//   else append(v)
-// }
-
+// shortcut to append multiple children (w/ cleanupFuncs)
 HTMLElement.prototype.aC = function (v, cleanupFuncs) {
   this.appendChild(
     isNode(v) ? v
@@ -548,5 +551,4 @@ HTMLElement.prototype.aC = function (v, cleanupFuncs) {
   )
 }
 
-export { s, h, special_elements }
 export default h
