@@ -69,6 +69,10 @@ plugin-boilerplate = (frame, id, _config, _data, DEFAULT_CONFIG, _onload) ->
   G.width = value _width = frame.client-width || config.width || 300
   G.height = value _height = frame.client-height || config.height || 300
 
+  if (_dpr = Math.round (window.device-pixel-ratio || 1)) > 4
+    _dpr = 4
+  G.dpr = value _dpr
+
   frame._id = id
   unless set_data = frame.set_data
     set_data = frame.set_data = value!

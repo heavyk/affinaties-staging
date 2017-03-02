@@ -13,6 +13,9 @@ TODO ITEMS:
  * test all the observable-array events to make sure there's no element smashing
 */
 
+// add your own (or utilise this to make your code smaller!)
+export var short_attrs = { s: 'style', c: 'class' }
+
 export function txt (t) {
   return doc.createTextNode(t)
 }
@@ -70,7 +73,6 @@ function context (createElement, arrayFragment) {
         e.appendChild(r = l)
       } else if (typeof l === 'object') {
         for (var k in l) (function (attr_val, k) {
-          if (k === 'ontouchstart') debugger
           if (typeof attr_val === 'function') {
             // TODO: not sure which one is faster: regex or substr test
             // if (/^on\w+/.test(k)) {
@@ -78,11 +80,13 @@ function context (createElement, arrayFragment) {
               add_event(e, k.substr(2), attr_val, false)
             } else {
               // observable
-              if ((s = attr_val()) != null) e.setAttribute(k, s)
-              // console.log('set-attribute', k, s)
+              // TODO: short names for k -> real attr names (eg. 'c' --> 'class', 's' --> 'style')
+              var kk = short_attrs[k] || k
+              if ((s = attr_val()) != null) e.setAttribute(kk, s)
+              // console.log('set-attribute', kk, s)
               cleanupFuncs.push(attr_val(function (v) {
-                if (v != null) e.setAttribute(k, v)
-                // console.log('set attribute', k, '->', v)
+                if (v != null) e.setAttribute(kk, v)
+                // console.log('set attribute', kk, '->', v)
               }))
             }
           } else if (k === 'data') {

@@ -1,4 +1,5 @@
 import { MixinEmitter } from '../drip/emitter'
+import { value, observable_property } from './observable'
 import eq from '../lodash/isEqual'
 
 export class ObservableArray extends MixinEmitter(Array) {
@@ -7,6 +8,10 @@ export class ObservableArray extends MixinEmitter(Array) {
   constructor (...v) {
     super(...v)
     this.observable = 'array'
+    if (this._o_length) this._o_length(this.length)
+    Object.defineProperty(this, 'o_length', {
+      get: () => this._o_length = value(this.length)
+    })
   }
 
   pop () {
@@ -18,6 +23,7 @@ export class ObservableArray extends MixinEmitter(Array) {
   push (...items) {
     if (!items.length) return this.length
     this.emit('change', { type: 'push', values: items })
+    if (this._o_length) this._o_length(this.length + items.length)
     return super.push(...items)
   }
 
@@ -30,6 +36,7 @@ export class ObservableArray extends MixinEmitter(Array) {
   shift () {
     if (!this.length) return
     this.emit('change', { type: 'shift' })
+    if (this._o_length) this._o_length(this.length - 1)
     return super.shift()
   }
 
@@ -83,6 +90,7 @@ export class ObservableArray extends MixinEmitter(Array) {
 
   empty () {
     this.emit('change', { type: 'empty' })
+    if (this._o_length) this._o_length(th0)
     this.length = 0
     return this
   }
@@ -102,26 +110,31 @@ export class ObservableArray extends MixinEmitter(Array) {
 
   insert (idx, val) {
     this.emit('change', { type: 'insert', val, idx })
+    if (this._o_length) this._o_length(this.length + 1)
     super.splice(idx, 0, val)
     return this
   }
 
   remove (idx) {
     this.emit('change', { type: 'remove', idx })
+    if (this._o_length) this._o_length(this.length - 1)
     super.splice(idx, 1)
     return this
   }
 
   splice (idx, remove, ...add) {
+    // TODO: fix this?? arguments?!?!?
     var l = arguments.length
     if (!l || (l <= 2 && (+idx >= this.length || +remove <= 0))) return []
     this.emit('change', { type: 'splice', idx, remove, add })
+    if (this._o_length) this._o_length(this.length + add.length - remove.length)
     return super.splice(idx, remove, ...add)
   }
 
   unshift (...items) {
     if (!items.length) return this.length
     this.emit('change', { type: 'unshift', values: items })
+    if (this._o_length) this._o_length(this.length + items.length)
     return super.unshift(...items)
   }
 
@@ -140,7 +153,7 @@ export class ObservableArray extends MixinEmitter(Array) {
 // the advantage of that might be easier access to the context for better management of them
 // ----
 // in other news, I also need an easy way of making new G objects (probably make it into a class)... horray for class abuse!
-import { value } from './observable'
+// import { value } from './observable'
 
 function ObservableArrayApply (oarr, ...arr) {
   oarr.on('change', (e) => {
@@ -237,10 +250,13 @@ export class RenderingArray extends ObservableArray {
           break
         // no args
         case 'pop':
-        case 'reverse':
         case 'shift':
+          // TODO: lower the length and clean up the resulting observable
+        case 'reverse':
           this._d[e.type]()
           this._ctx[e.type]()
+          this._idx[e.type]()
+          this[e.type]()
           break
       }
     })

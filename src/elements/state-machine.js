@@ -1,5 +1,5 @@
 
-import { value, transform, event } from '../lib/dom/observable'
+import { value, transform, event, observable_property } from '../lib/dom/observable'
 import { ObservableArray } from '../lib/dom/observable-array'
 import { h, s, isNode, forEach, txt, arrayFragment } from '../lib/dom/hyper-hermes'
 // import EventEmitter from '../../drip/enhanced'
@@ -312,7 +312,7 @@ export default class StateMachine extends PathEmitter(HTMLElement) {
       // console.log('observ:', k, v)
       self[k] = v
       var o = observables[k] = v.observable ? v : value(v)
-      Object.defineProperty(self, k, { set: (v) => { o(v) }, get: () => o() })
+      observable_property(self, k, o)
     })(k = camelize(keys[i]), opts[k])
 
     _observables.set(self, observables)
@@ -417,7 +417,7 @@ export default class StateMachine extends PathEmitter(HTMLElement) {
 
     if (v != null) self[k] = v
     o = observables[k] = typeof v === 'function' && v.observable ? v : value(v)
-    Object.defineProperty(self, kc, { set: (v) => { o(v) }, get: () => o() })
+    observable_property(self, kc, o)
     if (!hidden) o(function (v) {
       console.log('attr', k, v)
       if (v != null) self.setAttribute(k, v)

@@ -568,6 +568,7 @@ function rankKickers (ranks, noOfCards) {
 }
 
 function rankHandInt (hand) {
+  // TODO: I think Hand should have my cards + also the board cards.
   var rank = 0
   var message = ''
 

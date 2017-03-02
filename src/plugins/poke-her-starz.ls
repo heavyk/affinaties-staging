@@ -3,7 +3,7 @@
 # ``import load_sdk from '../lib/load-sdk-h'``
 ``import { s, h, special_elements } from '../lib/dom/hyper-hermes'``
 ``import { ObservableArray, RenderingArray} from '../lib/dom/observable-array'``
-``import { value, transform, compute, px } from '../lib/dom/observable'``
+``import { value, transform, compute, px, observable_property } from '../lib/dom/observable'``
 ``import polarToCartesian from '../lib/calc/polarToCartesian'``
 # ``import xhr from '../lib/xhr'``
 ``import { Table, Player, rankHand } from '../lib/game/texas-holdem'``
@@ -25,6 +25,25 @@ const IS_LOCAL = ~doc.location.host.index-of 'localhost'
 const HALF_PI = Math.PI / 180
 const DEFAULT_CONFIG =
   lala: 1155
+
+foto_size = (size) ->
+  _px = 0
+  switch size
+  | \x => _px = 1920
+  | \l => _px = 1440
+  | \m => _px = 720
+  | \s => _px = 360
+  | \t => _px = 240
+  | \a => _px = 120
+  | \z => _px = 49
+  | \y => _px = 36
+  | \k => _px = 28
+  _px
+
+foto = ({h}, opts = {}) ->
+  px = value (foto_size opts.size)
+  src = value opts.src
+  h \img {src, width: px, height: px}
 
 # palabras:
 # membership --> clout
@@ -106,8 +125,11 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   table-middle-x = compute [table-margin-sides, middle-area-rx], (tm, rx) -> tm + rx #- TABLE_PADDING
   table-middle-y = compute [table-margin-top, middle-area-ry], (tm, ry) -> tm + ry #- TABLE_PADDING
 
+  mid-w = transform middle-area-width, (w) -> 60 + (w / 2)
+  mid-h = transform middle-area-height, (h) -> 60 + (h / 2)
+
   hand-pos-x = (n) ->
-    compute [G.width, middle-area-card-width], (w, cw) -> (w * 0.49) - (cw / 2) + ((cw / 5) * n)
+    compute [G.width, middle-area-card-width, n], (w, cw, n) -> (w * 0.49) - (cw / 2) + ((cw / 5) * n)
   hand-pos-y = (n) ->
     compute [G.height, middle-area-card-height], (h, ch) -> h - (ch * 0.2)
 
@@ -123,17 +145,69 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   first-playa-angle = 200
   last-playa-angle = 340
-  num-playas = 8
-  angle-increment = (last-playa-angle - first-playa-angle) / (num-playas - 1)
+  max-playas = value 8
+  num-playas = value 2
+  # angle-increment = compute [last-playa-angle, first-playa-angle, num-playas] (a1, a0, n) -> (a1 - a0) / (n - 1)
+
+  playa-pos = (i) ->
+    compute [table-middle-x, table-middle-y, mid-w, mid-h, first-playa-angle, last-playa-angle, i, num-playas, max-playas], (mid-x, mid-y, mid-w, mid-h, a0, a1, i, n, m) ->
+      max_arc = a1 - a0
+      min_arc = max_arc / 2
+      arc_inc = if m > n => (max_arc - min_arc) / n else 0
+      inc = (max_arc - arc_inc - arc_inc) / (n - 1)
+      angle = (a0 + arc_inc + (i * inc)) * HALF_PI
+      # TODO: move this to a lib function
+      # http://stackoverflow.com/questions/39098308/how-to-use-two-coordinates-draw-an-ellipse-with-javascript
+      a = x: mid-w, y: 0
+      b = x: 0,     y: mid-h
+      x = mid-x + (a.x * (Math.cos angle)) + (b.x * (Math.sin angle))
+      y = mid-y + (a.y * (Math.cos angle)) + (b.y * (Math.sin angle))
+      {x, y}
 
   cards_down = value true
 
+  window.hand =\
+  hand = new RenderingArray G, (id, idx, {h}) ->
+    h \poke-her-card, id, { width: middle-area-card-width, x: (hand-pos-x idx), y: (hand-pos-y idx), down: cards_down }
+
   window.cards =\
   cards = new RenderingArray G, (id, idx, {h}) ->
-    # one way to get around all of the problems with movement in the array (like swapping, reversing, or sorting) will be to make idx into an observable
     h \poke-her-card, id, { width: middle-area-card-width, x: (card-pos-x idx), y: (card-pos-y idx) }
 
+  window.playaz =\
+  playaz = new RenderingArray G, (id, idx, {h}) ->
+    h.cleanupFuncs.push pos = playa-pos idx
+    h.cleanupFuncs.push x = transform pos, (p) -> "#{p.x}px"
+    h.cleanupFuncs.push y = transform pos, (p) -> "#{p.y}px"
+    h \div style: {
+      border: 'solid 1px #000'
+      # border-radius: '8px'
+      border-radius: '50%'
+      margin-top: '-30px'
+      margin-left: '-30px'
+      position: \fixed
+      width: '60px'
+      height: '60px'
+      left: x
+      top: y
+    }, id
+
+  # two things:
+  # 1. RenderingArray should have a cleanup function (to clean up everything in the array)
+  # 2. perhaps it may be a good idea to clean up o_length when calling the above cleanup function
+  playaz.d.o_length num-playas
+
   cards.d.push \AH, \2H, \3H #, \4H, \5H
+  hand.d.push \AS, \AD
+  playaz.d.push 'kenny', 'jenny'#, 'jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde'
+  more_playaz = ['jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde']
+
+  ii = set-interval !->
+    if p = more_playaz.shift!
+      console.log 'adding', p
+      playaz.d.push p
+    else clear-interval ii
+  , 2000
 
   G.E.frame.aC [
 
@@ -156,42 +230,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       for i til 5
         s \rect x: (space-pos-x i), y: (space-pos-y i), width: middle-area-space-width, height: middle-area-space-height, rx: 5, ry: 5, 'stroke-width': 0.5, stroke: '#fff', fill: 'none'
 
-    # window.card =\
-    # for i til 5
-    #   idx = value i
-    #   h \poke-her-card, \AH, { width: middle-area-card-width, x: (card-pos-x idx), y: (card-pos-y idx) }
-    cards
-
-    window.hand =\
-    for i til 2
-      h \poke-her-card, \AH, { width: middle-area-card-width, x: (hand-pos-x i), y: (hand-pos-y i), down: cards_down }
-
-    window.playa =\
-    for i til num-playas
-      angle = (first-playa-angle + (i * angle-increment)) * HALF_PI
-      mid-x = table-middle-x! # C.x
-      mid-y = table-middle-y! # C.y
-      mid-w = 60 + middle-area-width! * 0.5 # a
-      mid-h = 60 + middle-area-height! * 0.5 # b
-      # TODO: move this to a lib function
-      # http://stackoverflow.com/questions/39098308/how-to-use-two-coordinates-draw-an-ellipse-with-javascript
-      a = x: mid-w, y: 0
-      b = x: 0,     y: mid-h
-      x = mid-x + (a.x * (Math.cos angle)) + (b.x * (Math.sin angle))
-      y = mid-y + (a.y * (Math.cos angle)) + (b.y * (Math.sin angle))
-      h \div style: {
-        border: 'solid 1px #000'
-        # border-radius: '8px'
-        border-radius: '50%'
-        # padding: \50px
-        margin-top: \-30px
-        margin-left: \-30px
-        position: \fixed
-        width: '60px'
-        height: '60px'
-        left: "#{x}px"
-        top: "#{y}px"
-      }, "playa #{i}"
+    cards, hand, playaz
 
     # window.machina =\
     # h \poem-state-machine, {width: 40, active: false}, ({h}) ->

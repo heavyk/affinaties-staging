@@ -1,4 +1,4 @@
-"use strict";
+'use strict'
 
 import { forEach } from './hyper-hermes'
 // import isEqual from '../lodash/isEqual'
@@ -18,34 +18,34 @@ import { forEach } from './hyper-hermes'
 
 
 // bind a to b -- One Way Binding
-export function bind1(a, b) {
+export function bind1 (a, b) {
   a(b()); b(a)
 }
 
 //bind a to b and b to a -- Two Way Binding
-export function bind2(a, b) {
+export function bind2 (a, b) {
   b(a()); a(b); b(a)
 }
 
 //trigger all listeners
-function all(ary, val) {
+function all (ary, val) {
   for (var i = 0; i < ary.length; i++) ary[i](val)
 }
 
 // remove a listener
-function remove(ary, item) {
+function remove (ary, item) {
   var i = ary.indexOf(item)
   if (~i) setTimeout(function () { ary.splice(i, 1) }, 1)
 }
 
 // register a listener
-export function on(emitter, event, listener, opts = false) {
+export function on (emitter, event, listener, opts = false) {
   (emitter.on || emitter.addEventListener)
     .call(emitter, event, listener, opts)
 }
 
 // unregister a listener
-export function off(emitter, event, listener, opts = false) {
+export function off (emitter, event, listener, opts = false) {
   (emitter.removeListener || emitter.removeEventListener || emitter.off)
     .call(emitter, event, listener, opts)
 }
@@ -59,7 +59,7 @@ export function value (initialValue) {
   observable.observable = 'value'
   return observable
 
-  function observable(val) {
+  function observable (val) {
     return (
       val === undefined ? _val                                                        // getter
     // : typeof val !== 'function' ? all(listeners, _val = val)                       // this is the old way.. it'll always emit, even if the value is the same
@@ -93,7 +93,7 @@ export function property (model, key) {
 }
 
 export function transform (in_observable, down, up) {
-  if(typeof in_observable !== 'function')
+  if (typeof in_observable !== 'function')
     error('transform expects an observable')
 
   observable.observable = 'value'
@@ -109,11 +109,11 @@ export function transform (in_observable, down, up) {
 }
 
 export const _not = (v) => !v
-export function not(observable) {
+export function not (observable) {
   return transform(observable, _not)
 }
 
-export function px(observable) {
+export function px (observable) {
   return transform(observable, (v) => v + 'px')
 }
 
@@ -129,7 +129,7 @@ export function listen (element, event, attr, listener) {
 }
 
 //observe html element - aliased as `input`
-export function attribute(element, _attr, _event) {
+export function attribute (element, _attr, _event) {
   var attr = _attr !== void 0 ? _attr : 'value'
   var event = _event !== void 0 ? _event : 'input'
   observable.observable = 'attribute'
@@ -145,13 +145,13 @@ export function attribute(element, _attr, _event) {
 }
 
 // observe a select element
-export function select(element) {
+export function select (element) {
   function _attr () {
-      return element[element.selectedIndex].value;
+    return element[element.selectedIndex].value
   }
   function _set(val) {
-    for(var i=0; i < element.options.length; i++) {
-      if(element.options[i].value == val) element.selectedIndex = i;
+    for (var i = 0; i < element.options.length; i++) {
+      if (element.options[i].value == val) element.selectedIndex = i
     }
   }
   observable.observable = 'select'
@@ -201,18 +201,24 @@ export function compute (observables, compute) {
   var v = value()
 
   forEach(observables, function (f, i) {
-    cur[i] = f()
-    f(function (val) {
-      cur[i] = val
-      if(init === false) v(compute.apply(null, cur))
-    })
+    if (typeof f === 'function') {
+      cur[i] = f()
+      f(function (val) {
+        var prev = cur[i]
+        cur[i] = val
+        if (init === false && prev !== val) v(compute.apply(null, cur))
+      })
+    } else {
+      cur[i] = f
+    }
   })
 
   v(compute.apply(null, cur))
   init = false
-  v(function () {
-    compute.apply(null, cur)
-  })
+  // I see no reason why this is needed. disabled until I find a use for it.
+  // v(function () {
+  //   compute.apply(null, cur)
+  // })
 
   return v
 }
@@ -257,6 +263,10 @@ export function event (element, attr, event, truthy) {
       })
     )
   }
+}
+
+export function observable_property (obj, key, o) {
+  Object.defineProperty(obj, key, { set: (v) => { o(v) }, get: () => o() })
 }
 
 export function hover (e) { return toggle(e, 'mouseover', 'mouseout')}

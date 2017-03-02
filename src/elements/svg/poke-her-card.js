@@ -12,7 +12,7 @@ class Card extends StateMachine {
       if (typeof id === 'function') {
         // `id` is an observable
         this._id = id()
-        // id((id) => { this.reset(id) })
+        id((id) => { if (id !== this._id) this.reset(id) })
       }
       var svg = CARDS[this._id || id].call(this, G)
       // const _id = this.attr('card', this._id || id)
