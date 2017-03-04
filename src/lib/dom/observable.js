@@ -193,7 +193,6 @@ export function error (message) {
   throw new Error(message)
 }
 
-// OPTIMIZATION: use new Function to compose new observables which call each of the observables (faster than a loop)
 export function compute (observables, compute) {
   var init = true
   var cur = new Array(observables.length)

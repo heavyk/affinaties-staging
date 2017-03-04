@@ -143,8 +143,8 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   space-pos-y = (n) ->
     compute [middle-area-height, middle-area-space-height], (mh, ch) -> TABLE_STROKE + TABLE_PADDING + ((mh - ch - TABLE_PADDING2) / 2)
 
-  first-playa-angle = 200
-  last-playa-angle = 340
+  first-playa-angle = 150 #200
+  last-playa-angle = 390 #340
   max-playas = value 8
   num-playas = value 2
   # angle-increment = compute [last-playa-angle, first-playa-angle, num-playas] (a1, a0, n) -> (a1 - a0) / (n - 1)
@@ -152,7 +152,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   playa-pos = (i) ->
     compute [table-middle-x, table-middle-y, mid-w, mid-h, first-playa-angle, last-playa-angle, i, num-playas, max-playas], (mid-x, mid-y, mid-w, mid-h, a0, a1, i, n, m) ->
       max_arc = a1 - a0
-      min_arc = max_arc / 2
+      min_arc = max_arc / 3
       arc_inc = if m > n => (max_arc - min_arc) / n else 0
       inc = (max_arc - arc_inc - arc_inc) / (n - 1)
       angle = (a0 + arc_inc + (i * inc)) * HALF_PI
@@ -210,19 +210,6 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   , 2000
 
   G.E.frame.aC [
-
-    # h \div style: {
-    #   border: 'solid 1px #000'
-    #   border-radius: '50%'
-    #   # padding: \50px
-    #   # margin-top: \-50px
-    #   # margin-left: \-50px
-    #   position: \fixed
-    #   width: px middle-area-width
-    #   left: px table-margin-sides
-    #   top: px table-margin-top
-    #   height: px middle-area-height
-    # }, 'table'
 
     s \svg width: middle-area-width, height: middle-area-height, s: {position: \fixed, left: table-margin-sides, top: table-margin-top},
       s \ellipse cx: middle-area-rx, cy: middle-area-ry, rx: middle-area-rxs, ry: middle-area-rys, fill: '#252', stroke: '#652507', 'stroke-width': TABLE_STROKE2
