@@ -419,7 +419,7 @@ export default class StateMachine extends PathEmitter(HTMLElement) {
     o = observables[k] = typeof v === 'function' && v.observable ? v : value(v)
     observable_property(self, kc, o)
     if (!hidden) o(function (v) {
-      console.log('attr', k, v)
+      // console.log('attr', k, v)
       if (v != null) self.setAttribute(k, v)
     })
     return o
@@ -429,9 +429,9 @@ export default class StateMachine extends PathEmitter(HTMLElement) {
     return transform(typeof k === 'string' ? this.attr(k) : k, fn)
   }
 
-  observe (event, attr, fn) {
-    cleanupFuncs.push(event(this, attr, event)(fn))
-  }
+  // observe (event, attr, fn) {
+  //   cleanupFuncs.push(event(this, attr, event)(fn))
+  // }
 
   style (txt) {
     var shadow = this.shadow

@@ -13,8 +13,9 @@ import { forEach } from './hyper-hermes'
 //  °-> this can potentially be improved. I'll have to look into it a bit better. perhaps using a `Map` or a linked list?
 // * add .observable property to all returned functions (necessary for hyper-hermes to know that it's an observable instead of a context)
 // * changed `value` to only propagate when the value has actually changed. to force all liseners to receive the current value, `call observable.set()` or `observable.set(observable())`
-// (TODO) use isEqual function to compare values before setting the observable (and remove `signal`)
+// (TODO) use isEqual function to compare values before setting the observable
 // (TODO) add better documentation for each function
+// (TODO) add a remove function to bind1, bind2
 
 
 // bind a to b -- One Way Binding
@@ -28,8 +29,8 @@ export function bind2 (a, b) {
 }
 
 //trigger all listeners
-function all (ary, val) {
-  for (var i = 0; i < ary.length; i++) ary[i](val)
+function emit (ary, val2, val) {
+  for (var i = 0; i < ary.length; i++) ary[i](val, val2)
 }
 
 // remove a listener
@@ -52,19 +53,21 @@ export function off (emitter, event, listener, opts = false) {
 
 // An observable that stores a value.
 export function value (initialValue) {
+  // if the value is already an observable, then just return it
+  if (typeof initialValue === 'function' && initialValue.observable === 'value') return initialValue
   var _val = initialValue, listeners = []
   observable.set = function (val) {
-    all(listeners, _val = val === undefined ? _val : val)
+    emit(listeners, _val, _val = val === undefined ? _val : val)
   }
   observable.observable = 'value'
   return observable
 
   function observable (val) {
     return (
-      val === undefined ? _val                                                        // getter
-    // : typeof val !== 'function' ? all(listeners, _val = val)                       // this is the old way.. it'll always emit, even if the value is the same
-    : typeof val !== 'function' ? (!(_val === val) ? all(listeners, _val = val) : '') // setter (the new way - only sets if the value has changed)
-    : (listeners.push(val), (_val === undefined ? _val : val(_val)), function () {    // listener
+      val === undefined ? _val                                                              // getter
+    // : typeof val !== 'function' ? emit(listeners, _val, _val = val)                             // this is the old way.. it'll always emit, even if the value is the same
+    : typeof val !== 'function' ? (!(_val === val) ? emit(listeners, _val, _val = val) : '') // setter (the new way - only sets if the value has changed)
+    : (listeners.push(val), (_val === undefined ? _val : val(_val)), function () {          // listener
         remove(listeners, val)
       })
     )
@@ -106,11 +109,6 @@ export function transform (in_observable, down, up) {
     : in_observable(function (_val) { val(down(_val)) })
     )
   }
-}
-
-export const _not = (v) => !v
-export function not (observable) {
-  return transform(observable, _not)
 }
 
 export function px (observable) {
@@ -230,19 +228,6 @@ export function boolean (observable, truthy, falsey) {
       return val == truthy ? true : false
     })
   )
-}
-
-export function signal () {
-  var _val, listeners = []
-  return function (val) {
-    return (
-      val === undefined ? _val
-        : typeof val !== 'function' ? (!(_val === val) ? all(listeners, _val = val) : '')
-        : (listeners.push(val), val(_val), function () {
-           remove(listeners, val)
-        })
-    )
-  }
 }
 
 export function event (element, attr, event, truthy) {

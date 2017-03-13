@@ -6,6 +6,7 @@ import { rankHandInt } from './rank-hand'
 
 // TODO: rename to TexasHoldemTable
 // or, extract out the game logic into something else
+// TODO: generic table will get a config object and the game rules will have default values
 class Table extends EventEmitter {
   constructor (smallBlind, bigBlind, minPlayers, maxPlayers, minBuyIn, maxBuyIn) {
     super()
@@ -38,60 +39,60 @@ class Table extends EventEmitter {
     }
   }
 
-  getHandForPlayerName (playerName) {
-    for (var i in this.players) {
-      if (this.players[i].playerName === playerName) {
-        return this.players[i].cards
-      }
-    }
-    return []
-  }
+  // getHandForPlayerName (playerName) {
+  //   for (var i in this.players) {
+  //     if (this.players[i].playerName === playerName) {
+  //       return this.players[i].cards
+  //     }
+  //   }
+  //   return []
+  // }
 
   // Player actions: Check(), Fold(), Bet(bet), Call(), AllIn()
-  check (playerName) {
-    var currentPlayer = this.currentPlayer
-    if (playerName === this.players[ currentPlayer ].playerName) {
-      this.players[ currentPlayer ].Check()
-      return true
-    } else {
-      // todo: check if something went wrong ( not enough money or things )
-      console.log('wrong user has made a move')
-      return false
-    }
-  }
-
-  fold (playerName) {
-    var currentPlayer = this.currentPlayer
-    if (playerName === this.players[ currentPlayer ].playerName) {
-      this.players[ currentPlayer ].Fold()
-      return true
-    } else {
-      console.log('wrong user has made a move')
-      return false
-    }
-  }
-
-  call (playerName) {
-    var currentPlayer = this.currentPlayer
-    if (playerName === this.players[ currentPlayer ].playerName) {
-      this.players[ currentPlayer ].Call()
-      return true
-    } else {
-      console.log('wrong user has made a move')
-      return false
-    }
-  }
-
-  bet (playerName, amt) {
-    var currentPlayer = this.currentPlayer
-    if (playerName === this.players[ currentPlayer ].playerName) {
-      this.players[ currentPlayer ].Bet(amt)
-      return true
-    } else {
-      console.log('wrong user has made a move')
-      return false
-    }
-  }
+  // check (playerName) {
+  //   var currentPlayer = this.currentPlayer
+  //   if (playerName === this.players[ currentPlayer ].playerName) {
+  //     this.players[ currentPlayer ].Check()
+  //     return true
+  //   } else {
+  //     // todo: check if something went wrong ( not enough money or things )
+  //     console.log('wrong user has made a move')
+  //     return false
+  //   }
+  // }
+  //
+  // fold (playerName) {
+  //   var currentPlayer = this.currentPlayer
+  //   if (playerName === this.players[ currentPlayer ].playerName) {
+  //     this.players[ currentPlayer ].Fold()
+  //     return true
+  //   } else {
+  //     console.log('wrong user has made a move')
+  //     return false
+  //   }
+  // }
+  //
+  // call (playerName) {
+  //   var currentPlayer = this.currentPlayer
+  //   if (playerName === this.players[ currentPlayer ].playerName) {
+  //     this.players[ currentPlayer ].Call()
+  //     return true
+  //   } else {
+  //     console.log('wrong user has made a move')
+  //     return false
+  //   }
+  // }
+  //
+  // bet (playerName, amt) {
+  //   var currentPlayer = this.currentPlayer
+  //   if (playerName === this.players[ currentPlayer ].playerName) {
+  //     this.players[ currentPlayer ].Bet(amt)
+  //     return true
+  //   } else {
+  //     console.log('wrong user has made a move')
+  //     return false
+  //   }
+  // }
 
   getAllHands () {
     var all = this.losers.concat(this.players)
@@ -107,16 +108,17 @@ class Table extends EventEmitter {
   }
 
   initNewRound () {
-    this.dealer += 1
-    if (this.dealer >= this.players.length) {
+    var i = 0, l = this.players.length
+    this.dealer++
+    if (this.dealer >= l) {
       this.dealer = 0
     }
     this.game.reset()
-    for (var i = 0; i < this.players.length; i++) {
+    for (; i < l; i++) {
       this.players[i].folded = false
       this.players[i].talked = false
       this.players[i].allIn = false
-      this.players[i].cards.splice(0, this.players[i].cards.length)
+      this.players[i].cards.splice(0, 2)
     }
     this.NewRound()
   }
@@ -176,6 +178,19 @@ class Table extends EventEmitter {
     // Add players in waiting list
     var removeIndex = 0
     var i, k, smallBlind, bigBlind
+    var p, l = this.players.length
+
+    // while ((p = this.playersToRemove.pop()) != null) {
+    //   this.game.bets.push(0)
+    //   this.game.roundBets.push(0)
+    //   this.emit('newPlaya', p)
+    // }
+    //
+    // while (l < this.maxPlayers && (p = this.playersToAdd.pop())) {
+    //   this.game.bets.push(0)
+    //   this.game.roundBets.push(0)
+    //   this.emit('newPlaya', p)
+    // }
 
     for (k in this.playersToAdd) {
       if (removeIndex < this.playersToRemove.length) {
@@ -290,8 +305,8 @@ class Table extends EventEmitter {
           }
           this.emit('deal')
         }
-      } else {
-        console.log('still waiting for some players (round not yet done)')
+      // } else {
+      //   console.log('still waiting for some players (round not yet done)')
       }
     }
   }

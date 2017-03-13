@@ -9,14 +9,15 @@ export class ObservableArray extends MixinEmitter(Array) {
     super(...v)
     this.observable = 'array'
     if (this._o_length) this._o_length(this.length)
-    Object.defineProperty(this, 'o_length', {
-      get: () => this._o_length = value(this.length)
+    Object.defineProperty(this, 'obv_len', {
+      get: () => this._o_length || (this._o_length = value(this.length))
     })
   }
 
   pop () {
     if (!this.length) return
     this.emit('change', { type: 'pop' })
+    if (this._o_length) this._o_length(this.length - 1)
     return super.pop()
   }
 
@@ -90,7 +91,7 @@ export class ObservableArray extends MixinEmitter(Array) {
 
   empty () {
     this.emit('change', { type: 'empty' })
-    if (this._o_length) this._o_length(th0)
+    if (this._o_length) this._o_length(0)
     this.length = 0
     return this
   }
@@ -116,6 +117,11 @@ export class ObservableArray extends MixinEmitter(Array) {
   }
 
   remove (idx) {
+    if (typeof idx !== 'number') {
+      var iidx = this.indexOf(idx)
+      if (~iidx) idx = iidx
+      else return this
+    }
     this.emit('change', { type: 'remove', idx })
     if (this._o_length) this._o_length(this.length - 1)
     super.splice(idx, 1)
@@ -211,24 +217,35 @@ function ObservableArrayApply (oarr, ...arr) {
 
 function context (G) {
   var ctx = {}
-  Object.defineProperties((ctx = {}), {
-    h: define_val(() => ctx._h || (ctx._h = h.context())),
-    s: define_val(() => ctx._s || (ctx._s = s.context())),
+  Object.defineProperties(ctx, {
+    h: define_getter(() => ctx._h || (ctx._h = G.h.context())),
+    s: define_getter(() => ctx._s || (ctx._s = G.s.context())),
+    cleanup: define_value(() => {
+      if (ctx._h) ctx._h.cleanup()
+      if (ctx._s) ctx._s.cleanup()
+    })
   })
-  return Object.create(G, ctx)
-  // return (Object.defineProperties((ctx = {}), {
-  //   h: d(() => self._h || (self._h = h.context())),
-  //   s: d(() => self._s || (self._s = s.context())),
-  // }), self._ctx = ctx)
+  return ctx
 }
 
+function swap (o, to, from) {
+  var t = o[to]
+  o[to] = o[from]
+  o[from] = t
+}
+// const ObservableArray_props = ['swap', 'move', 'set', 'unshift', 'push', 'splice', 'remove', 'replace', 'insert', 'sort', 'empty', 'pop', 'reverse', 'shift']
+
 export class RenderingArray extends ObservableArray {
-  constructor (G, fn) {
+  constructor (G, data, fn) {
     super()
-    this.fn = fn
-    this.G = G
-    this.d = new ObservableArray
+    this.fn = typeof data === 'function' ? (fn = data) : fn
     var fl = this.fl = fn.length
+    this.G = G
+    this.d = data instanceof ObservableArray ? data : (data = new ObservableArray)
+
+    // replicate behaviour of ObservableArray
+    for (let p of ['swap','move','set','unshift','push','splice','remove','replace','insert','sort','empty','pop','reverse','shift'])
+      this[p] = function () { this.d[p].apply(this.d, arguments) }
 
     // where we store the id/data which gets passed to the rendering function
     if (fl >= 1) this._d = []
@@ -236,30 +253,106 @@ export class RenderingArray extends ObservableArray {
     if (fl >= 3) this._idx = []
 
     this.d.on('change', (e) => {
-      var l, len = this.length, fl = this.fl
-      switch (e.type) {
+      var v, l, len = this.length, fl = this.fl, type = e.type, a = this
+      switch (type) {
+        case 'swap':
+          swap(this, e.to, e.from)
+          if (fl >= 1) swap(this._d, e.to, e.from)
+          if (fl >= 2) swap(this._ctx, e.to, e.from)
+          if (fl >= 3) swap(this._idx, e.to, e.from)
+          break
+        case 'move':
+          (v = super.splice(e.from, 1)) && super.splice(e.to, 0, v[0])
+          // if (fl >= 1) v = this._d.splice(e.from, 1), this._d.splice(e.to, 0, v[0])
+          // if (fl >= 2) v = this._ctx.splice(e.from, 1), this._ctx.splice(e.to, 0, v[0])
+          // if (fl >= 3) v = this._idx.splice(e.from, 1), this._idx.splice(e.to, 0, v[0])
+          break
+        case 'set':
+          super[e.idx] = e.val
+          break
+        case 'unshift':
+          // TODO
+          debugger
+          // for (a of arr) a.unshift(...e.values)
+          break
         case 'push':
-          for (var v of e.values) {
+          for (v of e.values) {
             l = len++
             // make space in storage arrays
             if (fl >= 1) this._d.length = len
             if (fl >= 2) this._ctx.length = len
             if (fl >= 3) this._idx.length = len
-            this.push(this.fn_call(v, l))
+            super.push(this.fn_call(v, l))
           }
+          break
+        case 'splice':
+          // for (a of arr) a.splice(e.idx, e.remove, ...e.add)
+          // TODO
+          debugger
+          break
+        case 'remove':
+          // for (a of arr) a.splice(e.idx, 1)
+          // TODO
+          debugger
+          break
+        case 'replace':
+        case 'insert':
+          l = type === 'replace' ? 1 : 0
+          if (fl >= 1) this._d.splice(e.idx, l, null)
+          if (fl >= 2) this._ctx.splice(e.idx, l, null)
+          if (fl >= 3) this._idx.splice(e.idx, l, null)
+          super.splice(e.idx, l, this.fn_call(e.val, e.idx))
+          break
+        case 'sort':
+          // TODO: this totally will not work. I don't think the compare function will work the same for _d, _idx, _ctx
+          // I need to do quiksort and map the swap events. I think this will be a super.on('change', [save events into an array]), super.quiksort(e.compare), then replay the events on each of the arrays
+          // super.sort(e.compare)
+          // if (fl >= 1) this._d.sort(e.compare)
+          // if (fl >= 2) this._ctx.sort(e.compare)
+          // if (fl >= 3) this._idx.sort(e.compare)
+          debugger
+          break
+        case 'empty':
+          // TODO: proper cleanup
+          super.empty()
+          if (fl >= 1) this._d.length = 0
+          if (fl >= 2) for (v of this._ctx) v.cleanup(), this._ctx.length = 0
+          if (fl >= 3) this._idx.length = 0
           break
         // no args
         case 'pop':
         case 'shift':
-          // TODO: lower the length and clean up the resulting observable
+          // TODO: lower the length and clean up the context
         case 'reverse':
-          this._d[e.type]()
-          this._ctx[e.type]()
-          this._idx[e.type]()
-          this[e.type]()
+          this._d[type]()
+          this._ctx[type]().cleanup()
+          // console.log('popped ctx', v)
+          this._idx[type]()
+          super[type]()
+          // console.log('popped val', v)
+          // debugger
           break
       }
     })
+
+    // lastly, if data has length, then render and add each of them
+    for (var i = 0; i < data.length; i++) {
+      super.push(this.fn_call(data[i], i))
+    }
+  }
+
+  data (data) {
+    if (data instanceof ObservableArray) {
+      // empty / cleanup the array
+      if (this.length) this.empty()
+
+      for (var i = 0; i < data.length; i++) {
+        super.push(this.fn_call(data[i], i))
+      }
+
+      this.d = data
+    }
+    return this.d
   }
 
   fn_call (d, idx) {
@@ -279,6 +372,23 @@ export class RenderingArray extends ObservableArray {
       }
     }
   }
+
+  // OBSOLETE (see constructor): replicate behaviour of ObservableArray
+  // swap () { this.d.swap.apply(this.d, arguments) }
+  // move () { this.d.move.apply(this.d, arguments) }
+  // set () { this.d.set.apply(this.d, arguments) }
+  // unshift () { this.d.unshift.apply(this.d, arguments) }
+  // push () { this.d.push.apply(this.d, arguments) }
+  // splice () { this.d.splice.apply(this.d, arguments) }
+  // remove () { this.d.remove.apply(this.d, arguments) }
+  // replace () { this.d.replace.apply(this.d, arguments) }
+  // insert () { this.d.insert.apply(this.d, arguments) }
+  // sort () { this.d.sort.apply(this.d, arguments) }
+  // empty () { this.d.empty.apply(this.d, arguments) }
+  // pop () { this.d.pop.apply(this.d, arguments) }
+  // reverse () { this.d.reverse.apply(this.d, arguments) }
+  // shift () { this.d.shift.apply(this.d, arguments) }
+
 }
 
 // ==========================================
@@ -295,10 +405,17 @@ export function isCopy (other) {
   return true
 }
 
-function define_val (fn) {
+function define_value (fn) {
   return {
-    configurable: true, enumerable: false, writable: true,
+    //configurable: true, enumerable: false, writable: true,
     value: fn
+  }
+}
+
+function define_getter (fn) {
+  return {
+    configurable: true, enumerable: false,
+    get: fn
   }
 }
 

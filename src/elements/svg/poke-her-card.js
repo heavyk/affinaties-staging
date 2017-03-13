@@ -1,6 +1,7 @@
 import StateMachine from '../state-machine'
 
-import { touch, hover, mousedown, _not } from '../../lib/dom/observable'
+import { touch, hover, mousedown } from '../../lib/dom/observable'
+import { _not } from '../../lib/dom/observable-logic'
 
 // import CARDS from '../../assets/playing-cards'
 const CARDS = require('../assets/playing-cards')

@@ -1,4 +1,4 @@
-export function rankKickers (ranks, noOfCards) {
+function rankKickers (noOfCards, ranks) {
   var kickerRank = 0
   var myRanks = []
   var rank = ''
@@ -30,6 +30,7 @@ export function rankKickers (ranks, noOfCards) {
   return kickerRank
 }
 
+const remove = (str, r1, r2) => r2 ? str.replace(r1, '').replace(r2, '') : str.replace(r1, '')
 export function rankHandInt (_cards) {
   var rank = 0
   var message = ''
@@ -38,34 +39,34 @@ export function rankHandInt (_cards) {
   var handRanks = new Array(l)
   var handSuits = new Array(l)
   for (var i = 0; i < l; i++) {
-    handRanks[i] = _cards[i].substr(0, 1)
-    handSuits[i] = _cards[i].substr(1, 1)
+    handRanks[i] = _cards[i][0]
+    handSuits[i] = _cards[i][1]
   }
 
-  var ranks = handRanks.sort().toString().replace(/\W/g, '')
-  var suits = handSuits.sort().toString().replace(/\W/g, '')
-  var cards = _cards.toString()
+  var ranks = handRanks.sort().join('')
+  var suits = handSuits.sort().join('')
+  var cards = _cards.join(',')
 
-  console.log('ranks', ranks)
-  console.log('suits', suits)
-  console.log('cards', cards)
+  // console.log('ranks', ranks)
+  // console.log('suits', suits)
+  // console.log('cards', cards)
 
   // Four of a kind
   if (rank === 0) {
     rank =
-      ~ranks.indexOf('AAAA') ? 292 + rankKickers(ranks.replace('AAAA', ''), 1) :
-      ~ranks.indexOf('KKKK') ? 291 + rankKickers(ranks.replace('KKKK', ''), 1) :
-      ~ranks.indexOf('QQQQ') ? 290 + rankKickers(ranks.replace('QQQQ', ''), 1) :
-      ~ranks.indexOf('JJJJ') ? 289 + rankKickers(ranks.replace('JJJJ', ''), 1) :
-      ~ranks.indexOf('TTTT') ? 288 + rankKickers(ranks.replace('TTTT', ''), 1) :
-      ~ranks.indexOf('9999') ? 287 + rankKickers(ranks.replace('9999', ''), 1) :
-      ~ranks.indexOf('8888') ? 286 + rankKickers(ranks.replace('8888', ''), 1) :
-      ~ranks.indexOf('7777') ? 285 + rankKickers(ranks.replace('7777', ''), 1) :
-      ~ranks.indexOf('6666') ? 284 + rankKickers(ranks.replace('6666', ''), 1) :
-      ~ranks.indexOf('5555') ? 283 + rankKickers(ranks.replace('5555', ''), 1) :
-      ~ranks.indexOf('4444') ? 282 + rankKickers(ranks.replace('4444', ''), 1) :
-      ~ranks.indexOf('3333') ? 281 + rankKickers(ranks.replace('3333', ''), 1) :
-      ~ranks.indexOf('2222') ? 280 + rankKickers(ranks.replace('2222', ''), 1) : 0
+      ~ranks.indexOf('AAAA') ? 292 + rankKickers(1, remove(ranks, 'AAAA')) :
+      ~ranks.indexOf('KKKK') ? 291 + rankKickers(1, remove(ranks, 'KKKK')) :
+      ~ranks.indexOf('QQQQ') ? 290 + rankKickers(1, remove(ranks, 'QQQQ')) :
+      ~ranks.indexOf('JJJJ') ? 289 + rankKickers(1, remove(ranks, 'JJJJ')) :
+      ~ranks.indexOf('TTTT') ? 288 + rankKickers(1, remove(ranks, 'TTTT')) :
+      ~ranks.indexOf('9999') ? 287 + rankKickers(1, remove(ranks, '9999')) :
+      ~ranks.indexOf('8888') ? 286 + rankKickers(1, remove(ranks, '8888')) :
+      ~ranks.indexOf('7777') ? 285 + rankKickers(1, remove(ranks, '7777')) :
+      ~ranks.indexOf('6666') ? 284 + rankKickers(1, remove(ranks, '6666')) :
+      ~ranks.indexOf('5555') ? 283 + rankKickers(1, remove(ranks, '5555')) :
+      ~ranks.indexOf('4444') ? 282 + rankKickers(1, remove(ranks, '4444')) :
+      ~ranks.indexOf('3333') ? 281 + rankKickers(1, remove(ranks, '3333')) :
+      ~ranks.indexOf('2222') ? 280 + rankKickers(1, remove(ranks, '2222')) : 0
     if (rank !== 0) { message = 'Four of a kind' }
   }
 
@@ -275,7 +276,7 @@ export function rankHandInt (_cards) {
         ~cards.indexOf('AC') && ~cards.indexOf('2C') && ~cards.indexOf('3C') && ~cards.indexOf('4C') && ~cards.indexOf('5C') ? 293 :
         ~cards.indexOf('AS') && ~cards.indexOf('2S') && ~cards.indexOf('3S') && ~cards.indexOf('4S') && ~cards.indexOf('5S') ? 293 :
         ~cards.indexOf('AH') && ~cards.indexOf('2H') && ~cards.indexOf('3H') && ~cards.indexOf('4H') && ~cards.indexOf('5H') ? 293 :
-        ~cards.indexOf('AD') && ~cards.indexOf('2D') && ~cards.indexOf('3D') && ~cards.indexOf('4D') && ~cards.indexOf('5D') ? 293 : 123 + rankKickers(ranks, 5)
+        ~cards.indexOf('AD') && ~cards.indexOf('2D') && ~cards.indexOf('3D') && ~cards.indexOf('4D') && ~cards.indexOf('5D') ? 293 : 123 + rankKickers(5, ranks)
       message = rank >= 293 ? 'Straight Flush' : 'Flush'
     }
   }
@@ -299,149 +300,150 @@ export function rankHandInt (_cards) {
   // Three of a kind
   if (rank === 0) {
     rank =
-      ~ranks.indexOf('AAA') ? 112 + rankKickers(ranks.replace('AAA', ''), 2) :
-      ~ranks.indexOf('KKK') ? 111 + rankKickers(ranks.replace('KKK', ''), 2) :
-      ~ranks.indexOf('QQQ') ? 110 + rankKickers(ranks.replace('QQQ', ''), 2) :
-      ~ranks.indexOf('JJJ') ? 109 + rankKickers(ranks.replace('JJJ', ''), 2) :
-      ~ranks.indexOf('TTT') ? 108 + rankKickers(ranks.replace('TTT', ''), 2) :
-      ~ranks.indexOf('999') ? 107 + rankKickers(ranks.replace('999', ''), 2) :
-      ~ranks.indexOf('888') ? 106 + rankKickers(ranks.replace('888', ''), 2) :
-      ~ranks.indexOf('777') ? 105 + rankKickers(ranks.replace('777', ''), 2) :
-      ~ranks.indexOf('666') ? 104 + rankKickers(ranks.replace('666', ''), 2) :
-      ~ranks.indexOf('555') ? 103 + rankKickers(ranks.replace('555', ''), 2) :
-      ~ranks.indexOf('444') ? 102 + rankKickers(ranks.replace('444', ''), 2) :
-      ~ranks.indexOf('333') ? 101 + rankKickers(ranks.replace('333', ''), 2) :
-      ~ranks.indexOf('222') ? 100 + rankKickers(ranks.replace('222', ''), 2) : 0
+      ~ranks.indexOf('AAA') ? 112 + rankKickers(2, remove(ranks, 'AAA')) :
+      ~ranks.indexOf('KKK') ? 111 + rankKickers(2, remove(ranks, 'KKK')) :
+      ~ranks.indexOf('QQQ') ? 110 + rankKickers(2, remove(ranks, 'QQQ')) :
+      ~ranks.indexOf('JJJ') ? 109 + rankKickers(2, remove(ranks, 'JJJ')) :
+      ~ranks.indexOf('TTT') ? 108 + rankKickers(2, remove(ranks, 'TTT')) :
+      ~ranks.indexOf('999') ? 107 + rankKickers(2, remove(ranks, '999')) :
+      ~ranks.indexOf('888') ? 106 + rankKickers(2, remove(ranks, '888')) :
+      ~ranks.indexOf('777') ? 105 + rankKickers(2, remove(ranks, '777')) :
+      ~ranks.indexOf('666') ? 104 + rankKickers(2, remove(ranks, '666')) :
+      ~ranks.indexOf('555') ? 103 + rankKickers(2, remove(ranks, '555')) :
+      ~ranks.indexOf('444') ? 102 + rankKickers(2, remove(ranks, '444')) :
+      ~ranks.indexOf('333') ? 101 + rankKickers(2, remove(ranks, '333')) :
+      ~ranks.indexOf('222') ? 100 + rankKickers(2, remove(ranks, '222')) : 0
     if (rank !== 0) { message = 'Three of a Kind' }
   }
 
   // Two pair
   if (rank === 0) {
     rank =
-      ~ranks.indexOf('AA') && ~ranks.indexOf('KK') ? 99 + rankKickers(ranks.replace('AA', '').replace('KK', ''), 1) :
-      ~ranks.indexOf('AA') && ~ranks.indexOf('QQ') ? 98 + rankKickers(ranks.replace('AA', '').replace('QQ', ''), 1) :
-      ~ranks.indexOf('AA') && ~ranks.indexOf('JJ') ? 97 + rankKickers(ranks.replace('AA', '').replace('JJ', ''), 1) :
-      ~ranks.indexOf('AA') && ~ranks.indexOf('TT') ? 96 + rankKickers(ranks.replace('AA', '').replace('TT', ''), 1) :
-      ~ranks.indexOf('AA') && ~ranks.indexOf('99') ? 95 + rankKickers(ranks.replace('AA', '').replace('99', ''), 1) :
-      ~ranks.indexOf('AA') && ~ranks.indexOf('88') ? 94 + rankKickers(ranks.replace('AA', '').replace('88', ''), 1) :
-      ~ranks.indexOf('AA') && ~ranks.indexOf('77') ? 93 + rankKickers(ranks.replace('AA', '').replace('77', ''), 1) :
-      ~ranks.indexOf('AA') && ~ranks.indexOf('66') ? 92 + rankKickers(ranks.replace('AA', '').replace('66', ''), 1) :
-      ~ranks.indexOf('AA') && ~ranks.indexOf('55') ? 91 + rankKickers(ranks.replace('AA', '').replace('55', ''), 1) :
-      ~ranks.indexOf('AA') && ~ranks.indexOf('44') ? 90 + rankKickers(ranks.replace('AA', '').replace('44', ''), 1) :
-      ~ranks.indexOf('AA') && ~ranks.indexOf('33') ? 89 + rankKickers(ranks.replace('AA', '').replace('33', ''), 1) :
-      ~ranks.indexOf('AA') && ~ranks.indexOf('22') ? 88 + rankKickers(ranks.replace('AA', '').replace('22', ''), 1) :
-      ~ranks.indexOf('KK') && ~ranks.indexOf('QQ') ? 87 + rankKickers(ranks.replace('KK', '').replace('QQ', ''), 1) :
-      ~ranks.indexOf('KK') && ~ranks.indexOf('JJ') ? 86 + rankKickers(ranks.replace('KK', '').replace('JJ', ''), 1) :
-      ~ranks.indexOf('KK') && ~ranks.indexOf('TT') ? 85 + rankKickers(ranks.replace('KK', '').replace('TT', ''), 1) :
-      ~ranks.indexOf('KK') && ~ranks.indexOf('99') ? 84 + rankKickers(ranks.replace('KK', '').replace('99', ''), 1) :
-      ~ranks.indexOf('KK') && ~ranks.indexOf('88') ? 83 + rankKickers(ranks.replace('KK', '').replace('88', ''), 1) :
-      ~ranks.indexOf('KK') && ~ranks.indexOf('77') ? 82 + rankKickers(ranks.replace('KK', '').replace('77', ''), 1) :
-      ~ranks.indexOf('KK') && ~ranks.indexOf('66') ? 81 + rankKickers(ranks.replace('KK', '').replace('66', ''), 1) :
-      ~ranks.indexOf('KK') && ~ranks.indexOf('55') ? 80 + rankKickers(ranks.replace('KK', '').replace('55', ''), 1) :
-      ~ranks.indexOf('KK') && ~ranks.indexOf('44') ? 79 + rankKickers(ranks.replace('KK', '').replace('44', ''), 1) :
-      ~ranks.indexOf('KK') && ~ranks.indexOf('33') ? 78 + rankKickers(ranks.replace('KK', '').replace('33', ''), 1) :
-      ~ranks.indexOf('KK') && ~ranks.indexOf('22') ? 77 + rankKickers(ranks.replace('KK', '').replace('22', ''), 1) :
-      ~ranks.indexOf('QQ') && ~ranks.indexOf('JJ') ? 76 + rankKickers(ranks.replace('QQ', '').replace('JJ', ''), 1) :
-      ~ranks.indexOf('QQ') && ~ranks.indexOf('TT') ? 75 + rankKickers(ranks.replace('QQ', '').replace('TT', ''), 1) :
-      ~ranks.indexOf('QQ') && ~ranks.indexOf('99') ? 74 + rankKickers(ranks.replace('QQ', '').replace('99', ''), 1) :
-      ~ranks.indexOf('QQ') && ~ranks.indexOf('88') ? 73 + rankKickers(ranks.replace('QQ', '').replace('88', ''), 1) :
-      ~ranks.indexOf('QQ') && ~ranks.indexOf('77') ? 72 + rankKickers(ranks.replace('QQ', '').replace('77', ''), 1) :
-      ~ranks.indexOf('QQ') && ~ranks.indexOf('66') ? 71 + rankKickers(ranks.replace('QQ', '').replace('66', ''), 1) :
-      ~ranks.indexOf('QQ') && ~ranks.indexOf('55') ? 70 + rankKickers(ranks.replace('QQ', '').replace('55', ''), 1) :
-      ~ranks.indexOf('QQ') && ~ranks.indexOf('44') ? 69 + rankKickers(ranks.replace('QQ', '').replace('44', ''), 1) :
-      ~ranks.indexOf('QQ') && ~ranks.indexOf('33') ? 68 + rankKickers(ranks.replace('QQ', '').replace('33', ''), 1) :
-      ~ranks.indexOf('QQ') && ~ranks.indexOf('22') ? 67 + rankKickers(ranks.replace('QQ', '').replace('22', ''), 1) :
-      ~ranks.indexOf('JJ') && ~ranks.indexOf('TT') ? 66 + rankKickers(ranks.replace('JJ', '').replace('TT', ''), 1) :
-      ~ranks.indexOf('JJ') && ~ranks.indexOf('99') ? 65 + rankKickers(ranks.replace('JJ', '').replace('99', ''), 1) :
-      ~ranks.indexOf('JJ') && ~ranks.indexOf('88') ? 64 + rankKickers(ranks.replace('JJ', '').replace('88', ''), 1) :
-      ~ranks.indexOf('JJ') && ~ranks.indexOf('77') ? 63 + rankKickers(ranks.replace('JJ', '').replace('77', ''), 1) :
-      ~ranks.indexOf('JJ') && ~ranks.indexOf('66') ? 62 + rankKickers(ranks.replace('JJ', '').replace('66', ''), 1) :
-      ~ranks.indexOf('JJ') && ~ranks.indexOf('55') ? 61 + rankKickers(ranks.replace('JJ', '').replace('55', ''), 1) :
-      ~ranks.indexOf('JJ') && ~ranks.indexOf('44') ? 60 + rankKickers(ranks.replace('JJ', '').replace('44', ''), 1) :
-      ~ranks.indexOf('JJ') && ~ranks.indexOf('33') ? 59 + rankKickers(ranks.replace('JJ', '').replace('33', ''), 1) :
-      ~ranks.indexOf('JJ') && ~ranks.indexOf('22') ? 58 + rankKickers(ranks.replace('JJ', '').replace('22', ''), 1) :
-      ~ranks.indexOf('TT') && ~ranks.indexOf('99') ? 57 + rankKickers(ranks.replace('TT', '').replace('99', ''), 1) :
-      ~ranks.indexOf('TT') && ~ranks.indexOf('88') ? 56 + rankKickers(ranks.replace('TT', '').replace('88', ''), 1) :
-      ~ranks.indexOf('TT') && ~ranks.indexOf('77') ? 55 + rankKickers(ranks.replace('TT', '').replace('77', ''), 1) :
-      ~ranks.indexOf('TT') && ~ranks.indexOf('66') ? 54 + rankKickers(ranks.replace('TT', '').replace('66', ''), 1) :
-      ~ranks.indexOf('TT') && ~ranks.indexOf('55') ? 53 + rankKickers(ranks.replace('TT', '').replace('55', ''), 1) :
-      ~ranks.indexOf('TT') && ~ranks.indexOf('44') ? 52 + rankKickers(ranks.replace('TT', '').replace('44', ''), 1) :
-      ~ranks.indexOf('TT') && ~ranks.indexOf('33') ? 51 + rankKickers(ranks.replace('TT', '').replace('33', ''), 1) :
-      ~ranks.indexOf('TT') && ~ranks.indexOf('22') ? 50 + rankKickers(ranks.replace('TT', '').replace('22', ''), 1) :
-      ~ranks.indexOf('99') && ~ranks.indexOf('88') ? 49 + rankKickers(ranks.replace('99', '').replace('88', ''), 1) :
-      ~ranks.indexOf('99') && ~ranks.indexOf('77') ? 48 + rankKickers(ranks.replace('99', '').replace('77', ''), 1) :
-      ~ranks.indexOf('99') && ~ranks.indexOf('66') ? 47 + rankKickers(ranks.replace('99', '').replace('66', ''), 1) :
-      ~ranks.indexOf('99') && ~ranks.indexOf('55') ? 46 + rankKickers(ranks.replace('99', '').replace('55', ''), 1) :
-      ~ranks.indexOf('99') && ~ranks.indexOf('44') ? 45 + rankKickers(ranks.replace('99', '').replace('44', ''), 1) :
-      ~ranks.indexOf('99') && ~ranks.indexOf('33') ? 44 + rankKickers(ranks.replace('99', '').replace('33', ''), 1) :
-      ~ranks.indexOf('99') && ~ranks.indexOf('22') ? 43 + rankKickers(ranks.replace('99', '').replace('22', ''), 1) :
-      ~ranks.indexOf('88') && ~ranks.indexOf('77') ? 42 + rankKickers(ranks.replace('88', '').replace('77', ''), 1) :
-      ~ranks.indexOf('88') && ~ranks.indexOf('66') ? 41 + rankKickers(ranks.replace('88', '').replace('66', ''), 1) :
-      ~ranks.indexOf('88') && ~ranks.indexOf('55') ? 40 + rankKickers(ranks.replace('88', '').replace('55', ''), 1) :
-      ~ranks.indexOf('88') && ~ranks.indexOf('44') ? 39 + rankKickers(ranks.replace('88', '').replace('44', ''), 1) :
-      ~ranks.indexOf('88') && ~ranks.indexOf('33') ? 38 + rankKickers(ranks.replace('88', '').replace('33', ''), 1) :
-      ~ranks.indexOf('88') && ~ranks.indexOf('22') ? 37 + rankKickers(ranks.replace('88', '').replace('22', ''), 1) :
-      ~ranks.indexOf('77') && ~ranks.indexOf('66') ? 36 + rankKickers(ranks.replace('77', '').replace('66', ''), 1) :
-      ~ranks.indexOf('77') && ~ranks.indexOf('55') ? 35 + rankKickers(ranks.replace('77', '').replace('55', ''), 1) :
-      ~ranks.indexOf('77') && ~ranks.indexOf('44') ? 34 + rankKickers(ranks.replace('77', '').replace('44', ''), 1) :
-      ~ranks.indexOf('77') && ~ranks.indexOf('33') ? 33 + rankKickers(ranks.replace('77', '').replace('33', ''), 1) :
-      ~ranks.indexOf('77') && ~ranks.indexOf('22') ? 32 + rankKickers(ranks.replace('77', '').replace('22', ''), 1) :
-      ~ranks.indexOf('66') && ~ranks.indexOf('55') ? 31 + rankKickers(ranks.replace('66', '').replace('55', ''), 1) :
-      ~ranks.indexOf('66') && ~ranks.indexOf('44') ? 30 + rankKickers(ranks.replace('66', '').replace('44', ''), 1) :
-      ~ranks.indexOf('66') && ~ranks.indexOf('33') ? 29 + rankKickers(ranks.replace('66', '').replace('33', ''), 1) :
-      ~ranks.indexOf('66') && ~ranks.indexOf('22') ? 28 + rankKickers(ranks.replace('66', '').replace('22', ''), 1) :
-      ~ranks.indexOf('55') && ~ranks.indexOf('44') ? 27 + rankKickers(ranks.replace('55', '').replace('44', ''), 1) :
-      ~ranks.indexOf('55') && ~ranks.indexOf('33') ? 26 + rankKickers(ranks.replace('55', '').replace('33', ''), 1) :
-      ~ranks.indexOf('55') && ~ranks.indexOf('22') ? 25 + rankKickers(ranks.replace('55', '').replace('22', ''), 1) :
-      ~ranks.indexOf('44') && ~ranks.indexOf('33') ? 24 + rankKickers(ranks.replace('44', '').replace('33', ''), 1) :
-      ~ranks.indexOf('44') && ~ranks.indexOf('22') ? 23 + rankKickers(ranks.replace('44', '').replace('22', ''), 1) :
-      ~ranks.indexOf('33') && ~ranks.indexOf('22') ? 22 + rankKickers(ranks.replace('33', '').replace('22', ''), 1) : 0
+      ~ranks.indexOf('AA') && ~ranks.indexOf('KK') ? 99 + rankKickers(1, remove(ranks, 'AA', 'KK')) :
+      ~ranks.indexOf('AA') && ~ranks.indexOf('QQ') ? 98 + rankKickers(1, remove(ranks, 'AA', 'QQ')) :
+      ~ranks.indexOf('AA') && ~ranks.indexOf('JJ') ? 97 + rankKickers(1, remove(ranks, 'AA', 'JJ')) :
+      ~ranks.indexOf('AA') && ~ranks.indexOf('TT') ? 96 + rankKickers(1, remove(ranks, 'AA', 'TT')) :
+      ~ranks.indexOf('AA') && ~ranks.indexOf('99') ? 95 + rankKickers(1, remove(ranks, 'AA', '99')) :
+      ~ranks.indexOf('AA') && ~ranks.indexOf('88') ? 94 + rankKickers(1, remove(ranks, 'AA', '88')) :
+      ~ranks.indexOf('AA') && ~ranks.indexOf('77') ? 93 + rankKickers(1, remove(ranks, 'AA', '77')) :
+      ~ranks.indexOf('AA') && ~ranks.indexOf('66') ? 92 + rankKickers(1, remove(ranks, 'AA', '66')) :
+      ~ranks.indexOf('AA') && ~ranks.indexOf('55') ? 91 + rankKickers(1, remove(ranks, 'AA', '55')) :
+      ~ranks.indexOf('AA') && ~ranks.indexOf('44') ? 90 + rankKickers(1, remove(ranks, 'AA', '44')) :
+      ~ranks.indexOf('AA') && ~ranks.indexOf('33') ? 89 + rankKickers(1, remove(ranks, 'AA', '33')) :
+      ~ranks.indexOf('AA') && ~ranks.indexOf('22') ? 88 + rankKickers(1, remove(ranks, 'AA', '22')) :
+      ~ranks.indexOf('KK') && ~ranks.indexOf('QQ') ? 87 + rankKickers(1, remove(ranks, 'KK', 'QQ')) :
+      ~ranks.indexOf('KK') && ~ranks.indexOf('JJ') ? 86 + rankKickers(1, remove(ranks, 'KK', 'JJ')) :
+      ~ranks.indexOf('KK') && ~ranks.indexOf('TT') ? 85 + rankKickers(1, remove(ranks, 'KK', 'TT')) :
+      ~ranks.indexOf('KK') && ~ranks.indexOf('99') ? 84 + rankKickers(1, remove(ranks, 'KK', '99')) :
+      ~ranks.indexOf('KK') && ~ranks.indexOf('88') ? 83 + rankKickers(1, remove(ranks, 'KK', '88')) :
+      ~ranks.indexOf('KK') && ~ranks.indexOf('77') ? 82 + rankKickers(1, remove(ranks, 'KK', '77')) :
+      ~ranks.indexOf('KK') && ~ranks.indexOf('66') ? 81 + rankKickers(1, remove(ranks, 'KK', '66')) :
+      ~ranks.indexOf('KK') && ~ranks.indexOf('55') ? 80 + rankKickers(1, remove(ranks, 'KK', '55')) :
+      ~ranks.indexOf('KK') && ~ranks.indexOf('44') ? 79 + rankKickers(1, remove(ranks, 'KK', '44')) :
+      ~ranks.indexOf('KK') && ~ranks.indexOf('33') ? 78 + rankKickers(1, remove(ranks, 'KK', '33')) :
+      ~ranks.indexOf('KK') && ~ranks.indexOf('22') ? 77 + rankKickers(1, remove(ranks, 'KK', '22')) :
+      ~ranks.indexOf('QQ') && ~ranks.indexOf('JJ') ? 76 + rankKickers(1, remove(ranks, 'QQ', 'JJ')) :
+      ~ranks.indexOf('QQ') && ~ranks.indexOf('TT') ? 75 + rankKickers(1, remove(ranks, 'QQ', 'TT')) :
+      ~ranks.indexOf('QQ') && ~ranks.indexOf('99') ? 74 + rankKickers(1, remove(ranks, 'QQ', '99')) :
+      ~ranks.indexOf('QQ') && ~ranks.indexOf('88') ? 73 + rankKickers(1, remove(ranks, 'QQ', '88')) :
+      ~ranks.indexOf('QQ') && ~ranks.indexOf('77') ? 72 + rankKickers(1, remove(ranks, 'QQ', '77')) :
+      ~ranks.indexOf('QQ') && ~ranks.indexOf('66') ? 71 + rankKickers(1, remove(ranks, 'QQ', '66')) :
+      ~ranks.indexOf('QQ') && ~ranks.indexOf('55') ? 70 + rankKickers(1, remove(ranks, 'QQ', '55')) :
+      ~ranks.indexOf('QQ') && ~ranks.indexOf('44') ? 69 + rankKickers(1, remove(ranks, 'QQ', '44')) :
+      ~ranks.indexOf('QQ') && ~ranks.indexOf('33') ? 68 + rankKickers(1, remove(ranks, 'QQ', '33')) :
+      ~ranks.indexOf('QQ') && ~ranks.indexOf('22') ? 67 + rankKickers(1, remove(ranks, 'QQ', '22')) :
+      ~ranks.indexOf('JJ') && ~ranks.indexOf('TT') ? 66 + rankKickers(1, remove(ranks, 'JJ', 'TT')) :
+      ~ranks.indexOf('JJ') && ~ranks.indexOf('99') ? 65 + rankKickers(1, remove(ranks, 'JJ', '99')) :
+      ~ranks.indexOf('JJ') && ~ranks.indexOf('88') ? 64 + rankKickers(1, remove(ranks, 'JJ', '88')) :
+      ~ranks.indexOf('JJ') && ~ranks.indexOf('77') ? 63 + rankKickers(1, remove(ranks, 'JJ', '77')) :
+      ~ranks.indexOf('JJ') && ~ranks.indexOf('66') ? 62 + rankKickers(1, remove(ranks, 'JJ', '66')) :
+      ~ranks.indexOf('JJ') && ~ranks.indexOf('55') ? 61 + rankKickers(1, remove(ranks, 'JJ', '55')) :
+      ~ranks.indexOf('JJ') && ~ranks.indexOf('44') ? 60 + rankKickers(1, remove(ranks, 'JJ', '44')) :
+      ~ranks.indexOf('JJ') && ~ranks.indexOf('33') ? 59 + rankKickers(1, remove(ranks, 'JJ', '33')) :
+      ~ranks.indexOf('JJ') && ~ranks.indexOf('22') ? 58 + rankKickers(1, remove(ranks, 'JJ', '22')) :
+      ~ranks.indexOf('TT') && ~ranks.indexOf('99') ? 57 + rankKickers(1, remove(ranks, 'TT', '99')) :
+      ~ranks.indexOf('TT') && ~ranks.indexOf('88') ? 56 + rankKickers(1, remove(ranks, 'TT', '88')) :
+      ~ranks.indexOf('TT') && ~ranks.indexOf('77') ? 55 + rankKickers(1, remove(ranks, 'TT', '77')) :
+      ~ranks.indexOf('TT') && ~ranks.indexOf('66') ? 54 + rankKickers(1, remove(ranks, 'TT', '66')) :
+      ~ranks.indexOf('TT') && ~ranks.indexOf('55') ? 53 + rankKickers(1, remove(ranks, 'TT', '55')) :
+      ~ranks.indexOf('TT') && ~ranks.indexOf('44') ? 52 + rankKickers(1, remove(ranks, 'TT', '44')) :
+      ~ranks.indexOf('TT') && ~ranks.indexOf('33') ? 51 + rankKickers(1, remove(ranks, 'TT', '33')) :
+      ~ranks.indexOf('TT') && ~ranks.indexOf('22') ? 50 + rankKickers(1, remove(ranks, 'TT', '22')) :
+      ~ranks.indexOf('99') && ~ranks.indexOf('88') ? 49 + rankKickers(1, remove(ranks, '99', '88')) :
+      ~ranks.indexOf('99') && ~ranks.indexOf('77') ? 48 + rankKickers(1, remove(ranks, '99', '77')) :
+      ~ranks.indexOf('99') && ~ranks.indexOf('66') ? 47 + rankKickers(1, remove(ranks, '99', '66')) :
+      ~ranks.indexOf('99') && ~ranks.indexOf('55') ? 46 + rankKickers(1, remove(ranks, '99', '55')) :
+      ~ranks.indexOf('99') && ~ranks.indexOf('44') ? 45 + rankKickers(1, remove(ranks, '99', '44')) :
+      ~ranks.indexOf('99') && ~ranks.indexOf('33') ? 44 + rankKickers(1, remove(ranks, '99', '33')) :
+      ~ranks.indexOf('99') && ~ranks.indexOf('22') ? 43 + rankKickers(1, remove(ranks, '99', '22')) :
+      ~ranks.indexOf('88') && ~ranks.indexOf('77') ? 42 + rankKickers(1, remove(ranks, '88', '77')) :
+      ~ranks.indexOf('88') && ~ranks.indexOf('66') ? 41 + rankKickers(1, remove(ranks, '88', '66')) :
+      ~ranks.indexOf('88') && ~ranks.indexOf('55') ? 40 + rankKickers(1, remove(ranks, '88', '55')) :
+      ~ranks.indexOf('88') && ~ranks.indexOf('44') ? 39 + rankKickers(1, remove(ranks, '88', '44')) :
+      ~ranks.indexOf('88') && ~ranks.indexOf('33') ? 38 + rankKickers(1, remove(ranks, '88', '33')) :
+      ~ranks.indexOf('88') && ~ranks.indexOf('22') ? 37 + rankKickers(1, remove(ranks, '88', '22')) :
+      ~ranks.indexOf('77') && ~ranks.indexOf('66') ? 36 + rankKickers(1, remove(ranks, '77', '66')) :
+      ~ranks.indexOf('77') && ~ranks.indexOf('55') ? 35 + rankKickers(1, remove(ranks, '77', '55')) :
+      ~ranks.indexOf('77') && ~ranks.indexOf('44') ? 34 + rankKickers(1, remove(ranks, '77', '44')) :
+      ~ranks.indexOf('77') && ~ranks.indexOf('33') ? 33 + rankKickers(1, remove(ranks, '77', '33')) :
+      ~ranks.indexOf('77') && ~ranks.indexOf('22') ? 32 + rankKickers(1, remove(ranks, '77', '22')) :
+      ~ranks.indexOf('66') && ~ranks.indexOf('55') ? 31 + rankKickers(1, remove(ranks, '66', '55')) :
+      ~ranks.indexOf('66') && ~ranks.indexOf('44') ? 30 + rankKickers(1, remove(ranks, '66', '44')) :
+      ~ranks.indexOf('66') && ~ranks.indexOf('33') ? 29 + rankKickers(1, remove(ranks, '66', '33')) :
+      ~ranks.indexOf('66') && ~ranks.indexOf('22') ? 28 + rankKickers(1, remove(ranks, '66', '22')) :
+      ~ranks.indexOf('55') && ~ranks.indexOf('44') ? 27 + rankKickers(1, remove(ranks, '55', '44')) :
+      ~ranks.indexOf('55') && ~ranks.indexOf('33') ? 26 + rankKickers(1, remove(ranks, '55', '33')) :
+      ~ranks.indexOf('55') && ~ranks.indexOf('22') ? 25 + rankKickers(1, remove(ranks, '55', '22')) :
+      ~ranks.indexOf('44') && ~ranks.indexOf('33') ? 24 + rankKickers(1, remove(ranks, '44', '33')) :
+      ~ranks.indexOf('44') && ~ranks.indexOf('22') ? 23 + rankKickers(1, remove(ranks, '44', '22')) :
+      ~ranks.indexOf('33') && ~ranks.indexOf('22') ? 22 + rankKickers(1, remove(ranks, '33', '22')) : 0
     if (rank !== 0) { message = 'Two Pair' }
   }
 
   // One Pair
   if (rank === 0) {
     rank =
-      ~ranks.indexOf('AA') ? 21 + rankKickers(ranks.replace('AA', ''), 3) :
-      ~ranks.indexOf('KK') ? 20 + rankKickers(ranks.replace('KK', ''), 3) :
-      ~ranks.indexOf('QQ') ? 19 + rankKickers(ranks.replace('QQ', ''), 3) :
-      ~ranks.indexOf('JJ') ? 18 + rankKickers(ranks.replace('JJ', ''), 3) :
-      ~ranks.indexOf('TT') ? 17 + rankKickers(ranks.replace('TT', ''), 3) :
-      ~ranks.indexOf('99') ? 16 + rankKickers(ranks.replace('99', ''), 3) :
-      ~ranks.indexOf('88') ? 15 + rankKickers(ranks.replace('88', ''), 3) :
-      ~ranks.indexOf('77') ? 14 + rankKickers(ranks.replace('77', ''), 3) :
-      ~ranks.indexOf('66') ? 13 + rankKickers(ranks.replace('66', ''), 3) :
-      ~ranks.indexOf('55') ? 12 + rankKickers(ranks.replace('55', ''), 3) :
-      ~ranks.indexOf('44') ? 11 + rankKickers(ranks.replace('44', ''), 3) :
-      ~ranks.indexOf('33') ? 10 + rankKickers(ranks.replace('33', ''), 3) :
-      ~ranks.indexOf('22') ?  9 + rankKickers(ranks.replace('22', ''), 3) : 0
+      ~ranks.indexOf('AA') ? 21 + rankKickers(3, remove(ranks, 'AA')) :
+      ~ranks.indexOf('KK') ? 20 + rankKickers(3, remove(ranks, 'KK')) :
+      ~ranks.indexOf('QQ') ? 19 + rankKickers(3, remove(ranks, 'QQ')) :
+      ~ranks.indexOf('JJ') ? 18 + rankKickers(3, remove(ranks, 'JJ')) :
+      ~ranks.indexOf('TT') ? 17 + rankKickers(3, remove(ranks, 'TT')) :
+      ~ranks.indexOf('99') ? 16 + rankKickers(3, remove(ranks, '99')) :
+      ~ranks.indexOf('88') ? 15 + rankKickers(3, remove(ranks, '88')) :
+      ~ranks.indexOf('77') ? 14 + rankKickers(3, remove(ranks, '77')) :
+      ~ranks.indexOf('66') ? 13 + rankKickers(3, remove(ranks, '66')) :
+      ~ranks.indexOf('55') ? 12 + rankKickers(3, remove(ranks, '55')) :
+      ~ranks.indexOf('44') ? 11 + rankKickers(3, remove(ranks, '44')) :
+      ~ranks.indexOf('33') ? 10 + rankKickers(3, remove(ranks, '33')) :
+      ~ranks.indexOf('22') ?  9 + rankKickers(3, remove(ranks, '22')) : 0
     if (rank !== 0) { message = 'Pair' }
   }
 
   // High Card
   if (rank === 0) {
     rank =
-       ~ranks.indexOf('A') ? 8 + rankKickers(ranks.replace('A', ''), 4) :
-       ~ranks.indexOf('K') ? 7 + rankKickers(ranks.replace('K', ''), 4) :
-       ~ranks.indexOf('Q') ? 6 + rankKickers(ranks.replace('Q', ''), 4) :
-       ~ranks.indexOf('J') ? 5 + rankKickers(ranks.replace('J', ''), 4) :
-       ~ranks.indexOf('T') ? 4 + rankKickers(ranks.replace('T', ''), 4) :
-       ~ranks.indexOf('9') ? 3 + rankKickers(ranks.replace('9', ''), 4) :
-       ~ranks.indexOf('8') ? 2 + rankKickers(ranks.replace('8', ''), 4) :
-       ~ranks.indexOf('7') ? 1 + rankKickers(ranks.replace('7', ''), 4) : 0
+       ~ranks.indexOf('A') ? 8 + rankKickers(remove(ranks, 'A'), 4) :
+       ~ranks.indexOf('K') ? 7 + rankKickers(remove(ranks, 'K'), 4) :
+       ~ranks.indexOf('Q') ? 6 + rankKickers(remove(ranks, 'Q'), 4) :
+       ~ranks.indexOf('J') ? 5 + rankKickers(remove(ranks, 'J'), 4) :
+       ~ranks.indexOf('T') ? 4 + rankKickers(remove(ranks, 'T'), 4) :
+       ~ranks.indexOf('9') ? 3 + rankKickers(remove(ranks, '9'), 4) :
+       ~ranks.indexOf('8') ? 2 + rankKickers(remove(ranks, '8'), 4) :
+       ~ranks.indexOf('7') ? 1 + rankKickers(remove(ranks, '7'), 4) : 0
     if (rank !== 0) { message = 'High Card' }
   }
 
+  // console.log('hand:', { rank, message })
   return { rank, message }
 }
 
 export function rankHands (hands) {
-  var i, myResult
+  var i = 0, rank
 
-  for (i = 0; i < hands.length; i++) {
-    myResult = rankHandInt(hands[i].cards)
-    hands[i].rank = myResult.rank
-    hands[i].message = myResult.message
+  for (; i < hands.length; i++) {
+    rank = rankHandInt(hands[i].cards)
+    hands[i].rank = rank.rank
+    hands[i].message = rank.message
   }
 
   return hands

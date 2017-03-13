@@ -6,16 +6,19 @@
 ``import { value, transform, compute, px, observable_property } from '../lib/dom/observable'``
 ``import polarToCartesian from '../lib/calc/polarToCartesian'``
 # ``import xhr from '../lib/xhr'``
-``import { Table, Player, rankHand } from '../lib/game/texas-holdem'``
+``import { Table, Player } from '../lib/game/texas-holdem'``
+``import { holdem_table } from '../lib/game/texas-holdem-logic'``
+``import { rankHandInt } from '../lib/game/rank-hand'``
 # ``import { rand, rand2, randomId, randomEl, randomIds, randomPos, randomDate, randomCharactor, between, lipsum, word, obj } from '../lib/random'``
 
-# ``import StateMachine from '../elements/state-machine'``
+``import StateMachine from '../elements/state-machine'``
 # ``import { Modal } from '../elements/state-machine'``
 ``import '../elements/svg/poke-her-card'``
 # ``import '../elements/svg/poke-her-playa'``
 
 # special_elements['poke-her-card'] = 2 # opts, fn
-# window.custom-elements.define \poem-state-machine, StateMachine
+special_elements['poem-state-machine'] = 2 # opts, fn
+window.custom-elements.define \poem-state-machine, StateMachine
 # window.custom-elements.define \poem-modal, Modal
 # window.custom-elements.define \poke-her-card, Card
 
@@ -52,8 +55,13 @@ foto = ({h}, opts = {}) ->
 # TODO: otro plugin: playaz-club
 poke-her-starz = ({config, G, set_config, set_data}) ->
   window.G = G
-  # G.width (v) !-> console.log \width, v
+  G.width (v, old_width) !-> console.log \width, old_width, '->', v
   # G.orientation (v) !-> console.log 'orientation', v
+
+  table = holdem_table 50, 100, 4, 10, 100, 1000
+  # table.add-player 'kenny', 1000
+
+  console.log 'table', table
 
   table = new Table 50, 100, 4, 10, 100, 1000 # smallBlind, bigBlind, minPlayers, maxPlayers, minBuyIn, maxBuyIn
   table.add-player 'bob', 1000
@@ -62,37 +70,34 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   table.add-player 'john', 1000
   table.start-game!
 
-  # for p in table.players
-  #   if Math.random! > 0.8 and rank-hand p.hand
-  #     p.bet Math.random! * 20
-  #   else p.call!
   p = table.players
+  # deal
   p.0.Call!
   p.1.Call!
   p.2.Call!
   p.3.Call!
 
+  # flop
   p.0.Call!
   p.1.Call!
   p.2.Call!
   p.3.Call!
 
+  # turn
+  p.1.Bet 2
   p.0.Bet 50
-  p.1.Bet 1
-  p.2.Call!
+  p.2.Bet 50
   p.3.Call!
+  # needed to finish the round because jane (p.1) only bet 2 which does not match the maxBet amount (50)
+  p.1.Call!
 
+  # river
   p.0.Call!
   p.1.Call!
   p.2.Call!
   p.3.Call!
-
-  # I shouldn't need to call to end the game... but it looks like I do
-  # debugger
-  p.0.Call!
-  p.1.Call!
-  p.2.Call!
-  p.3.Call!
+  # showdown!!
+  # show winners
 
   console.log table.game
 
@@ -176,9 +181,10 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   window.playaz =\
   playaz = new RenderingArray G, (id, idx, {h}) ->
-    h.cleanupFuncs.push pos = playa-pos idx
-    h.cleanupFuncs.push x = transform pos, (p) -> "#{p.x}px"
-    h.cleanupFuncs.push y = transform pos, (p) -> "#{p.y}px"
+    # do these need to save off functions?
+    pos = playa-pos idx
+    x = transform pos, (p) -> "#{p.x}px"
+    y = transform pos, (p) -> "#{p.y}px"
     h \div style: {
       border: 'solid 1px #000'
       # border-radius: '8px'
@@ -195,17 +201,18 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   # two things:
   # 1. RenderingArray should have a cleanup function (to clean up everything in the array)
   # 2. perhaps it may be a good idea to clean up o_length when calling the above cleanup function
-  playaz.d.o_length num-playas
+  # this needs fixing
+  playaz.obv_len num-playas
 
-  cards.d.push \AH, \2H, \3H #, \4H, \5H
-  hand.d.push \AS, \AD
-  playaz.d.push 'kenny', 'jenny'#, 'jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde'
+  cards.push \AH, \2H, \3H #, \4H, \5H
+  hand.push \AS, \AD
+  playaz.push 'kenny', 'jenny'#, 'jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde'
   more_playaz = ['jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde']
 
   ii = set-interval !->
     if p = more_playaz.shift!
       console.log 'adding', p
-      playaz.d.push p
+      playaz.push p
     else clear-interval ii
   , 2000
 
@@ -219,110 +226,73 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
     cards, hand, playaz
 
-    # window.machina =\
-    # h \poem-state-machine, {width: 40, active: false}, ({h}) ->
-    #   # o = @observables
-    #   # style
-    #   @style '''
-    #   :host {
-    #     color: #f00;
-    #     position: absolute;
-    #   }
-    #   '''
-    #
-    #   set-timeout !~>
-    #     @style '''
-    #     :host {
-    #       color: #0f0;
-    #     }
-    #     '''
-    #   , 3000
-    #
-    #   # attrs:
-    #   # width = @attr \width, 40
-    #   height = @attr \height, 40
-    #   img-height = @attr \img-height, 40#, true
-    #
-    #   # computed:
-    #   search-width = compute [G.width], (w) -> w / 3
-    #   search-left = compute [G.width], (w) -> w / 3
-    #
-    #   # components:
-    #   common-div = h \div.common, "common div"
-    #   search-box = h \input.search-box.a-05,
-    #     type: \text
-    #     placeholder: 'search...'
-    #     style:
-    #       opacity: 0.4
-    #       position: \fixed
-    #       width: px search-width
-    #       left: px search-left
-    #     observe:
-    #       input: (v) !->
-    #         console.log \observed.input, v
-    #       focus: (v) !->
-    #         search-box.style.top = "#{if v => 0 else -10}px"
-    #         search-box.style.opacity = if v => 1 else 0.4
-    #       keyup: (v) !->
-    #         console.log 'send it!!', v
-    #       # 'keyup.event': (ev) -> ev.which is 13 and not ev.shift-key
-    #
-    #   # h \img.avatar,
-    #   #   src: 'https://secure.gravatar.com/avatar/4e9e35e45c14daca038165a11cde7464'
-    #   #   style:
-    #   #     position: \absolute
-    #   #     width: img_width |> px
-    #   #     height: img_height |> px
-    #   #     top: img_padding |> px
-    #   #     left: top_right |> px
-    #   arr = []
-    #
-    #   # states:
-    #   '/': ->
-    #     set-timeout ( !~> @now \loaded ), 2000ms
-    #     h \div "loading..."
-    #
-    #   disconnected: !->
-    #     console.log \disconnected!
-    #
-    #   loaded: ->
-    #     set-timeout ( !~> @now \sort1 ), 2000ms
-    #     @_els.arr = arr
-    #     for i til 20
-    #       n = Math.random! * 20
-    #       arr.push n
-    #       h \div c: (n.toFixed 1 .replace '.', '-'), "#{n}"
-    #     # return [
-    #     #   h \div.loaded.state-1 "state one", img-height
-    #     #   common-div
-    #     #   search-box
-    #     # ]
-    #
-    #   state2: ->
-    #     set-timeout ( !~> @now \state3 ), 2000ms
-    #     return [
-    #       search-box
-    #       common-div
-    #       h \div.state-2 "state two"
-    #       h \div.state-2 "state two", img-height
-    #     ]
-    #
-    #   state3: ->
-    #     set-timeout ( !~> @now \sort1 ), 2000ms
-    #     return [
-    #       common-div
-    #       h \div.state-3 "state three"
-    #       h \div.state-3 "state three", img-height
-    #       search-box
-    #     ]
-    #
-    #   sort1: ->
-    #     set-timeout ( !~> @now \sort2 ), 2000ms
-    #     @_els.quiksort (a, b) -> (a.text-content * 1) - (b.text-content * 1)
-    #
-    #   sort2: ->
-    #     # set-timeout ( !~> @now \sort1 ), 2000ms
-    #     @_els.quiksort (a, b) -> (b.text-content * 1) - (a.text-content * 1)
+    window.machina =\
+    h \poem-state-machine, {width: 40, active: false}, ({h}) ->
+      # o = @observables
+      # style
+      @style '''
+      :host {
+        color: #f00;
+        position: absolute;
+      }
+      '''
+
+      # attrs:
+      # width = @attr \width, 40
+      height = @attr \height, 40
+      img-height = @attr \img-height, 40#, true
+
+      # computed:
+      search-width = compute [G.width], (w) -> w / 3
+      search-left = compute [G.width], (w) -> w / 3
+
+      # components:
+      common-div = h \div.common, "common div"
+      search-box = h \input.search-box.a-05,
+        type: \text
+        placeholder: 'search...'
+        style:
+          opacity: 0.4
+          position: \fixed
+          width: px search-width
+          left: px search-left
+        observe:
+          input: (v) !->
+            console.log \observed.input, v
+          focus: (v) !->
+            search-box.style.top = "#{if v => 0 else -10}px"
+            search-box.style.opacity = if v => 1 else 0.4
+          keyup: (v) !->
+            console.log 'send it!!', v
+          # 'keyup.event': (ev) -> ev.which is 13 and not ev.shift-key
+
+      # h \img.avatar,
+      #   src: 'https://secure.gravatar.com/avatar/4e9e35e45c14daca038165a11cde7464'
+      #   style:
+      #     position: \absolute
+      #     width: img_width |> px
+      #     height: img_height |> px
+      #     top: img_padding |> px
+      #     left: top_right |> px
+      arr = []
+
+      # states:
+      '/': ->
+        # splash screen + menu
+        # logo + slogan
+        h \div "poke her starz"
+
+      '/table/:table': (id) ->
+        h \div, "table: #{id}"
+
+      '/tables': ->
+        tables = new RenderingArray G, (id, idx, {h}) ->
+
+        h \div "tables:"
+
+      disconnected: !->
+        console.log \disconnected!
+
 
     # h \div.top-bar.col-12, ->
     #   img_width = value 40
