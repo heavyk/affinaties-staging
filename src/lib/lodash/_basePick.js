@@ -1,4 +1,5 @@
-import arrayReduce from './_arrayReduce.js';
+import basePickBy from './_basePickBy.js';
+import hasIn from './hasIn.js';
 
 'use strict';
 
@@ -8,17 +9,13 @@ import arrayReduce from './_arrayReduce.js';
  *
  * @private
  * @param {Object} object The source object.
- * @param {string[]} props The property identifiers to pick.
+ * @param {string[]} paths The property paths to pick.
  * @returns {Object} Returns the new object.
  */
-function basePick(object, props) {
-  object = Object(object);
-  return arrayReduce(props, function(result, key) {
-    if (key in object) {
-      result[key] = object[key];
-    }
-    return result;
-  }, {});
+function basePick(object, paths) {
+  return basePickBy(object, paths, function(value, path) {
+    return hasIn(object, path);
+  });
 }
 
 export default basePick;

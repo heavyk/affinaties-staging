@@ -1,25 +1,25 @@
 import arrayMap from './_arrayMap.js';
 import baseIntersection from './_baseIntersection.js';
 import baseIteratee from './_baseIteratee.js';
+import baseRest from './_baseRest.js';
 import castArrayLikeObject from './_castArrayLikeObject.js';
 import last from './last.js';
-import rest from './rest.js';
 
 'use strict';
 
 /**
  * This method is like `_.intersection` except that it accepts `iteratee`
  * which is invoked for each element of each `arrays` to generate the criterion
- * by which they're compared. Result values are chosen from the first array.
- * The iteratee is invoked with one argument: (value).
+ * by which they're compared. The order and references of result values are
+ * determined by the first array. The iteratee is invoked with one argument:
+ * (value).
  *
  * @static
  * @memberOf _
  * @since 4.0.0
  * @category Array
  * @param {...Array} [arrays] The arrays to inspect.
- * @param {Array|Function|Object|string} [iteratee=_.identity]
- *  The iteratee invoked per element.
+ * @param {Function} [iteratee=_.identity] The iteratee invoked per element.
  * @returns {Array} Returns the new array of intersecting values.
  * @example
  *
@@ -30,7 +30,7 @@ import rest from './rest.js';
  * _.intersectionBy([{ 'x': 1 }], [{ 'x': 2 }, { 'x': 1 }], 'x');
  * // => [{ 'x': 1 }]
  */
-var intersectionBy = rest(function(arrays) {
+var intersectionBy = baseRest(function(arrays) {
   var iteratee = last(arrays),
       mapped = arrayMap(arrays, castArrayLikeObject);
 
@@ -40,7 +40,7 @@ var intersectionBy = rest(function(arrays) {
     mapped.pop();
   }
   return (mapped.length && mapped[0] === arrays[0])
-    ? baseIntersection(mapped, baseIteratee(iteratee))
+    ? baseIntersection(mapped, baseIteratee(iteratee, 2))
     : [];
 });
 

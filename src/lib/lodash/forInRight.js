@@ -1,5 +1,5 @@
 import baseForRight from './_baseForRight.js';
-import baseIteratee from './_baseIteratee.js';
+import castFunction from './_castFunction.js';
 import keysIn from './keysIn.js';
 
 'use strict';
@@ -33,7 +33,7 @@ import keysIn from './keysIn.js';
 function forInRight(object, iteratee) {
   return object == null
     ? object
-    : baseForRight(object, baseIteratee(iteratee, 3), keysIn);
+    : baseForRight(object, castFunction(iteratee), keysIn);
 }
 
 export default forInRight;

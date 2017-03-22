@@ -1,11 +1,10 @@
-import baseFlatten from './_baseFlatten.js';
-import createWrapper from './_createWrapper.js';
-import rest from './rest.js';
+import createWrap from './_createWrap.js';
+import flatRest from './_flatRest.js';
 
 'use strict';
 
-/** Used to compose bitmasks for wrapper metadata. */
-var REARG_FLAG = 256;
+/** Used to compose bitmasks for function metadata. */
+var WRAP_REARG_FLAG = 256;
 
 /**
  * Creates a function that invokes `func` with arguments arranged according
@@ -29,8 +28,8 @@ var REARG_FLAG = 256;
  * rearged('b', 'c', 'a')
  * // => ['a', 'b', 'c']
  */
-var rearg = rest(function(func, indexes) {
-  return createWrapper(func, REARG_FLAG, undefined, undefined, undefined, baseFlatten(indexes, 1));
+var rearg = flatRest(function(func, indexes) {
+  return createWrap(func, WRAP_REARG_FLAG, undefined, undefined, undefined, indexes);
 });
 
 export default rearg;

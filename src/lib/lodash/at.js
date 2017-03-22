@@ -1,6 +1,5 @@
 import baseAt from './_baseAt.js';
-import baseFlatten from './_baseFlatten.js';
-import rest from './rest.js';
+import flatRest from './_flatRest.js';
 
 'use strict';
 
@@ -12,7 +11,7 @@ import rest from './rest.js';
  * @since 1.0.0
  * @category Object
  * @param {Object} object The object to iterate over.
- * @param {...(string|string[])} [paths] The property paths of elements to pick.
+ * @param {...(string|string[])} [paths] The property paths to pick.
  * @returns {Array} Returns the picked values.
  * @example
  *
@@ -21,8 +20,6 @@ import rest from './rest.js';
  * _.at(object, ['a[0].b.c', 'a[1]']);
  * // => [3, 4]
  */
-var at = rest(function(object, paths) {
-  return baseAt(object, baseFlatten(paths, 1));
-});
+var at = flatRest(baseAt);
 
 export default at;

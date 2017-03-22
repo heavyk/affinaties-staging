@@ -13,14 +13,13 @@ import baseWhile from './_baseWhile.js';
  * @since 3.0.0
  * @category Array
  * @param {Array} array The array to query.
- * @param {Array|Function|Object|string} [predicate=_.identity]
- *  The function invoked per iteration.
+ * @param {Function} [predicate=_.identity] The function invoked per iteration.
  * @returns {Array} Returns the slice of `array`.
  * @example
  *
  * var users = [
  *   { 'user': 'barney',  'active': false },
- *   { 'user': 'fred',    'active': false},
+ *   { 'user': 'fred',    'active': false },
  *   { 'user': 'pebbles', 'active': true }
  * ];
  *

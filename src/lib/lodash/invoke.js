@@ -1,5 +1,5 @@
 import baseInvoke from './_baseInvoke.js';
-import rest from './rest.js';
+import baseRest from './_baseRest.js';
 
 'use strict';
 
@@ -21,6 +21,6 @@ import rest from './rest.js';
  * _.invoke(object, 'a[0].b.c.slice', 1, 3);
  * // => [2, 3]
  */
-var invoke = rest(baseInvoke);
+var invoke = baseRest(baseInvoke);
 
 export default invoke;

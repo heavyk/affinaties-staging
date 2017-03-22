@@ -13,8 +13,7 @@ import baseSum from './_baseSum.js';
  * @since 4.0.0
  * @category Math
  * @param {Array} array The array to iterate over.
- * @param {Array|Function|Object|string} [iteratee=_.identity]
- *  The iteratee invoked per element.
+ * @param {Function} [iteratee=_.identity] The iteratee invoked per element.
  * @returns {number} Returns the sum.
  * @example
  *
@@ -29,7 +28,7 @@ import baseSum from './_baseSum.js';
  */
 function sumBy(array, iteratee) {
   return (array && array.length)
-    ? baseSum(array, baseIteratee(iteratee))
+    ? baseSum(array, baseIteratee(iteratee, 2))
     : 0;
 }
 

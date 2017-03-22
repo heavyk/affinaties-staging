@@ -1,4 +1,5 @@
 import assignValue from './_assignValue.js';
+import baseAssignValue from './_baseAssignValue.js';
 
 'use strict';
 
@@ -13,6 +14,7 @@ import assignValue from './_assignValue.js';
  * @returns {Object} Returns `object`.
  */
 function copyObject(source, props, object, customizer) {
+  var isNew = !object;
   object || (object = {});
 
   var index = -1,
@@ -23,9 +25,16 @@ function copyObject(source, props, object, customizer) {
 
     var newValue = customizer
       ? customizer(object[key], source[key], key, object, source)
-      : source[key];
+      : undefined;
 
-    assignValue(object, key, newValue);
+    if (newValue === undefined) {
+      newValue = source[key];
+    }
+    if (isNew) {
+      baseAssignValue(object, key, newValue);
+    } else {
+      assignValue(object, key, newValue);
+    }
   }
   return object;
 }

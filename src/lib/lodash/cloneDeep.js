@@ -2,6 +2,10 @@ import baseClone from './_baseClone.js';
 
 'use strict';
 
+/** Used to compose bitmasks for cloning. */
+var CLONE_DEEP_FLAG = 1,
+    CLONE_SYMBOLS_FLAG = 4;
+
 /**
  * This method is like `_.clone` except that it recursively clones `value`.
  *
@@ -21,7 +25,7 @@ import baseClone from './_baseClone.js';
  * // => false
  */
 function cloneDeep(value) {
-  return baseClone(value, true, true);
+  return baseClone(value, CLONE_DEEP_FLAG | CLONE_SYMBOLS_FLAG);
 }
 
 export default cloneDeep;

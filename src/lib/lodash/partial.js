@@ -1,12 +1,12 @@
-import createWrapper from './_createWrapper.js';
+import baseRest from './_baseRest.js';
+import createWrap from './_createWrap.js';
 import getHolder from './_getHolder.js';
 import replaceHolders from './_replaceHolders.js';
-import rest from './rest.js';
 
 'use strict';
 
-/** Used to compose bitmasks for wrapper metadata. */
-var PARTIAL_FLAG = 32;
+/** Used to compose bitmasks for function metadata. */
+var WRAP_PARTIAL_FLAG = 32;
 
 /**
  * Creates a function that invokes `func` with `partials` prepended to the
@@ -28,9 +28,9 @@ var PARTIAL_FLAG = 32;
  * @returns {Function} Returns the new partially applied function.
  * @example
  *
- * var greet = function(greeting, name) {
+ * function greet(greeting, name) {
  *   return greeting + ' ' + name;
- * };
+ * }
  *
  * var sayHelloTo = _.partial(greet, 'hello');
  * sayHelloTo('fred');
@@ -41,9 +41,9 @@ var PARTIAL_FLAG = 32;
  * greetFred('hi');
  * // => 'hi fred'
  */
-var partial = rest(function(func, partials) {
+var partial = baseRest(function(func, partials) {
   var holders = replaceHolders(partials, getHolder(partial));
-  return createWrapper(func, PARTIAL_FLAG, undefined, partials, holders);
+  return createWrap(func, WRAP_PARTIAL_FLAG, undefined, partials, holders);
 });
 
 // Assign default placeholders.

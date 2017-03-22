@@ -1,4 +1,6 @@
 import Symbol from './_Symbol.js';
+import arrayMap from './_arrayMap.js';
+import isArray from './isArray.js';
 import isSymbol from './isSymbol.js';
 
 'use strict';
@@ -22,6 +24,10 @@ function baseToString(value) {
   // Exit early for strings to avoid a performance hit in some environments.
   if (typeof value == 'string') {
     return value;
+  }
+  if (isArray(value)) {
+    // Recursively convert values (susceptible to call stack limits).
+    return arrayMap(value, baseToString) + '';
   }
   if (isSymbol(value)) {
     return symbolToString ? symbolToString.call(value) : '';

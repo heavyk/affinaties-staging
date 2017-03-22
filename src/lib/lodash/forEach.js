@@ -1,6 +1,6 @@
 import arrayEach from './_arrayEach.js';
 import baseEach from './_baseEach.js';
-import baseIteratee from './_baseIteratee.js';
+import castFunction from './_castFunction.js';
 import isArray from './isArray.js';
 
 'use strict';
@@ -25,7 +25,7 @@ import isArray from './isArray.js';
  * @see _.forEachRight
  * @example
  *
- * _([1, 2]).forEach(function(value) {
+ * _.forEach([1, 2], function(value) {
  *   console.log(value);
  * });
  * // => Logs `1` then `2`.
@@ -37,7 +37,7 @@ import isArray from './isArray.js';
  */
 function forEach(collection, iteratee) {
   var func = isArray(collection) ? arrayEach : baseEach;
-  return func(collection, baseIteratee(iteratee, 3));
+  return func(collection, castFunction(iteratee));
 }
 
 export default forEach;

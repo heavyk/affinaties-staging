@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * A method that returns a new empty array.
+ * This method returns a new empty array.
  *
  * @static
  * @memberOf _

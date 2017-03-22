@@ -1,9 +1,7 @@
 import baseFlatten from './_baseFlatten.js';
 import baseOrderBy from './_baseOrderBy.js';
-import isArray from './isArray.js';
-import isFlattenableIteratee from './_isFlattenableIteratee.js';
+import baseRest from './_baseRest.js';
 import isIterateeCall from './_isIterateeCall.js';
-import rest from './rest.js';
 
 'use strict';
 
@@ -18,8 +16,8 @@ import rest from './rest.js';
  * @since 0.1.0
  * @category Collection
  * @param {Array|Object} collection The collection to iterate over.
- * @param {...(Array|Array[]|Function|Function[]|Object|Object[]|string|string[])}
- *  [iteratees=[_.identity]] The iteratees to sort by.
+ * @param {...(Function|Function[])} [iteratees=[_.identity]]
+ *  The iteratees to sort by.
  * @returns {Array} Returns the new sorted array.
  * @example
  *
@@ -30,18 +28,13 @@ import rest from './rest.js';
  *   { 'user': 'barney', 'age': 34 }
  * ];
  *
- * _.sortBy(users, function(o) { return o.user; });
+ * _.sortBy(users, [function(o) { return o.user; }]);
  * // => objects for [['barney', 36], ['barney', 34], ['fred', 48], ['fred', 40]]
  *
  * _.sortBy(users, ['user', 'age']);
  * // => objects for [['barney', 34], ['barney', 36], ['fred', 40], ['fred', 48]]
- *
- * _.sortBy(users, 'user', function(o) {
- *   return Math.floor(o.age / 10);
- * });
- * // => objects for [['barney', 36], ['barney', 34], ['fred', 48], ['fred', 40]]
  */
-var sortBy = rest(function(collection, iteratees) {
+var sortBy = baseRest(function(collection, iteratees) {
   if (collection == null) {
     return [];
   }
@@ -51,11 +44,7 @@ var sortBy = rest(function(collection, iteratees) {
   } else if (length > 2 && isIterateeCall(iteratees[0], iteratees[1], iteratees[2])) {
     iteratees = [iteratees[0]];
   }
-  iteratees = (iteratees.length == 1 && isArray(iteratees[0]))
-    ? iteratees[0]
-    : baseFlatten(iteratees, 1, isFlattenableIteratee);
-
-  return baseOrderBy(collection, iteratees, []);
+  return baseOrderBy(collection, baseFlatten(iteratees, 1), []);
 });
 
 export default sortBy;

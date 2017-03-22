@@ -1,3 +1,4 @@
+import baseAssignValue from './_baseAssignValue.js';
 import createAggregator from './_createAggregator.js';
 
 'use strict';
@@ -19,8 +20,7 @@ var hasOwnProperty = objectProto.hasOwnProperty;
  * @since 0.5.0
  * @category Collection
  * @param {Array|Object} collection The collection to iterate over.
- * @param {Array|Function|Object|string} [iteratee=_.identity]
- *  The iteratee to transform keys.
+ * @param {Function} [iteratee=_.identity] The iteratee to transform keys.
  * @returns {Object} Returns the composed aggregate object.
  * @example
  *
@@ -32,7 +32,11 @@ var hasOwnProperty = objectProto.hasOwnProperty;
  * // => { '3': 2, '5': 1 }
  */
 var countBy = createAggregator(function(result, value, key) {
-  hasOwnProperty.call(result, key) ? ++result[key] : (result[key] = 1);
+  if (hasOwnProperty.call(result, key)) {
+    ++result[key];
+  } else {
+    baseAssignValue(result, key, 1);
+  }
 });
 
 export default countBy;

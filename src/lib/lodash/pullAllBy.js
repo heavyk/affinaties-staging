@@ -16,8 +16,7 @@ import basePullAll from './_basePullAll.js';
  * @category Array
  * @param {Array} array The array to modify.
  * @param {Array} values The values to remove.
- * @param {Array|Function|Object|string} [iteratee=_.identity]
- *  The iteratee invoked per element.
+ * @param {Function} [iteratee=_.identity] The iteratee invoked per element.
  * @returns {Array} Returns `array`.
  * @example
  *
@@ -29,7 +28,7 @@ import basePullAll from './_basePullAll.js';
  */
 function pullAllBy(array, values, iteratee) {
   return (array && array.length && values && values.length)
-    ? basePullAll(array, values, baseIteratee(iteratee))
+    ? basePullAll(array, values, baseIteratee(iteratee, 2))
     : array;
 }
 

@@ -39,7 +39,7 @@ import baseCreate from './_baseCreate.js';
  */
 function create(prototype, properties) {
   var result = baseCreate(prototype);
-  return properties ? baseAssign(result, properties) : result;
+  return properties == null ? result : baseAssign(result, properties);
 }
 
 export default create;

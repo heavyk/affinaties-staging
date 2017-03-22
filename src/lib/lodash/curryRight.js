@@ -1,9 +1,9 @@
-import createWrapper from './_createWrapper.js';
+import createWrap from './_createWrap.js';
 
 'use strict';
 
-/** Used to compose bitmasks for wrapper metadata. */
-var CURRY_RIGHT_FLAG = 16;
+/** Used to compose bitmasks for function metadata. */
+var WRAP_CURRY_RIGHT_FLAG = 16;
 
 /**
  * This method is like `_.curry` except that arguments are applied to `func`
@@ -45,7 +45,7 @@ var CURRY_RIGHT_FLAG = 16;
  */
 function curryRight(func, arity, guard) {
   arity = guard ? undefined : arity;
-  var result = createWrapper(func, CURRY_RIGHT_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
+  var result = createWrap(func, WRAP_CURRY_RIGHT_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
   result.placeholder = curryRight.placeholder;
   return result;
 }

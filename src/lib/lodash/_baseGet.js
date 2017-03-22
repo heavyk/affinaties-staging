@@ -1,5 +1,4 @@
 import castPath from './_castPath.js';
-import isKey from './_isKey.js';
 import toKey from './_toKey.js';
 
 'use strict';
@@ -13,7 +12,7 @@ import toKey from './_toKey.js';
  * @returns {*} Returns the resolved value.
  */
 function baseGet(object, path) {
-  path = isKey(path, object) ? [path] : castPath(path);
+  path = castPath(path, object);
 
   var index = 0,
       length = path.length;

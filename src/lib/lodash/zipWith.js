@@ -1,4 +1,4 @@
-import rest from './rest.js';
+import baseRest from './_baseRest.js';
 import unzipWith from './unzipWith.js';
 
 'use strict';
@@ -13,7 +13,8 @@ import unzipWith from './unzipWith.js';
  * @since 3.8.0
  * @category Array
  * @param {...Array} [arrays] The arrays to process.
- * @param {Function} [iteratee=_.identity] The function to combine grouped values.
+ * @param {Function} [iteratee=_.identity] The function to combine
+ *  grouped values.
  * @returns {Array} Returns the new array of grouped elements.
  * @example
  *
@@ -22,7 +23,7 @@ import unzipWith from './unzipWith.js';
  * });
  * // => [111, 222]
  */
-var zipWith = rest(function(arrays) {
+var zipWith = baseRest(function(arrays) {
   var length = arrays.length,
       iteratee = length > 1 ? arrays[length - 1] : undefined;
 

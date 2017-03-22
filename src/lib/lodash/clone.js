@@ -2,6 +2,9 @@ import baseClone from './_baseClone.js';
 
 'use strict';
 
+/** Used to compose bitmasks for cloning. */
+var CLONE_SYMBOLS_FLAG = 4;
+
 /**
  * Creates a shallow clone of `value`.
  *
@@ -29,7 +32,7 @@ import baseClone from './_baseClone.js';
  * // => true
  */
 function clone(value) {
-  return baseClone(value, false, true);
+  return baseClone(value, CLONE_SYMBOLS_FLAG);
 }
 
 export default clone;

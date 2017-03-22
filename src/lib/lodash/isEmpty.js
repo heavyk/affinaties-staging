@@ -1,12 +1,11 @@
+import baseKeys from './_baseKeys.js';
 import getTag from './_getTag.js';
 import isArguments from './isArguments.js';
 import isArray from './isArray.js';
 import isArrayLike from './isArrayLike.js';
 import isBuffer from './isBuffer.js';
-import isFunction from './isFunction.js';
-import isObjectLike from './isObjectLike.js';
-import isString from './isString.js';
-import keys from './keys.js';
+import isPrototype from './_isPrototype.js';
+import isTypedArray from './isTypedArray.js';
 
 'use strict';
 
@@ -19,12 +18,6 @@ var objectProto = Object.prototype;
 
 /** Used to check objects for own properties. */
 var hasOwnProperty = objectProto.hasOwnProperty;
-
-/** Built-in value references. */
-var propertyIsEnumerable = objectProto.propertyIsEnumerable;
-
-/** Detect if properties shadowing those on `Object.prototype` are non-enumerable. */
-var nonEnumShadows = !propertyIsEnumerable.call({ 'valueOf': 1 }, 'valueOf');
 
 /**
  * Checks if `value` is an empty object, collection, map, or set.
@@ -60,23 +53,27 @@ var nonEnumShadows = !propertyIsEnumerable.call({ 'valueOf': 1 }, 'valueOf');
  * // => false
  */
 function isEmpty(value) {
+  if (value == null) {
+    return true;
+  }
   if (isArrayLike(value) &&
-      (isArray(value) || isString(value) || isFunction(value.splice) ||
-        isArguments(value) || isBuffer(value))) {
+      (isArray(value) || typeof value == 'string' || typeof value.splice == 'function' ||
+        isBuffer(value) || isTypedArray(value) || isArguments(value))) {
     return !value.length;
   }
-  if (isObjectLike(value)) {
-    var tag = getTag(value);
-    if (tag == mapTag || tag == setTag) {
-      return !value.size;
-    }
+  var tag = getTag(value);
+  if (tag == mapTag || tag == setTag) {
+    return !value.size;
+  }
+  if (isPrototype(value)) {
+    return !baseKeys(value).length;
   }
   for (var key in value) {
     if (hasOwnProperty.call(value, key)) {
       return false;
     }
   }
-  return !(nonEnumShadows && keys(value).length);
+  return true;
 }
 
 export default isEmpty;

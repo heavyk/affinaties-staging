@@ -1,7 +1,7 @@
-import assignInDefaults from './_assignInDefaults.js';
 import assignInWith from './assignInWith.js';
 import attempt from './attempt.js';
 import baseValues from './_baseValues.js';
+import customDefaultsAssignIn from './_customDefaultsAssignIn.js';
 import escapeStringChar from './_escapeStringChar.js';
 import isError from './isError.js';
 import isIterateeCall from './_isIterateeCall.js';
@@ -19,7 +19,7 @@ var reEmptyStringLeading = /\b__p \+= '';/g,
 
 /**
  * Used to match
- * [ES template delimiters](http://ecma-international.org/ecma-262/6.0/#sec-template-literal-lexical-components).
+ * [ES template delimiters](http://ecma-international.org/ecma-262/7.0/#sec-template-literal-lexical-components).
  */
 var reEsTemplate = /\$\{([^\\}]*(?:\\.[^\\}]*)*)\}/g;
 
@@ -88,7 +88,8 @@ var reUnescapedString = /['\n\r\u2028\u2029\\]/g;
  * compiled({ 'user': 'barney' });
  * // => 'hello barney!'
  *
- * // Use the ES delimiter as an alternative to the default "interpolate" delimiter.
+ * // Use the ES template literal delimiter as an "interpolate" delimiter.
+ * // Disable support by replacing the "interpolate" delimiter.
  * var compiled = _.template('hello ${ user }!');
  * compiled({ 'user': 'pebbles' });
  * // => 'hello pebbles!'
@@ -142,9 +143,9 @@ function template(string, options, guard) {
     options = undefined;
   }
   string = toString(string);
-  options = assignInWith({}, options, settings, assignInDefaults);
+  options = assignInWith({}, options, settings, customDefaultsAssignIn);
 
-  var imports = assignInWith({}, options.imports, settings.imports, assignInDefaults),
+  var imports = assignInWith({}, options.imports, settings.imports, customDefaultsAssignIn),
       importsKeys = keys(imports),
       importsValues = baseValues(imports, importsKeys);
 

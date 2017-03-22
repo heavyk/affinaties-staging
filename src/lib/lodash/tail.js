@@ -1,4 +1,4 @@
-import drop from './drop.js';
+import baseSlice from './_baseSlice.js';
 
 'use strict';
 
@@ -17,7 +17,8 @@ import drop from './drop.js';
  * // => [2, 3]
  */
 function tail(array) {
-  return drop(array, 1);
+  var length = array == null ? 0 : array.length;
+  return length ? baseSlice(array, 1, length) : [];
 }
 
 export default tail;

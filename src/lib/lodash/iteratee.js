@@ -3,6 +3,9 @@ import baseIteratee from './_baseIteratee.js';
 
 'use strict';
 
+/** Used to compose bitmasks for cloning. */
+var CLONE_DEEP_FLAG = 1;
+
 /**
  * Creates a function that invokes `func` with the arguments of the created
  * function. If `func` is a property name, the created function returns the
@@ -46,7 +49,7 @@ import baseIteratee from './_baseIteratee.js';
  * // => ['def']
  */
 function iteratee(func) {
-  return baseIteratee(typeof func == 'function' ? func : baseClone(func, true));
+  return baseIteratee(typeof func == 'function' ? func : baseClone(func, CLONE_DEEP_FLAG));
 }
 
 export default iteratee;

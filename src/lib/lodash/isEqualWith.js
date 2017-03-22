@@ -15,8 +15,7 @@ import baseIsEqual from './_baseIsEqual.js';
  * @param {*} value The value to compare.
  * @param {*} other The other value to compare.
  * @param {Function} [customizer] The function to customize comparisons.
- * @returns {boolean} Returns `true` if the values are equivalent,
- *  else `false`.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
  * @example
  *
  * function isGreeting(value) {
@@ -38,7 +37,7 @@ import baseIsEqual from './_baseIsEqual.js';
 function isEqualWith(value, other, customizer) {
   customizer = typeof customizer == 'function' ? customizer : undefined;
   var result = customizer ? customizer(value, other) : undefined;
-  return result === undefined ? baseIsEqual(value, other, customizer) : !!result;
+  return result === undefined ? baseIsEqual(value, other, undefined, customizer) : !!result;
 }
 
 export default isEqualWith;

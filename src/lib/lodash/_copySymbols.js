@@ -4,7 +4,7 @@ import getSymbols from './_getSymbols.js';
 'use strict';
 
 /**
- * Copies own symbol properties of `source` to `object`.
+ * Copies own symbols of `source` to `object`.
  *
  * @private
  * @param {Object} source The object to copy symbols from.

@@ -1,9 +1,8 @@
-import sampleSize from './sampleSize.js';
+import arrayShuffle from './_arrayShuffle.js';
+import baseShuffle from './_baseShuffle.js';
+import isArray from './isArray.js';
 
 'use strict';
-
-/** Used as references for the maximum length and index of an array. */
-var MAX_ARRAY_LENGTH = 4294967295;
 
 /**
  * Creates an array of shuffled values, using a version of the
@@ -21,7 +20,8 @@ var MAX_ARRAY_LENGTH = 4294967295;
  * // => [4, 1, 3, 2]
  */
 function shuffle(collection) {
-  return sampleSize(collection, MAX_ARRAY_LENGTH);
+  var func = isArray(collection) ? arrayShuffle : baseShuffle;
+  return func(collection);
 }
 
 export default shuffle;

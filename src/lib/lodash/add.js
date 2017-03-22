@@ -19,6 +19,6 @@ import createMathOperation from './_createMathOperation.js';
  */
 var add = createMathOperation(function(augend, addend) {
   return augend + addend;
-});
+}, 0);
 
 export default add;

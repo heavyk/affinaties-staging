@@ -1,6 +1,6 @@
 import baseRandom from './_baseRandom.js';
 import isIterateeCall from './_isIterateeCall.js';
-import toNumber from './toNumber.js';
+import toFinite from './toFinite.js';
 
 'use strict';
 
@@ -61,12 +61,12 @@ function random(lower, upper, floating) {
     upper = 1;
   }
   else {
-    lower = toNumber(lower) || 0;
+    lower = toFinite(lower);
     if (upper === undefined) {
       upper = lower;
       lower = 0;
     } else {
-      upper = toNumber(upper) || 0;
+      upper = toFinite(upper);
     }
   }
   if (lower > upper) {

@@ -2,9 +2,7 @@ import castPath from './_castPath.js';
 import isArguments from './isArguments.js';
 import isArray from './isArray.js';
 import isIndex from './_isIndex.js';
-import isKey from './_isKey.js';
 import isLength from './isLength.js';
-import isString from './isString.js';
 import toKey from './_toKey.js';
 
 'use strict';
@@ -19,11 +17,11 @@ import toKey from './_toKey.js';
  * @returns {boolean} Returns `true` if `path` exists, else `false`.
  */
 function hasPath(object, path, hasFunc) {
-  path = isKey(path, object) ? [path] : castPath(path);
+  path = castPath(path, object);
 
-  var result,
-      index = -1,
-      length = path.length;
+  var index = -1,
+      length = path.length,
+      result = false;
 
   while (++index < length) {
     var key = toKey(path[index]);
@@ -32,12 +30,12 @@ function hasPath(object, path, hasFunc) {
     }
     object = object[key];
   }
-  if (result) {
+  if (result || ++index != length) {
     return result;
   }
-  var length = object ? object.length : 0;
+  length = object == null ? 0 : object.length;
   return !!length && isLength(length) && isIndex(key, length) &&
-    (isArray(object) || isString(object) || isArguments(object));
+    (isArray(object) || isArguments(object));
 }
 
 export default hasPath;

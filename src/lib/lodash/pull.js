@@ -1,11 +1,11 @@
+import baseRest from './_baseRest.js';
 import pullAll from './pullAll.js';
-import rest from './rest.js';
 
 'use strict';
 
 /**
  * Removes all given values from `array` using
- * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
+ * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
  * for equality comparisons.
  *
  * **Note:** Unlike `_.without`, this method mutates `array`. Use `_.remove`
@@ -26,6 +26,6 @@ import rest from './rest.js';
  * console.log(array);
  * // => ['b', 'b']
  */
-var pull = rest(pullAll);
+var pull = baseRest(pullAll);
 
 export default pull;

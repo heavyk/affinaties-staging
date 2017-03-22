@@ -14,8 +14,7 @@ import baseSortedIndexBy from './_baseSortedIndexBy.js';
  * @category Array
  * @param {Array} array The sorted array to inspect.
  * @param {*} value The value to evaluate.
- * @param {Array|Function|Object|string} [iteratee=_.identity]
- *  The iteratee invoked per element.
+ * @param {Function} [iteratee=_.identity] The iteratee invoked per element.
  * @returns {number} Returns the index at which `value` should be inserted
  *  into `array`.
  * @example
@@ -30,7 +29,7 @@ import baseSortedIndexBy from './_baseSortedIndexBy.js';
  * // => 0
  */
 function sortedIndexBy(array, value, iteratee) {
-  return baseSortedIndexBy(array, value, baseIteratee(iteratee));
+  return baseSortedIndexBy(array, value, baseIteratee(iteratee, 2));
 }
 
 export default sortedIndexBy;

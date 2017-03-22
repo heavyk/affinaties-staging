@@ -1,5 +1,5 @@
 import baseInvoke from './_baseInvoke.js';
-import rest from './rest.js';
+import baseRest from './_baseRest.js';
 
 'use strict';
 
@@ -26,7 +26,7 @@ import rest from './rest.js';
  * _.map([['a', '2'], ['c', '0']], _.methodOf(object));
  * // => [2, 0]
  */
-var methodOf = rest(function(object, args) {
+var methodOf = baseRest(function(object, args) {
   return function(path) {
     return baseInvoke(object, path, args);
   };

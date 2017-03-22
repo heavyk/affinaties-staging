@@ -4,6 +4,9 @@ import mapToArray from './_mapToArray.js';
 
 'use strict';
 
+/** Used to compose bitmasks for cloning. */
+var CLONE_DEEP_FLAG = 1;
+
 /**
  * Creates a clone of `map`.
  *
@@ -14,7 +17,7 @@ import mapToArray from './_mapToArray.js';
  * @returns {Object} Returns the cloned map.
  */
 function cloneMap(map, isDeep, cloneFunc) {
-  var array = isDeep ? cloneFunc(mapToArray(map), true) : mapToArray(map);
+  var array = isDeep ? cloneFunc(mapToArray(map), CLONE_DEEP_FLAG) : mapToArray(map);
   return arrayReduce(array, addMapEntry, new map.constructor);
 }
 

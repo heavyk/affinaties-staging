@@ -1,5 +1,5 @@
 import baseDelay from './_baseDelay.js';
-import rest from './rest.js';
+import baseRest from './_baseRest.js';
 
 'use strict';
 
@@ -19,9 +19,9 @@ import rest from './rest.js';
  * _.defer(function(text) {
  *   console.log(text);
  * }, 'deferred');
- * // => Logs 'deferred' after one or more milliseconds.
+ * // => Logs 'deferred' after one millisecond.
  */
-var defer = rest(function(func, args) {
+var defer = baseRest(function(func, args) {
   return baseDelay(func, 1, args);
 });
 

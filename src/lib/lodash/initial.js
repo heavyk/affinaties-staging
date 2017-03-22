@@ -1,4 +1,4 @@
-import dropRight from './dropRight.js';
+import baseSlice from './_baseSlice.js';
 
 'use strict';
 
@@ -17,7 +17,8 @@ import dropRight from './dropRight.js';
  * // => [1, 2]
  */
 function initial(array) {
-  return dropRight(array, 1);
+  var length = array == null ? 0 : array.length;
+  return length ? baseSlice(array, 0, -1) : [];
 }
 
 export default initial;

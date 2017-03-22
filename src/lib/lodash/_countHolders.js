@@ -14,7 +14,7 @@ function countHolders(array, placeholder) {
 
   while (length--) {
     if (array[length] === placeholder) {
-      result++;
+      ++result;
     }
   }
   return result;

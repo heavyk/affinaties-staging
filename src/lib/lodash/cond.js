@@ -1,11 +1,11 @@
 import apply from './_apply.js';
 import arrayMap from './_arrayMap.js';
 import baseIteratee from './_baseIteratee.js';
-import rest from './rest.js';
+import baseRest from './_baseRest.js';
 
 'use strict';
 
-/** Used as the `TypeError` message for "Functions" methods. */
+/** Error message constants. */
 var FUNC_ERROR_TEXT = 'Expected a function';
 
 /**
@@ -25,7 +25,7 @@ var FUNC_ERROR_TEXT = 'Expected a function';
  * var func = _.cond([
  *   [_.matches({ 'a': 1 }),           _.constant('matches A')],
  *   [_.conforms({ 'b': _.isNumber }), _.constant('matches B')],
- *   [_.constant(true),                _.constant('no match')]
+ *   [_.stubTrue,                      _.constant('no match')]
  * ]);
  *
  * func({ 'a': 1, 'b': 2 });
@@ -38,7 +38,7 @@ var FUNC_ERROR_TEXT = 'Expected a function';
  * // => 'no match'
  */
 function cond(pairs) {
-  var length = pairs ? pairs.length : 0,
+  var length = pairs == null ? 0 : pairs.length,
       toIteratee = baseIteratee;
 
   pairs = !length ? [] : arrayMap(pairs, function(pair) {
@@ -48,7 +48,7 @@ function cond(pairs) {
     return [toIteratee(pair[0]), pair[1]];
   });
 
-  return rest(function(args) {
+  return baseRest(function(args) {
     var index = -1;
     while (++index < length) {
       var pair = pairs[index];

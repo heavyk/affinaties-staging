@@ -1,19 +1,12 @@
+import baseGetTag from './_baseGetTag.js';
 import isObjectLike from './isObjectLike.js';
+import isPlainObject from './isPlainObject.js';
 
 'use strict';
 
 /** `Object#toString` result references. */
-var errorTag = '[object Error]';
-
-/** Used for built-in method references. */
-var objectProto = Object.prototype;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objectToString = objectProto.toString;
+var domExcTag = '[object DOMException]',
+    errorTag = '[object Error]';
 
 /**
  * Checks if `value` is an `Error`, `EvalError`, `RangeError`, `ReferenceError`,
@@ -24,8 +17,7 @@ var objectToString = objectProto.toString;
  * @since 3.0.0
  * @category Lang
  * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an error object,
- *  else `false`.
+ * @returns {boolean} Returns `true` if `value` is an error object, else `false`.
  * @example
  *
  * _.isError(new Error);
@@ -38,8 +30,9 @@ function isError(value) {
   if (!isObjectLike(value)) {
     return false;
   }
-  return (objectToString.call(value) == errorTag) ||
-    (typeof value.message == 'string' && typeof value.name == 'string');
+  var tag = baseGetTag(value);
+  return tag == errorTag || tag == domExcTag ||
+    (typeof value.message == 'string' && typeof value.name == 'string' && !isPlainObject(value));
 }
 
 export default isError;

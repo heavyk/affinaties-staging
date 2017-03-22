@@ -2,6 +2,9 @@ import baseClone from './_baseClone.js';
 
 'use strict';
 
+/** Used to compose bitmasks for cloning. */
+var CLONE_SYMBOLS_FLAG = 4;
+
 /**
  * This method is like `_.clone` except that it accepts `customizer` which
  * is invoked to produce the cloned value. If `customizer` returns `undefined`,
@@ -34,7 +37,8 @@ import baseClone from './_baseClone.js';
  * // => 0
  */
 function cloneWith(value, customizer) {
-  return baseClone(value, false, true, customizer);
+  customizer = typeof customizer == 'function' ? customizer : undefined;
+  return baseClone(value, CLONE_SYMBOLS_FLAG, customizer);
 }
 
 export default cloneWith;

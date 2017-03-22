@@ -1,4 +1,6 @@
-import indexOfNaN from './_indexOfNaN.js';
+import baseFindIndex from './_baseFindIndex.js';
+import baseIsNaN from './_baseIsNaN.js';
+import strictLastIndexOf from './_strictLastIndexOf.js';
 import toInteger from './toInteger.js';
 
 'use strict';
@@ -15,7 +17,7 @@ var nativeMax = Math.max,
  * @memberOf _
  * @since 0.1.0
  * @category Array
- * @param {Array} array The array to search.
+ * @param {Array} array The array to inspect.
  * @param {*} value The value to search for.
  * @param {number} [fromIndex=array.length-1] The index to search from.
  * @returns {number} Returns the index of the matched value, else `-1`.
@@ -29,28 +31,18 @@ var nativeMax = Math.max,
  * // => 1
  */
 function lastIndexOf(array, value, fromIndex) {
-  var length = array ? array.length : 0;
+  var length = array == null ? 0 : array.length;
   if (!length) {
     return -1;
   }
   var index = length;
   if (fromIndex !== undefined) {
     index = toInteger(fromIndex);
-    index = (
-      index < 0
-        ? nativeMax(length + index, 0)
-        : nativeMin(index, length - 1)
-    ) + 1;
+    index = index < 0 ? nativeMax(length + index, 0) : nativeMin(index, length - 1);
   }
-  if (value !== value) {
-    return indexOfNaN(array, index - 1, true);
-  }
-  while (index--) {
-    if (array[index] === value) {
-      return index;
-    }
-  }
-  return -1;
+  return value === value
+    ? strictLastIndexOf(array, value, index)
+    : baseFindIndex(array, baseIsNaN, index, true);
 }
 
 export default lastIndexOf;

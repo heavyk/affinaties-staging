@@ -16,7 +16,7 @@ var mapTag = '[object Map]',
     setTag = '[object Set]';
 
 /** Built-in value references. */
-var iteratorSymbol = typeof (iteratorSymbol = Symbol && Symbol.iterator) == 'symbol' ? iteratorSymbol : undefined;
+var symIterator = Symbol ? Symbol.iterator : undefined;
 
 /**
  * Converts `value` to an array.
@@ -48,8 +48,8 @@ function toArray(value) {
   if (isArrayLike(value)) {
     return isString(value) ? stringToArray(value) : copyArray(value);
   }
-  if (iteratorSymbol && value[iteratorSymbol]) {
-    return iteratorToArray(value[iteratorSymbol]());
+  if (symIterator && value[symIterator]) {
+    return iteratorToArray(value[symIterator]());
   }
   var tag = getTag(value),
       func = tag == mapTag ? mapToArray : (tag == setTag ? setToArray : values);

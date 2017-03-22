@@ -19,6 +19,6 @@ import createMathOperation from './_createMathOperation.js';
  */
 var subtract = createMathOperation(function(minuend, subtrahend) {
   return minuend - subtrahend;
-});
+}, 0);
 
 export default subtract;

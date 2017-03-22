@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * A method that returns a new empty object.
+ * This method returns a new empty object.
  *
  * @static
  * @memberOf _

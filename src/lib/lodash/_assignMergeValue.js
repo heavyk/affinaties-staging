@@ -1,3 +1,4 @@
+import baseAssignValue from './_baseAssignValue.js';
 import eq from './eq.js';
 
 'use strict';
@@ -13,8 +14,8 @@ import eq from './eq.js';
  */
 function assignMergeValue(object, key, value) {
   if ((value !== undefined && !eq(object[key], value)) ||
-      (typeof key == 'number' && value === undefined && !(key in object))) {
-    object[key] = value;
+      (value === undefined && !(key in object))) {
+    baseAssignValue(object, key, value);
   }
 }
 

@@ -1,15 +1,16 @@
 import arrayFilter from './_arrayFilter.js';
+import baseRest from './_baseRest.js';
 import baseXor from './_baseXor.js';
 import isArrayLikeObject from './isArrayLikeObject.js';
 import last from './last.js';
-import rest from './rest.js';
 
 'use strict';
 
 /**
  * This method is like `_.xor` except that it accepts `comparator` which is
- * invoked to compare elements of `arrays`. The comparator is invoked with
- * two arguments: (arrVal, othVal).
+ * invoked to compare elements of `arrays`. The order of result values is
+ * determined by the order they occur in the arrays. The comparator is invoked
+ * with two arguments: (arrVal, othVal).
  *
  * @static
  * @memberOf _
@@ -26,11 +27,9 @@ import rest from './rest.js';
  * _.xorWith(objects, others, _.isEqual);
  * // => [{ 'x': 2, 'y': 1 }, { 'x': 1, 'y': 1 }]
  */
-var xorWith = rest(function(arrays) {
+var xorWith = baseRest(function(arrays) {
   var comparator = last(arrays);
-  if (isArrayLikeObject(comparator)) {
-    comparator = undefined;
-  }
+  comparator = typeof comparator == 'function' ? comparator : undefined;
   return baseXor(arrayFilter(arrays, isArrayLikeObject), undefined, comparator);
 });
 

@@ -1,13 +1,13 @@
-import identity from './identity.js';
+import castFunction from './_castFunction.js';
 import partial from './partial.js';
 
 'use strict';
 
 /**
- * Creates a function that provides `value` to the wrapper function as its
- * first argument. Any additional arguments provided to the function are
- * appended to those provided to the wrapper function. The wrapper is invoked
- * with the `this` binding of the created function.
+ * Creates a function that provides `value` to `wrapper` as its first
+ * argument. Any additional arguments provided to the function are appended
+ * to those provided to the `wrapper`. The wrapper is invoked with the `this`
+ * binding of the created function.
  *
  * @static
  * @memberOf _
@@ -26,8 +26,7 @@ import partial from './partial.js';
  * // => '<p>fred, barney, &amp; pebbles</p>'
  */
 function wrap(value, wrapper) {
-  wrapper = wrapper == null ? identity : wrapper;
-  return partial(wrapper, value);
+  return partial(castFunction(wrapper), value);
 }
 
 export default wrap;

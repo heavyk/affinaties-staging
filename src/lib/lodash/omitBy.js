@@ -1,5 +1,6 @@
 import baseIteratee from './_baseIteratee.js';
-import basePickBy from './_basePickBy.js';
+import negate from './negate.js';
+import pickBy from './pickBy.js';
 
 'use strict';
 
@@ -14,8 +15,7 @@ import basePickBy from './_basePickBy.js';
  * @since 4.0.0
  * @category Object
  * @param {Object} object The source object.
- * @param {Array|Function|Object|string} [predicate=_.identity]
- *  The function invoked per property.
+ * @param {Function} [predicate=_.identity] The function invoked per property.
  * @returns {Object} Returns the new object.
  * @example
  *
@@ -25,10 +25,7 @@ import basePickBy from './_basePickBy.js';
  * // => { 'b': '2' }
  */
 function omitBy(object, predicate) {
-  predicate = baseIteratee(predicate);
-  return basePickBy(object, function(value, key) {
-    return !predicate(value, key);
-  });
+  return pickBy(object, negate(baseIteratee(predicate)));
 }
 
 export default omitBy;
