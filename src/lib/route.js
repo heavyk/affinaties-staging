@@ -1,4 +1,5 @@
-import { parseQS, parseHash, parseJSON } from './utils.js'
+import { parseQS, parseHash, parseJSON } from './utils'
+import { pathVars, pathToRegExp, pathToStrictRegExp } from './router-utils'
 
 import assign from './lodash/assign'
 import isEmpty from './lodash/isEmpty'
@@ -10,10 +11,10 @@ import pick from './lodash/pick'
 export default class Route {
   constructor (pattern, Handler, data, observe, router) {
     this.pattern = pattern
-    this.vars = parsePattern(pattern)
+    this.vars = pathVars(pattern)
     this.map = [this.vars]
-    this.regExp = [patternToRegExp(pattern)]
-    this.strictRegExp = [patternToStrictRegExp(pattern)]
+    this.regExp = [pathToRegExp(pattern)]
+    this.strictRegExp = [pathToStrictRegExp(pattern)]
     this.isComponent = !!Handler.extend
     this.Handler = Handler
     this.observe = assign({ qs: [], hash: [], state: [] }, observe)
@@ -33,9 +34,9 @@ export default class Route {
   }
 
   addPattern (pattern) {
-    this.map.push(parsePattern(pattern))
-    this.regExp.push(patternToRegExp(pattern))
-    this.strictRegExp.push(patternToStrictRegExp(pattern))
+    this.map.push(pathVars(pattern))
+    this.regExp.push(pathToRegExp(pattern))
+    this.strictRegExp.push(pathToStrictRegExp(pattern))
     this.vars = uniq(flatten(this.map))
   }
 
@@ -61,14 +62,12 @@ export default class Route {
       , parseHash(uri.hash, this.observe.hash)
     )
 
-    // console.info('parse:before', d, assign({}, d))
     for (let i = 0; i < this.vars.length; i++) {
       let k = this.vars[i]
       if (d[k] === void 9)
         d[k] = null
     }
 
-    // console.info('parse:after', d, assign({}, d))
     return d
   }
 
@@ -121,43 +120,18 @@ export default class Route {
 
   parsePath (path) {
     let data = {}
-    for (let ii = 0; ii < this.regExp.length; ii++) {
-      let parsed = path.match(this.regExp[ii])
+    for (let j = 0; j < this.regExp.length; j++) {
+      let parsed = path.match(this.regExp[j])
 
-      if (parsed) for (let i = 0; i < this.map[ii].length; i++) {
-        if (!isEmpty(parsed[i + 1])) {
-          data[this.map[ii][i]] = parseJSON(parsed[i + 1])
+      if (parsed) {
+        for (let i = 0; i < this.map[j].length; i++) {
+          let v = parsed[i + 1]
+          if (!isEmpty(v)) data[this.map[j][i]] = parseJSON(v)
         }
+        break
       }
     }
 
     return data
   }
-}
-
-function parsePattern (pattern) {
-  let m = pattern.match(/\/:\w+/g)
-  return m ? map(m, function (name) {
-    return name.substr(2)
-  }) : []
-}
-
-function patternToRegExp (pattern) {
-  return new RegExp(
-    patternToRegExpString(pattern)
-      .replace(/^\^(\\\/)?/, '^\\/?')
-      .replace(/(\\\/)?\$$/, '\\/?$'),
-    'i'
-  )
-}
-
-function patternToRegExpString (pattern) {
-  return ('^' + pattern + '$')
-    .replace(/\/:\w+(\([^)]+\))?/g, '(?:\/([^/]+)$1)')
-    .replace(/\(\?:\/\(\[\^\/]\+\)\(/, '(?:/(')
-    .replace(/\//g, '\\/')
-}
-
-function patternToStrictRegExp (pattern) {
-  return new RegExp(patternToRegExpString(pattern))
 }

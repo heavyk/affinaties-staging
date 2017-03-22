@@ -1,4 +1,5 @@
 import { MixinEmitter } from '../drip/emitter'
+import { define_getter, define_value } from '../utils'
 import { value, observable_property } from './observable'
 import eq from '../lodash/isEqual'
 
@@ -10,6 +11,7 @@ export class ObservableArray extends MixinEmitter(Array) {
     this.observable = 'array'
     if (this._o_length) this._o_length(this.length)
     Object.defineProperty(this, 'obv_len', {
+      configurable: true,
       get: () => this._o_length || (this._o_length = value(this.length))
     })
   }
@@ -539,20 +541,6 @@ export function isCopy (other) {
     if (hasOwnProperty.call(this, i) !== hasOwnProperty.call(other, i) || !eq(this[i], other[i])) return false
   }
   return true
-}
-
-function define_value (fn) {
-  return {
-    //configurable: true, enumerable: false, writable: true,
-    value: fn
-  }
-}
-
-function define_getter (fn) {
-  return {
-    configurable: true, enumerable: false,
-    get: fn
-  }
 }
 
 export default ObservArray

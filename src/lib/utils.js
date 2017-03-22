@@ -1,43 +1,3 @@
-// TODO - move all this into ./utils/
-
-export function assign (object, source) {
-  for (var i = 1, c = arguments.length; i < c; i++) {
-    for (var x in arguments[i]) {
-      if (arguments[i].hasOwnProperty(x) && arguments[i][x] !== undefined) {
-        object[x] = arguments[i][x]
-      }
-    }
-  }
-
-  return object
-}
-
-
-import compact from './lodash/compact'
-/*
-export function compact (collection) {
-  return pick(collection, function (value) {
-    return !isEmpty(value)
-  })
-}
-*/
-
-import isEmpty from './lodash/isEmpty'
-/*
-export function isEmpty (value) {
-  if (!value || typeof value !== 'object') {
-    return !value
-  }
-
-  return !Object.keys(value).length
-}
-*/
-
-export function joinPaths (parts) {
-  return Array.prototype.slice.call(arguments)
-    .join('/')
-    .replace(/\/+/g, '/')
-}
 
 export function parents (el, name) {
   while (el && el.nodeName.toLowerCase() !== name) {
@@ -47,6 +7,18 @@ export function parents (el, name) {
   return el && el.nodeName.toLowerCase() === name
     ? el
     : null
+}
+
+export function isEmpty (value) {
+  if (!value || typeof value !== 'object') {
+    return !value
+  }
+
+  return !Object.keys(value).length
+}
+
+export function joinPaths (...parts) {
+  return parts.join('/').replace(/\/+/g, '/')
 }
 
 export function parseHash (hash, keys) {
@@ -103,8 +75,6 @@ export function parseQS (qs, keys) {
     : parsed
 }
 
-import pick from './lodash/pick'
-/*
 export function pick (object, keys) {
   var data = {}
 
@@ -122,7 +92,6 @@ export function pick (object, keys) {
 
   return data
 }
-*/
 
 export function scrollTo (id) {
   if (!id) return
@@ -187,24 +156,21 @@ export function removeClass (node, className) {
   }
 }
 
-// import repeat from './lodash/repeat'
+export function camelize (k) {
+  return ~k.indexOf('-') ? k.replace(/-+(.)?/g, (tmp, c) => (c || '').toUpperCase()) : k
+}
 
-export default {
-  assign,
-  // compact,
-  // isEmpty,
-  joinPaths,
-  parents,
-  parseHash,
-  parseJSON,
-  parseUri,
-  parseQS,
-  // pick,
-  scrollTo,
-  stringify,
-  stringifyHash,
-  stringifyQS,
-  addClass,
-  removeClass,
-  // repeat,
+// I imagine that something better can be done than this...
+export function define_getter (fn) {
+  return {
+    configurable: true, //enumerable: true,
+    get: fn
+  }
+}
+
+export function define_value (fn) {
+  return {
+    // configurable: true, writable: true,
+    value: fn
+  }
 }

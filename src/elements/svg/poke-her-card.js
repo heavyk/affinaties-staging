@@ -3,20 +3,21 @@ import StateMachine from '../state-machine'
 import { touch, hover, mousedown } from '../../lib/dom/observable'
 import { _not } from '../../lib/dom/observable-logic'
 
-// import CARDS from '../../assets/playing-cards'
+// use `require` instead of import, to allow for bundle partitioning
 const CARDS = require('../assets/playing-cards')
 
 class Card extends StateMachine {
   constructor (id, opts) {
     super(opts, (G) => {
-      // this._id = typeof id === 'function' ? id() : id
       if (typeof id === 'function') {
         // `id` is an observable
         this._id = id()
         id((id) => { if (id !== this._id) this.reset(id) })
+      } else if (id != null) {
+        this._id = id
       }
-      var svg = CARDS[this._id || id].call(this, G)
-      // const _id = this.attr('card', this._id || id)
+      
+      var svg = CARDS[this._id].call(this, G)
 
       // maintain aspect ratio
       const _w = this.attr('width')
@@ -25,6 +26,7 @@ class Card extends StateMachine {
       _h((v) => { _w(v * 1 / 1.45) })
 
       // if the card is face down, then allow for mouse/touch to show the cards (eg. cards in your hand)
+      // I don't like that it's only bound if the bound value is true... there should be another way of determining if the cards can be flipped
       const down = this.attr('down')
       if (down()) {
         G.h.cleanupFuncs.push(
@@ -37,7 +39,6 @@ class Card extends StateMachine {
         '/': () => {
           return svg
         },
-        // up: ()
       }
     })
   }

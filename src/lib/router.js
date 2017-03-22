@@ -1,5 +1,4 @@
 import Route from './route.js'
-// import { parseUri, assign, scrollTo, joinPaths, parseQS, stringifyQS, isEmpty, stringifyHash, parents } from './utils.js'
 import { parseUri, scrollTo, joinPaths, parseQS, stringifyQS, stringifyHash, parents } from './utils.js'
 
 import EventEmitter from './drip/emitter'
