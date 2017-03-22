@@ -157,10 +157,17 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   playa-pos = (i) ->
     compute [table-middle-x, table-middle-y, mid-w, mid-h, first-playa-angle, last-playa-angle, i, num-playas, max-playas], (mid-x, mid-y, mid-w, mid-h, a0, a1, i, n, m) ->
       max_arc = a1 - a0
-      min_arc = max_arc / 3
-      arc_inc = if m > n => (max_arc - min_arc) / n else 0
-      inc = (max_arc - arc_inc - arc_inc) / (n - 1)
-      angle = (a0 + arc_inc + (i * inc)) * HALF_PI
+      if n < 2
+        angle = ((max_arc / 2) + a0)
+      else
+        min_arc = max_arc / 3
+        # arc_inc = if m > n => (max_arc - min_arc) / n else 0
+        arc_inc = (max_arc - min_arc) / n
+        inc = (max_arc - arc_inc - arc_inc) / (n - 1)
+        angle = (a0 + arc_inc + (i * inc))
+        # console.log i, n, \min_arc, min_arc, \arc_inc, arc_inc, \inc, inc, \angle, angle
+        # if angle is 270 => debugger
+      angle *= HALF_PI
       # TODO: move this to a lib function
       # http://stackoverflow.com/questions/39098308/how-to-use-two-coordinates-draw-an-ellipse-with-javascript
       a = x: mid-w, y: 0
@@ -180,7 +187,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
     h \poke-her-card, id, { width: middle-area-card-width, x: (card-pos-x idx), y: (card-pos-y idx) }
 
   window.playaz =\
-  playaz = new RenderingArray G, (id, idx, {h}) ->
+  playaz = new RenderingArray G, (d, idx, {h}) ->
     # do these need to save off functions?
     pos = playa-pos idx
     x = transform pos, (p) -> "#{p.x}px"
@@ -196,7 +203,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       height: '60px'
       left: x
       top: y
-    }, id
+    }, d
 
   # two things:
   # 1. RenderingArray should have a cleanup function (to clean up everything in the array)
@@ -206,7 +213,16 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   cards.push \AH, \2H, \3H #, \4H, \5H
   hand.push \AS, \AD
-  playaz.push 'kenny', 'jenny'#, 'jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde'
+  # playaz.push 'kenny', 'jenny', 'jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde'
+  # playaz.splice 0, 0, 'kenny', 'jenny', 'jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde'
+  # test = [] # new ObservableArray
+  # test.push.apply test, ['kenny', 'jenny', 'jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde']
+  # test.sort (a, b) ->
+  #   # console.log 'sort', a, b, a > b
+  #   # debugger
+  #   a > b
+  # console.log test, test.join ','
+  playaz.push 'kenny', 'jenny'
   more_playaz = ['jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde']
 
   ii = set-interval !->
@@ -227,7 +243,8 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
     cards, hand, playaz
 
     window.machina =\
-    h \poem-state-machine, {width: 40, active: false}, ({h}) ->
+    h \poem-state-machine, {width: 40, active: false}, (G) ->
+      {h} = G
       # o = @observables
       # style
       @style '''
@@ -282,7 +299,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
         # logo + slogan
         h \div "poke her starz"
 
-      '/table/:table': (id) ->
+      '/table/:id/lala': ({id}) ->
         h \div, "table: #{id}"
 
       '/tables': ->

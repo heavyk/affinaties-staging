@@ -51,41 +51,56 @@ export class ObservableArray extends MixinEmitter(Array) {
 
   sort (compare) {
     if (this.length <= 1) return this
-    var tmp = Array.from(this)
-    super.sort(compare)
-    if (!isCopy.call(this, tmp)) {
-      this.emit('change', { type: 'sort', compare: compare, orig: tmp })
+    // the slowest sort method, however yields the least number of swaps
+    // TODO: implement quiksort
+    return this.selectionsort(compare)
+  }
+
+  selectionsort (compare) {
+    var i = 0, j, k, a = this, l = a.length
+    for (; i < l; i++) {
+      // smallest index val
+      k = i
+      for (j = i+1; j < l; j++) {
+        if (compare(a[j], a[k]) <= 0) k = j
+      }
+
+      if (k !== i) {
+        this.emit('change', {type: 'swap', from: k, to: i })
+        swap(a, i, k)
+      }
     }
+
     return this
   }
 
-  insertionsort (compare, from = 0, to = this.length) {
-    // function InsertionSort(a, from, to) {
-    var a = this
-    for (var i = from + 1; i < to; i++) {
-      var element = a[i]
-      for (var j = i - 1; j >= from; j--) {
-        var tmp = a[j]
-        var order = compare(tmp, element)
-        if (order > 0) {
-          this.emit('change', {type: 'swap', from: j, to: j + 1 })
-          a[j + 1] = tmp
-        } else {
-          break
+  quiksort (comparefn) {
+    throw new Error('not working at all... needs some swap function improvements')
+    var InsertionSort = (a, from, to) => {
+      for (var i = from + 1; i < to; i++) {
+        var element = a[i]
+        for (var j = i - 1; j >= from; j--) {
+          var tmp = a[j]
+          var order = comparefn(tmp, element)
+          if (order > 0) {
+            this.emit('change', {type: 'swap', from: j, to: j + 1 })
+            a[j + 1] = tmp
+          } else {
+            break
+          }
         }
+        this.emit('change', {type: 'swap', from: i, to: j + 1 })
+        a[j + 1] = element
       }
-      a[j + 1] = element
     }
-  }
 
-  quiksort2 (comparefn) {
-    function QuickSort(a, from, to) {
-      var third_index = 0;
+    var QuickSort = (a, from, to) => {
+      var third_index = 0
       while (true) {
         // Insertion sort is faster for short arrays.
-        if (to - from <= 10) {
-          InsertionSort(a, from, to);
-          return;
+        if (to - from <= 4) {
+          InsertionSort(a, from, to)
+          return
         }
 
         third_index = from + ((to - from) >> 1)
@@ -94,80 +109,83 @@ export class ObservableArray extends MixinEmitter(Array) {
         var v0 = a[from]
         var v1 = a[to - 1]
         var v2 = a[third_index]
-        var c01 = comparefn(v0, v1);
+        var c01 = comparefn(v0, v1)
         if (c01 > 0) {
           // v1 < v0, so swap them.
-          var tmp = v0;
-          v0 = v1;
-          v1 = tmp;
+          this.emit('change', {type: 'swap', from: from, to: to - 1 })
+          var tmp = v0
+          v0 = v1
+          v1 = tmp
         } // v0 <= v1.
-        var c02 = comparefn(v0, v2);
+        var c02 = comparefn(v0, v2)
         if (c02 >= 0) {
           // v2 <= v0 <= v1.
-          var tmp = v0;
-          v0 = v2;
-          v2 = v1;
-          v1 = tmp;
+          this.emit('change', {type: 'swap', from: from, to: to - 1 })
+          var tmp = v0
+          v0 = v2
+          v2 = v1
+          v1 = tmp
         } else {
           // v0 <= v1 && v0 < v2
-          var c12 = comparefn(v1, v2);
+          var c12 = comparefn(v1, v2)
           if (c12 > 0) {
             // v0 <= v2 < v1
-            var tmp = v1;
-            v1 = v2;
-            v2 = tmp;
+            var tmp = v1
+            v1 = v2
+            v2 = tmp
           }
         }
         // v0 <= v1 <= v2
-        a[from] = v0;
-        a[to - 1] = v2;
-        var pivot = v1;
-        var low_end = from + 1;   // Upper bound of elements lower than pivot.
-        var high_start = to - 1;  // Lower bound of elements greater than pivot.
-        a[third_index] = a[low_end];
-        a[low_end] = pivot;
+        a[from] = v0
+        a[to - 1] = v2
+        var pivot = v1
+        var low_end = from + 1 // Upper bound of elements lower than pivot.
+        var high_start = to - 1 // Lower bound of elements greater than pivot.
+        a[third_index] = a[low_end]
+        a[low_end] = pivot
 
         // From low_end to i are elements equal to pivot.
         // From i to high_start are elements that haven't been compared yet.
         partition: for (var i = low_end + 1; i < high_start; i++) {
-          var element = a[i];
-          var order = comparefn(element, pivot);
+          var element = a[i]
+          var order = comparefn(element, pivot)
           if (order < 0) {
-            a[i] = a[low_end];
-            a[low_end] = element;
-            low_end++;
+            a[i] = a[low_end]
+            a[low_end] = element
+            low_end++
           } else if (order > 0) {
             do {
-              high_start--;
-              if (high_start == i) break partition;
-              var top_elem = a[high_start];
-              order = comparefn(top_elem, pivot);
-            } while (order > 0);
-            a[i] = a[high_start];
-            a[high_start] = element;
+              high_start--
+              if (high_start == i) break partition
+              var top_elem = a[high_start]
+              order = comparefn(top_elem, pivot)
+            } while (order > 0)
+            a[i] = a[high_start]
+            a[high_start] = element
             if (order < 0) {
-              element = a[i];
-              a[i] = a[low_end];
-              a[low_end] = element;
-              low_end++;
+              element = a[i]
+              a[i] = a[low_end]
+              a[low_end] = element
+              low_end++
             }
           }
         }
         if (to - high_start < low_end - from) {
-          QuickSort(a, high_start, to);
-          to = low_end;
+          QuickSort(a, high_start, to)
+          to = low_end
         } else {
-          QuickSort(a, from, low_end);
-          from = high_start;
+          QuickSort(a, from, low_end)
+          from = high_start
         }
       }
     }
 
     // start it off
     QuickSort(this, 0, this.length)
+    return this
   }
 
-  quiksort (compare) {
+  quiksort_old (compare) {
     // DJ quiksort :D
     // ripped from http://stackoverflow.com/questions/5185864/javascript-quicksort
     // slight speed tradeoff. another way: copy the array, use native sort, and compare the results to re-order the elements
@@ -195,7 +213,7 @@ export class ObservableArray extends MixinEmitter(Array) {
       }
     }
 
-    _quikSort(this, 0, this.length-1, 0, this.length-1)
+    _quikSort(this, 0, this.length - 1, 0, this.length - 1)
     return this
   }
 
@@ -243,7 +261,7 @@ export class ObservableArray extends MixinEmitter(Array) {
     var l = arguments.length
     if (!l || (l <= 2 && (+idx >= this.length || +remove <= 0))) return []
     this.emit('change', { type: 'splice', idx, remove, add })
-    if (this._o_length) this._o_length(this.length + add.length - remove.length)
+    if (this._o_length) this._o_length(this.length + add.length - remove)
     return super.splice(idx, remove, ...add)
   }
 
@@ -325,7 +343,7 @@ function ObservableArrayApply (oarr, ...arr) {
   })
 }
 
-function context (G) {
+export function context (G) {
   var ctx = {}
   Object.defineProperties(ctx, {
     h: define_getter(() => ctx._h || (ctx._h = G.h.context())),
@@ -355,7 +373,7 @@ export class RenderingArray extends ObservableArray {
 
     // replicate behaviour of ObservableArray
     for (let p of ['swap','move','set','unshift','push','splice','remove','replace','insert','sort','empty','pop','reverse','shift'])
-      this[p] = function () { this.d[p].apply(this.d, arguments) }
+      this[p] = function () { return this.d[p].apply(this.d, arguments) }
 
     // where we store the id/data which gets passed to the rendering function
     if (fl >= 1) this._d = []
@@ -363,14 +381,13 @@ export class RenderingArray extends ObservableArray {
     if (fl >= 3) this._idx = []
 
     this.d.on('change', (e) => {
-      var v, t, l, len = this.length, fl = this.fl, type = e.type, a = this
+      var v, t, i, j, len = this.length, fl = this.fl, type = e.type, a = this
       switch (type) {
         // TODO: update all idx when it's modified (eg. swap, unshift, splice, move, insert, reverse)
         case 'swap':
           if (fl >= 1) swap(this._d, e.to, e.from)
           if (fl >= 2) swap(this._ctx, e.to, e.from)
           if (fl >= 3) {
-            debugger
             this._idx[e.from](e.to)
             this._idx[e.to](e.from)
             swap(this._idx, e.to, e.from)
@@ -391,69 +408,67 @@ export class RenderingArray extends ObservableArray {
           super[e.idx] = e.val
           break
         case 'unshift':
-          l = 0
+          i = 0
           // make space in storage arrays by splicing in undefined values (to be filled in by fn_call)
           v = new Array(e.values.length)
           if (fl >= 1) this._d.splice(0, 0, v)
           if (fl >= 2) this._ctx.splice(0, 0, v)
           if (fl >= 3) this._idx.splice(0, 0, v)
-          for (v of e.values) super.unshift(this.fn_call(v, l++))
+          for (v of e.values) super.unshift(this.fn_call(v, i++))
+          if (fl >= 3) for (; i < len; i++) this._idx[i](i)
           break
         case 'push':
-          l = len + e.values.length
+          i = len + e.values.length
+          t = []
           // make space in storage arrays
-          if (fl >= 1) this._d.length = l
-          if (fl >= 2) this._ctx.length = l
-          if (fl >= 3) this._idx.length = l
-          for (v of e.values) super.push(this.fn_call(v, len++))
+          if (fl >= 1) this._d.length = i
+          if (fl >= 2) this._ctx.length = i
+          if (fl >= 3) this._idx.length = i
+          for (v of e.values) t.push(this.fn_call(v, len++))
+          super.push(...t)
           break
         case 'splice':
-          l = e.idx
+          i = e.idx
+          j = e.remove
           // make space in storage arrays by splicing in undefined values (to be filled in by fn_call)
           v = new Array(e.add.length)
-          if (fl >= 1) this._d.splice(e.idx, e.remove, v)
-          if (fl >= 3) this._idx.splice(e.idx, e.remove, v)
-          if (fl >= 2) t = this._ctx.splice(e.idx, e.remove, v)
-          // not sure if this is right, actually... perhaps I need to make the elements identifiable (so that the arrayFragment listener gets it right)
-          super.splice(e.idx, e.remove, ...v)
+          if (fl >= 1) this._d.splice(i, j, ...v)
+          if (fl >= 2) t = this._ctx.splice(i, j, ...v)
+          if (fl >= 3) this._idx.splice(i, j, ...v)
+          // TODO: not sure if this is right, actually... perhaps I need to make the elements identifiable (so that the arrayFragment listener gets it right)
           for (v of t) v.cleanup()
-          for (v of e.add) this.fn_call(v, l++)
-          debugger
+          t = [] // temp array to save rendered elements
+          len = i - j // reduce index by number of removes
+          for (v of e.add) t.push(this.fn_call(v, len++))
+          super.splice(i, j, ...t)
+          if (fl >= 3) for (; i < len; i++) this._idx[i](i)
           break
         case 'remove':
-          if (fl >= 1) this._d.splice(e.idx, 1)
-          if (fl >= 2) this._ctx.splice(e.idx, 1)[0].cleanup()
-          if (fl >= 3) this._idx.splice(e.idx, 1)
-          super.splice(e.idx, 1)[0]
+          i = e.idx
+          if (fl >= 1) this._d.splice(i, 1)
+          if (fl >= 2) this._ctx.splice(i, 1)[0].cleanup()
+          if (fl >= 3) this._idx.splice(i, 1)
+          super.splice(i, 1)[0]
+          if (fl >= 3) for (len--; i < len; i++) this._idx[i](i)
           break
         case 'replace':
         case 'insert':
-          l = type === 'replace' ? 1 : 0
-          if (fl >= 1) this._d.splice(e.idx, l, null)
-          if (fl >= 2) v = this._ctx.splice(e.idx, l, null)
-          if (fl >= 3) this._idx.splice(e.idx, l, null)
-          super.splice(e.idx, l, this.fn_call(e.val, e.idx))
-          if (l > 0) v[0].cleanup()
-          else {
-            // it's insert, so update the indexes
-          }
+          i = e.idx
+          j = type === 'replace' ? 1 : 0
+          if (fl >= 1) this._d.splice(i, j, null)
+          if (fl >= 2) v = this._ctx.splice(i, j, null)
+          if (fl >= 3) this._idx.splice(i, j, null)
+          super.splice(i, j, this.fn_call(e.val, i))
+          if (j > 0 && v[0]) v[0].cleanup()                        // replace: clean up old ctx
+          else if (fl >= 3) for (; i <= len; i++) this._idx[i](i)   // insert: update the indexes
           break
         case 'sort':
-          // TODO: this totally will not work. I don't think the compare function will work the same for _d, _idx, _ctx
-          // I need to do quiksort and map the swap events. I think this will be a super.on('change', [save events into an array]), super.quiksort(e.compare), then replay the events on each of the arrays
           t = []
           let listen = (e) => { t.push(e) }
-          // super.on('change', listen)
-          // super.quiksort(e.compare)
-          // super.off('change', listen)
           this.d.on('change', listen)
-          this.d.quiksort(e.compare)
+          this.d.selectionsort(e.compare)
           this.d.off('change', listen)
-          for (v of t) {
-            // console.log('replay', v)
-            // this.d.emit('change', v)
-            super.emit('change', v)
-          }
+          for (v of t) super.emit('change', v)
           break
         case 'empty':
           super.empty()
@@ -462,11 +477,17 @@ export class RenderingArray extends ObservableArray {
           if (fl >= 3) this._idx.length = 0
           break
         // no args
-        case 'pop':
-        case 'shift':
         case 'reverse':
+          // reverse the indexes
+          for (i = 0; i < len; i++) this._idx[i](len - i - 1)
+          // set len to 0 so we don't cleanup() (it should be greater than 1)
+          len = 0
+          // nobreak
+        case 'shift':
+          if (len) for (i = 1; i < len; i++) this._idx[i](i - 1)
+        case 'pop':
           this._d[type]()
-          this._ctx[type]().cleanup()
+          if ((v = this._ctx[type]()) && len) v.cleanup()
           this._idx[type]()
           super[type]()
           break
@@ -474,9 +495,7 @@ export class RenderingArray extends ObservableArray {
     })
 
     // lastly, if data has length, then render and add each of them
-    for (var i = 0; i < data.length; i++) {
-      super.push(this.fn_call(data[i], i))
-    }
+    this.data(data)
   }
 
   data (data) {
@@ -484,9 +503,18 @@ export class RenderingArray extends ObservableArray {
       // empty / cleanup the array
       if (this.length) this.empty()
 
-      for (var i = 0; i < data.length; i++) {
-        super.push(this.fn_call(data[i], i))
+      for (var i = 0, _d = []; i < data.length; i++) {
+        _d.push(this.fn_call(data[i], i))
       }
+
+      super.push(..._d)
+
+      if (this._o_length) this._o_length(data.length)
+      Object.defineProperty(this, 'obv_len', {
+        configurable: true,
+        // get: () => this._o_length || (this._o_length = value(this.d.length))
+        get: () => this.d.obv_len
+      })
 
       this.d = data
     }
