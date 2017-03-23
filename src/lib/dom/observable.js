@@ -1,6 +1,7 @@
 'use strict'
 
 import { forEach } from './hyper-hermes'
+import { define_value } from '../utils'
 // import isEqual from '../lodash/isEqual'
 
 // knicked from: https://github.com/dominictarr/observable/blob/master/index.js
@@ -72,6 +73,21 @@ export function value (initialValue) {
       })
     )
   }
+}
+
+// an observable object
+export function object (initialValue, _keys) {
+  // if the value is already an observable, then just return it
+  if (initialValue && initialValue.observable === 'object') return initialValue
+
+  var obj = {}
+  var val = {}
+  var keys = Array.isArray(_keys) ? _keys : Object.keys(initialValue)
+  var props = { observable: define_value('object') }
+  for (let k of keys) props[k] = { get: () => val[k] || (val[k] = value(initialValue[k])) }
+  Object.defineProperties(obj, props)
+
+  return obj
 }
 
 /*

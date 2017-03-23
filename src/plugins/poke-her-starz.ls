@@ -60,43 +60,44 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   console.log 'table', table
 
-  table = new Table 50, 100, 4, 10, 100, 1000 # smallBlind, bigBlind, minPlayers, maxPlayers, minBuyIn, maxBuyIn
-  table.add-player 'bob', 1000
-  table.add-player 'jane', 1000
-  table.add-player 'dylan', 1000
-  table.add-player 'john', 1000
+  # table = new Table 50, 100, 4, 10, 100, 1000 # smallBlind, bigBlind, minPlayers, maxPlayers, minBuyIn, maxBuyIn
+  pp = [
+    table.add-player 'bob', 1000
+    table.add-player 'jane', 1000
+    table.add-player 'dylan', 1000
+    table.add-player 'john', 1000
+  ]
   table.start-game!
 
-  p = table.players
-  # deal
-  p.0.Call!
-  p.1.Call!
-  p.2.Call!
-  p.3.Call!
+  if p = table.players
+    # deal
+    p.0.Call!
+    p.1.Call!
+    p.2.Call!
+    p.3.Call!
 
-  # flop
-  p.0.Call!
-  p.1.Call!
-  p.2.Call!
-  p.3.Call!
+    # flop
+    p.0.Call!
+    p.1.Call!
+    p.2.Call!
+    p.3.Call!
 
-  # turn
-  p.1.Bet 2
-  p.0.Bet 50
-  p.2.Bet 50
-  p.3.Call!
-  # needed to finish the round because jane (p.1) only bet 2 which does not match the maxBet amount (50)
-  p.1.Call!
+    # turn
+    p.1.Bet 2
+    p.0.Bet 50
+    p.2.Bet 50
+    p.3.Call!
+    # needed to finish the round because jane (p.1) only bet 2 which does not match the maxBet amount (50)
+    p.1.Call!
 
-  # river
-  p.0.Call!
-  p.1.Call!
-  p.2.Call!
-  p.3.Call!
-  # showdown!!
-  # show winners
-
-  console.log table.game
+    # river
+    p.0.Call!
+    p.1.Call!
+    p.2.Call!
+    p.3.Call!
+    # showdown!!
+    # show winners
+    console.log table.game
 
 
 
@@ -191,8 +192,8 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
     y = transform pos, (p) -> "#{p.y}px"
     h \div style: {
       border: 'solid 1px #000'
-      # border-radius: '8px'
-      border-radius: '50%'
+      border-radius: '8px'
+      # border-radius: '50%'
       margin-top: '-30px'
       margin-left: '-30px'
       position: \fixed
@@ -200,7 +201,10 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       height: '60px'
       left: x
       top: y
-    }, d
+    },
+      h \div.name, d.name
+      h \div.state, d.state
+      h \div.chips, d.chips
 
   # two things:
   # 1. RenderingArray should have a cleanup function (to clean up everything in the array)
@@ -219,14 +223,21 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   #   # debugger
   #   a > b
   # console.log test, test.join ','
-  playaz.push 'kenny', 'jenny'
+  playaz.push.apply playaz, pp #'kenny', 'jenny'
   more_playaz = ['jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde']
 
   ii = set-interval !->
     if p = more_playaz.shift!
-      console.log 'adding', p
-      playaz.push p
-    else clear-interval ii
+      # playaz.push p
+      if pp = table.add-player p, (200 + (Math.round Math.random! * 1000))
+        console.log 'adding', p, pp
+        playaz.push pp
+      else
+        console.log 'err:', p, pp
+        more_playaz.unshift p
+    else
+      clear-interval ii
+      table.start-game!
   , 2000
 
   G.E.frame.aC [
