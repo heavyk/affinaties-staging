@@ -3,12 +3,16 @@
 // many modifications...
 // also took some inspiration from https://github.com/Raynos/mercury
 
-import ClassList from './class-list.js'
 import { attribute, hover, focus, select, event, on, off } from './observable.js'
-var doc = window.document
+
+export const doc = window.document
+export const body = doc.body
+export const IS_LOCAL = ~doc.location.host.indexOf('localhost')
 
 /*
 TODO ITEMS:
+ * convert to short function syntax (and perhaps use this)
+ * experiment with the idea of making the h function's context be attached to `this` - that way I could move contexts around and stuff
  * extract out the attribute setting function and make it available to the attribute observable so setting attributes will work properyly for shortcut syntax
  * test all the observable-array events to make sure there's no element smashing
 */
@@ -46,7 +50,7 @@ function context (createElement, arrayFragment) {
             } else {
               s = v.substring(1, i)
               if (v[0] === '.') {
-                ClassList(e).add(s)
+                e.classList.add(s)
               } else if (v[0] === '#') {
                 e.setAttribute('id', s)
               }
@@ -94,12 +98,11 @@ function context (createElement, arrayFragment) {
           } else if (k === 'for') {
             e.htmlFor = attr_val
           } else if (k === 'c' || k === 'class') {
-            // e.className = Array.isArray(attr_val) ? attr_val.join(' ') : attr_val
             if (Array.isArray(attr_val)) {
               forEach(attr_val, function (c) {
-                if (c) ClassList(e).add(c)
+                if (c) e.classList.add(c)
               })
-            } else if (attr_val) ClassList(e).add(attr_val)
+            } else if (attr_val) e.classList.add(attr_val)
           } else if (k === 'on') {
             if (typeof attr_val === 'object') {
               for (s in attr_val)

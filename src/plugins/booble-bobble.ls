@@ -6,9 +6,7 @@
 ``import shuffle from '../lib/lodash/shuffle'``
 ``import random from '../lib/lodash/random'``
 ``import isEqual from '../lib/lodash/isEqual'``
-``import h from '../lib/dom/hyper-hermes'``
-``import { s } from '../lib/dom/hyper-hermes'``
-``import CL from '../lib/dom/class-list'``
+``import { h, s } from '../lib/dom/hyper-hermes'``
 ``import ObservArray from '../lib/dom/observable-array'``
 ``import { value, attribute, transform, compute } from '../lib/dom/observable'``
 ``import floatingTip from '../lib/decorators/floating-tip'``
@@ -54,9 +52,6 @@ TODO: code
    - implement an AST based graphical code editor (translates to js)
   - hash server for asset lookup
 */
-
-# const doc = document
-# const IS_LOCAL = ~doc.location.host.index-of 'localhost'
 
 const DEFAULT_CONFIG =
   difficulty: 2

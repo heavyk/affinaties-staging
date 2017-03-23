@@ -1,7 +1,7 @@
 ``import pluginBoilerplate from '../lib/plugins/plugin-boilerplate'``
 # ``import h from '../lib/dom/hyper-hermes'``
 # ``import load_sdk from '../lib/load-sdk-h'``
-``import { s, h, special_elements } from '../lib/dom/hyper-hermes'``
+``import { s, h, doc, special_elements } from '../lib/dom/hyper-hermes'``
 ``import { ObservableArray, RenderingArray} from '../lib/dom/observable-array'``
 ``import { value, transform, compute, px, observable_property } from '../lib/dom/observable'``
 ``import polarToCartesian from '../lib/calc/polarToCartesian'``
@@ -21,9 +21,6 @@ special_elements['poem-state-machine'] = 2 # opts, fn
 window.custom-elements.define \poem-state-machine, StateMachine
 # window.custom-elements.define \poem-modal, Modal
 # window.custom-elements.define \poke-her-card, Card
-
-const doc = document
-const IS_LOCAL = ~doc.location.host.index-of 'localhost'
 
 const HALF_PI = Math.PI / 180
 const DEFAULT_CONFIG =

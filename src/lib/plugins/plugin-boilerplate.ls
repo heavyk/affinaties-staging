@@ -1,8 +1,7 @@
 ``import defaults from '../lodash/defaultsDeep'``
 ``import { value } from '../dom/observable'``
 ``import { ResizeSensor } from '../dom/css-element-queries'``
-``import h from '../dom/hyper-hermes'``
-``import { s } from '../dom/hyper-hermes'``
+``import { h, s, doc, body } from '../dom/hyper-hermes'``
 
 
 parse-json = (s) ->
@@ -14,7 +13,6 @@ parse-json = (s) ->
 
 plugin-boilerplate = (frame, id, _config, _data, DEFAULT_CONFIG, _onload) ->
   const config = defaults {}, (parse-json _config), DEFAULT_CONFIG
-  const doc = document
   const body = doc.body
   const IS_LOCAL = ~doc.location.host.index-of 'localhost'
   if IS_LOCAL

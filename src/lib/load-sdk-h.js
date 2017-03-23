@@ -1,7 +1,5 @@
 
-import h from './dom/hyper-hermes'
-
-const doc = document
+import { h, doc } from './dom/hyper-hermes'
 
 function load_sdk (_id, v, cb) {
   if (typeof v === 'function') cb = v, v = null

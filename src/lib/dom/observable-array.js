@@ -281,15 +281,7 @@ export class ObservableArray extends MixinEmitter(Array) {
   }
 }
 
-// not yet decided on this one, because every time something is added, the function is called.
-// so, that means I'll need to create a context for each function call so I can clean up the observables when the item is removed
-// that brings me to another point which I'm not sure about: it may be a lot more efficient to convert hyper-hermes to store its context in `this` instead of a closure
-// the advantage of that might be easier access to the context for better management of them
-// ----
-// in other news, I also need an easy way of making new G objects (probably make it into a class)... horray for class abuse!
-// import { value } from './observable'
-
-function ObservableArrayApply (oarr, ...arr) {
+export function ObservableArrayApply (oarr, ...arr) {
   oarr.on('change', (e) => {
     var a, t
     switch (e.type) {
