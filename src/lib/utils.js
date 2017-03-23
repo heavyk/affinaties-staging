@@ -134,28 +134,6 @@ export function stringifyQS (data) {
     : ''
 }
 
-export function addClass (node, className) {
-  if (node.classList) {
-    node.classList.add(className)
-  } else {
-    var pattern = new RegExp(`\\b${className}\\b`)
-    if (!pattern.test(node.getAttribute('class'))) {
-      node.setAttribute('class', node.getAttribute('class') + ' ' + className)
-    }
-  }
-}
-
-export function removeClass (node, className) {
-  if (node.classList) {
-    node.classList.remove(className)
-  } else {
-    var pattern = new RegExp(`\\b${className}\\b`, 'g')
-    if (pattern.test(node.getAttribute('class'))) {
-      node.setAttribute('class', node.getAttribute('class').replace(pattern, ''))
-    }
-  }
-}
-
 export function camelize (k) {
   return ~k.indexOf('-') ? k.replace(/-+(.)?/g, (tmp, c) => (c || '').toUpperCase()) : k
 }

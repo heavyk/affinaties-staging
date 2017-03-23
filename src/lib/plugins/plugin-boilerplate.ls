@@ -1,7 +1,7 @@
 ``import defaults from '../lodash/defaultsDeep'``
 ``import { value } from '../dom/observable'``
 ``import { ResizeSensor } from '../dom/css-element-queries'``
-``import { h, s, doc, body } from '../dom/hyper-hermes'``
+``import { h, s, doc, body, IS_LOCAL } from '../dom/hyper-hermes'``
 
 
 parse-json = (s) ->
@@ -13,8 +13,7 @@ parse-json = (s) ->
 
 plugin-boilerplate = (frame, id, _config, _data, DEFAULT_CONFIG, _onload) ->
   const config = defaults {}, (parse-json _config), DEFAULT_CONFIG
-  const body = doc.body
-  const IS_LOCAL = ~doc.location.host.index-of 'localhost'
+
   if IS_LOCAL
     # set the domain (to allow parent window modification)
     # doc.domain = doc.domain
@@ -23,7 +22,7 @@ plugin-boilerplate = (frame, id, _config, _data, DEFAULT_CONFIG, _onload) ->
     # TODO: need information whether the "plugin" has a stylesheet
     style = body.style
     style.background = '#fff'
-    style.'font-family' = 'Helvetica Neue,Helvetica,Arial,sans-serif'
+    style.font-family = 'Helvetica Neue,Helvetica,Arial,sans-serif'
     style.padding = style.margin = 0
 
   unless frame

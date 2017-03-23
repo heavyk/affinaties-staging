@@ -1,9 +1,7 @@
 import { value, transform } from '../dom/observable'
 
 export const _not = (v) => !v
-export function not (observable) {
-  return transform(observable, _not)
-}
+export const not = (observable) => transform(observable, _not)
 
 // TODO: timeout returns an error
 // TODO: strict option selection, else error

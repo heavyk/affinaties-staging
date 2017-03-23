@@ -30,16 +30,14 @@ function context (createElement, arrayFragment) {
 
   function add_event (e, event, listener, opts) {
     on(e, event, listener, opts)
-    cleanupFuncs.push(function () {
-      off(e, event, listener, opts)
-    })
+    cleanupFuncs.push(() => { off(e, event, listener, opts) })
   }
 
 
   function h() {
     var args = [].slice.call(arguments), e = null
     function item (l) {
-      var r, s, i, o
+      var r, s, i, o, k
       function parseClass (string) {
         var m = string.split(/([\.#]?[a-zA-Z0-9_:-]+)/)
         if (/^\.|#/.test(m[1])) e = createElement('div')
@@ -76,7 +74,9 @@ function context (createElement, arrayFragment) {
       } else if (isNode(l) || l instanceof window.Text) {
         e.appendChild(r = l)
       } else if (typeof l === 'object') {
-        for (var k in l) (function (attr_val, k) {
+        for (k in l) (function (attr_val, _key) {
+          // convert short attributes to long versions. s -> style, c -> className
+          var k = short_attrs[_key] || _key
           if (typeof attr_val === 'function') {
             // TODO: not sure which one is faster: regex or substr test
             // if (/^on\w+/.test(k)) {
@@ -84,25 +84,21 @@ function context (createElement, arrayFragment) {
               add_event(e, k.substr(2), attr_val, false)
             } else {
               // observable
-              // TODO: short names for k -> real attr names (eg. 'c' --> 'class', 's' --> 'style')
-              var kk = short_attrs[k] || k
-              if ((s = attr_val()) != null) e.setAttribute(kk, s)
-              // console.log('set-attribute', kk, s)
+              if ((s = attr_val()) != null) e.setAttribute(k, s)
+              // console.log('set-attribute', k, s)
               cleanupFuncs.push(attr_val(function (v) {
-                if (v != null) e.setAttribute(kk, v)
-                // console.log('set attribute', kk, '->', v)
+                if (v != null) e.setAttribute(k, v)
+                // console.log('set attribute', k, '->', v)
               }))
             }
           } else if (k === 'data') {
             for(s in attr_val) e.dataset[s] = attr_val[s]
           } else if (k === 'for') {
             e.htmlFor = attr_val
-          } else if (k === 'c' || k === 'class') {
-            if (Array.isArray(attr_val)) {
-              forEach(attr_val, function (c) {
-                if (c) e.classList.add(c)
-              })
-            } else if (attr_val) e.classList.add(attr_val)
+          } else if (k === 'class' && attr_val) {
+            o = e.classList
+            if (Array.isArray(attr_val)) forEach(attr_val, (c) => { if (c) o.add(c) })
+            else o.add(attr_val)
           } else if (k === 'on') {
             if (typeof attr_val === 'object') {
               for (s in attr_val)
@@ -150,12 +146,11 @@ function context (createElement, arrayFragment) {
               })(s, attr_val[s])
             }).bind(e, attr_val, e), 0)
           // ------------------ testing ---------------
-          } else if (k === 's' || k === 'style') {
+          } else if (k === 'style') {
             if (typeof attr_val === 'string') {
               e.style.cssText = attr_val
             } else {
-              // debugger
-              // if I use setProperty, then, borderRadius will not work. (which is nice when using LiveScript, cause then the property does not need to be quoted)
+              // if I use setProperty, then, 'borderRadius' will not work. (which is nice when using LiveScript, cause then the property does not need to be quoted)
               for (s in attr_val) (function (s, v) {
                 if (typeof v === 'function') {
                   // observable
@@ -177,15 +172,8 @@ function context (createElement, arrayFragment) {
             // for namespaced attributes, such as xlink:href
             // (I'm really not aware of any others than xlink... PRs accepted!)
             if (~(i = k.indexOf(':'))) {
-              // var attr = k.split(':')
-              // debugger
-              switch (k.substr(0, i)) {
-                case 'xlink':
-                  // debugger
-                  e.setAttributeNS('http://www.w3.org/1999/xlink', k.substr(++i), attr_val)
-                //   break
-                // default:
-                //   console.error('unknown namespaced attribute: ' + k)
+              if (k.substr(0, i) === 'xlink') {
+                e.setAttributeNS('http://www.w3.org/1999/xlink', k.substr(++i), attr_val)
               }
             // } else if (k === 'src' && e.tagName === 'IMG' && ~attr_val.indexOf('holder.js')) {
             //   e.dataset.src = attr_val
