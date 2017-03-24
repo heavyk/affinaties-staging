@@ -30,7 +30,7 @@
     "dropzone": "^4.3.0",
     "eases": "^1.0.8",
     "electron": "^1.6.2",
-    "electron-builder": "^16.2.0",
+    "electron-builder": "^16.3.0",
     "electron-packager": "^8.6.0",
     "electron-rebuild": "^1.5.7",
     "engine.io-client": "^2.1.1",
