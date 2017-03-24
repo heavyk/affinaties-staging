@@ -81,10 +81,26 @@ export function object (initialValue, _keys) {
   if (initialValue && initialValue.observable === 'object') return initialValue
 
   var obj = {}
-  var val = {}
-  var keys = Array.isArray(_keys) ? _keys : Object.keys(initialValue)
-  var props = { observable: define_value('object') }
-  for (let k of keys) props[k] = { get: () => val[k] || (val[k] = value(initialValue[k])) }
+  var obvs = {}
+  var keys = []
+  for (let k of Array.isArray(_keys) ? _keys : Object.keys(initialValue)) {
+    let v = initialValue[k]
+    if (v !== undefined) {
+      if (v.observable) obvs[k] = v
+      keys.push(k)
+    }
+  }
+
+  var props = {
+    observable: define_value('object'),
+    // TODO: implement get/set,on/off for compatibility with scuttlebutt?
+    set: define_value((v) => {
+      for (let k of keys) {
+        if (obvs[k] && v[k]) obvs[k](v[k])
+      }
+    })
+  }
+  for (let k of keys) props[k] = { get: () => obvs[k] || (obvs[k] = value(initialValue[k])) }
   Object.defineProperties(obj, props)
 
   return obj

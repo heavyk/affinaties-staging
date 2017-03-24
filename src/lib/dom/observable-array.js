@@ -2,6 +2,8 @@ import { MixinEmitter } from '../drip/emitter'
 import { define_getter, define_value } from '../utils'
 import { value, object, observable_property } from './observable'
 import eq from '../lodash/isEqual'
+import invoke from '../lodash/invoke'
+import set from '../lodash/set'
 
 export class ObservableArray extends MixinEmitter(Array) {
   // this is so all derived objects are of type Array, instead of ObservableArray
@@ -279,6 +281,17 @@ export class ObservableArray extends MixinEmitter(Array) {
     this[idx] = val
     return this
   }
+
+  setPath (idx, path, value) {
+    var obj = this[idx]
+    // in case it's an observable, no need to emit the event
+    if (obj.observable === 'object') invoke(obj, path, value)
+    else {
+      set(obj, path, value)
+      this.emit('change', { type: 'set', idx, val: obj })
+    }
+    return obj
+  }
 }
 
 export function ObservableArrayApply (oarr, ...arr) {
@@ -364,7 +377,7 @@ export class RenderingArray extends ObservableArray {
     this.d = data instanceof ObservableArray ? data : (data = new ObservableArray)
 
     // replicate behaviour of ObservableArray
-    for (let p of ['swap','move','set','unshift','push','splice','remove','replace','insert','sort','empty','pop','reverse','shift'])
+    for (let p of ['swap','move','set','unshift','push','splice','remove','replace','insert','sort','empty','pop','reverse','shift', 'setPath'])
       this[p] = function () { return this.d[p].apply(this.d, arguments) }
 
     // where we store the id/data which gets passed to the rendering function
@@ -375,37 +388,43 @@ export class RenderingArray extends ObservableArray {
     this.d.on('change', (e) => {
       var v, t, i, j, len = this.length, fl = this.fl, type = e.type, a = this
       switch (type) {
-        // TODO: update all idx when it's modified (eg. swap, unshift, splice, move, insert, reverse)
+        // TODO: in places where no swapping is done, just update this._d
         case 'swap':
-          if (fl >= 1) swap(this._d, e.to, e.from)
-          if (fl >= 2) swap(this._ctx, e.to, e.from)
+          i = e.from
+          j = e.to
+          if (fl >= 1) swap(this._d, j, i)
+          if (fl >= 2) swap(this._ctx, j, i)
           if (fl >= 3) {
-            this._idx[e.from](e.to)
-            this._idx[e.to](e.from)
-            swap(this._idx, e.to, e.from)
+            this._idx[i](j)
+            this._idx[j](i)
+            swap(this._idx, j, i)
           }
-          swap(this, e.to, e.from)
+          swap(this, j, i)
           break
         case 'move':
-          if (fl >= 1) v = this._d.splice(e.from, 1), this._d.splice(e.to, 0, v[0])
-          if (fl >= 2) v = this._ctx.splice(e.from, 1), this._ctx.splice(e.to, 0, v[0])
+          i = e.from
+          j = e.to
+          if (fl >= 1) v = this._d.splice(i, 1), this._d.splice(j, 0, v[0])
+          if (fl >= 2) v = this._ctx.splice(i, 1), this._ctx.splice(j, 0, v[0])
           if (fl >= 3) {
-            v = this._idx.splice(e.from, 1), this._idx.splice(e.to, 0, v[0])
-            this._idx[e.from](e.to)
-            this._idx[e.to](e.from)
+            v = this._idx.splice(i, 1), this._idx.splice(j, 0, v[0])
+            this._idx[i](j)
+            this._idx[j](i)
           }
-          (v = super.splice(e.from, 1)) && super.splice(e.to, 0, v[0])
+          v = super.splice(i, 1), super.splice(j, 0, v[0])
           break
         case 'set':
-          super[e.idx] = e.val
+          i = e.idx, v = e.val
+          super[i] = v
+          if (fl >= 1) this._d[i].set(v)
           break
         case 'unshift':
           i = 0
           // make space in storage arrays by splicing in undefined values (to be filled in by fn_call)
           v = new Array(e.values.length)
-          if (fl >= 1) this._d.splice(0, 0, v)
-          if (fl >= 2) this._ctx.splice(0, 0, v)
-          if (fl >= 3) this._idx.splice(0, 0, v)
+          if (fl >= 1) this._d.splice(0, 0, ...v)
+          if (fl >= 2) this._ctx.splice(0, 0, ...v)
+          if (fl >= 3) this._idx.splice(0, 0, ...v)
           for (v of e.values) super.unshift(this.fn_call(v, i++))
           if (fl >= 3) for (; i < len; i++) this._idx[i](i)
           break
@@ -472,11 +491,12 @@ export class RenderingArray extends ObservableArray {
         case 'reverse':
           // reverse the indexes
           for (i = 0; i < len; i++) this._idx[i](len - i - 1)
-          // set len to 0 so we don't cleanup() (it should be greater than 1)
+          // set len to 0 so we don't cleanup() or shift the idx
           len = 0
           // nobreak
         case 'shift':
           if (len) for (i = 1; i < len; i++) this._idx[i](i - 1)
+          // nobreak
         case 'pop':
           this._d[type]()
           if ((v = this._ctx[type]()) && len) v.cleanup()
@@ -492,10 +512,13 @@ export class RenderingArray extends ObservableArray {
 
   data (data) {
     if (data instanceof ObservableArray) {
+      var i = 0, _d = []
+      // TODO: technically, I don't need to empty the array at all... just update the values of this._d for each one, then push on (or splice off) the difference
+
       // empty / cleanup the array
       if (this.length) this.empty()
 
-      for (var i = 0, _d = []; i < data.length; i++) {
+      for (; i < data.length; i++) {
         _d.push(this.fn_call(data[i], i))
       }
 
