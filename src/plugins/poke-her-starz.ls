@@ -56,18 +56,18 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   # G.orientation (v) !-> console.log 'orientation', v
 
   table = holdem_table 50, 100, 4, 10, 100, 1000
+  var game
   # table.add-player 'kenny', 1000
 
   console.log 'table', table
 
   # table = new Table 50, 100, 4, 10, 100, 1000 # smallBlind, bigBlind, minPlayers, maxPlayers, minBuyIn, maxBuyIn
   pp = [
+    my = table.add-player 'k-prime', 1000
     table.add-player 'bob', 1000
-    table.add-player 'jane', 1000
     table.add-player 'dylan', 1000
-    table.add-player 'john', 1000
   ]
-  table.start-game!
+  # console.log \start, table.start-game!
 
   if p = table.players
     # deal
@@ -104,8 +104,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   const S1 = 11
   const S2 = 9
   const S3 = 5
-  const TABLE_PADDING = 50
-  const TABLE_PADDING2 = TABLE_PADDING * 2
+
   const TABLE_STROKE = 5.5
   const TABLE_STROKE2 = TABLE_STROKE * 2
 
@@ -115,8 +114,14 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   middle-area-ry = transform middle-area-height, (v) -> v / 2
   middle-area-rxs = transform middle-area-rx, (v) -> v - TABLE_STROKE2 # because two half strokes always equals the total stroke
   middle-area-rys = transform middle-area-ry, (v) -> v - TABLE_STROKE2 # because two half strokes always equals the total stroke
+  table-padding = transform middle-area-width, (v) -> v * 0.15
+  table-padding (v) -> console.log 'table-padding', v
+  playa-offset = transform middle-area-width, (v) -> v * 0.07
+  playa-offset (v) -> console.log 'playa-offset', v
+  bet-offset = transform middle-area-width, (v) -> -(v * 0.07)
+  bet-offset (v) -> console.log 'bet-offset', v
   middle-area-card-margin = transform middle-area-width, (v) -> v * 0.025
-  middle-area-card-width = compute [middle-area-width, middle-area-card-margin], (w, m) -> ((w - TABLE_PADDING2) / 5) - m
+  middle-area-card-width = compute [middle-area-width, middle-area-card-margin, table-padding], (w, m, p) -> ((w - p - p) / 5) - m
   middle-area-card-height = transform middle-area-card-width, (w) -> w * 1.45
 
   middle-area-space-width = transform middle-area-card-width, (w) -> w + 3 + 3
@@ -128,8 +133,12 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   table-middle-x = compute [table-margin-sides, middle-area-rx], (tm, rx) -> tm + rx #- TABLE_PADDING
   table-middle-y = compute [table-margin-top, middle-area-ry], (tm, ry) -> tm + ry #- TABLE_PADDING
 
-  mid-w = transform middle-area-width, (w) -> 60 + (w / 2)
-  mid-h = transform middle-area-height, (h) -> 60 + (h / 2)
+  playa-mid-w = compute [middle-area-rx, playa-offset], (w, p) -> w + p
+  playa-mid-h = compute [middle-area-ry, playa-offset], (h, p) -> h + p
+  bet-mid-w = compute [middle-area-rx, bet-offset], (w, b) -> w + b
+  bet-mid-h = compute [middle-area-ry, bet-offset], (h, b) -> h + b
+  bet-mid-w (v) -> console.log 'bet-mid-w', v
+  playa-mid-w (v) -> console.log 'playa-mid-w', v
 
   hand-pos-x = (n) ->
     compute [G.width, middle-area-card-width, n], (w, cw, n) -> (w * 0.49) - (cw / 2) + ((cw / 5) * n)
@@ -137,22 +146,21 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
     compute [G.height, middle-area-card-height], (h, ch) -> h - (ch * 0.2)
 
   card-pos-x = (n) ->
-    compute [table-margin-sides, middle-area-card-width, middle-area-card-margin, n], (tm, cw, cm, n) -> TABLE_STROKE + TABLE_PADDING + tm + (cw * n) + (cm * n) + 3
+    compute [table-margin-sides, middle-area-card-width, middle-area-card-margin, table-padding, n], (tm, cw, cm, tp, n) -> TABLE_STROKE + tp + tm + (cw * n) + (cm * n) + 3
   card-pos-y = (n) ->
-    compute [table-margin-top, middle-area-height, middle-area-card-height, n], (tm, mh, ch, n) -> TABLE_STROKE + TABLE_PADDING + tm + ((mh - ch - TABLE_PADDING2) / 2)
+    compute [table-margin-top, middle-area-height, middle-area-card-height, table-padding, n], (tm, mh, ch, tp, n) -> TABLE_STROKE + tp + tm + ((mh - ch - tp - tp) / 2)
 
   space-pos-x = (n) ->
-    compute [middle-area-space-width, middle-area-space-margin], (cw, cm) -> TABLE_STROKE + TABLE_PADDING + (cw * n) + (cm * n) # - 3
+    compute [middle-area-space-width, middle-area-space-margin, table-padding], (cw, cm, tp) -> TABLE_STROKE + tp + (cw * n) + (cm * n) # - 3
   space-pos-y = (n) ->
-    compute [middle-area-height, middle-area-space-height], (mh, ch) -> TABLE_STROKE + TABLE_PADDING + ((mh - ch - TABLE_PADDING2) / 2)
+    compute [middle-area-height, middle-area-space-height, table-padding], (mh, ch, tp) -> TABLE_STROKE + tp + ((mh - ch - tp - tp) / 2)
 
   first-playa-angle = 150 #200
   last-playa-angle = 390 #340
   max-playas = value 8
   num-playas = value 2
-  # angle-increment = compute [last-playa-angle, first-playa-angle, num-playas] (a1, a0, n) -> (a1 - a0) / (n - 1)
 
-  playa-pos = (i) ->
+  table-pos = (i, mid-w, mid-h) ->
     compute [table-middle-x, table-middle-y, mid-w, mid-h, first-playa-angle, last-playa-angle, i, num-playas, max-playas], (mid-x, mid-y, mid-w, mid-h, a0, a1, i, n, m) ->
       max_arc = a1 - a0
       if n < 2
@@ -163,15 +171,15 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
         arc_inc = (max_arc - min_arc) / n
         inc = (max_arc - arc_inc - arc_inc) / (n - 1)
         angle = (a0 + arc_inc + (i * inc))
-        # console.log i, n, \min_arc, min_arc, \arc_inc, arc_inc, \inc, inc, \angle, angle
-        # if angle is 270 => debugger
       angle *= HALF_PI
       # TODO: move this to a lib function
       # http://stackoverflow.com/questions/39098308/how-to-use-two-coordinates-draw-an-ellipse-with-javascript
+      cos = Math.cos angle
+      sin = Math.sin angle
       a = x: mid-w, y: 0
       b = x: 0,     y: mid-h
-      x = mid-x + (a.x * (Math.cos angle)) + (b.x * (Math.sin angle))
-      y = mid-y + (a.y * (Math.cos angle)) + (b.y * (Math.sin angle))
+      x = mid-x + (a.x * cos) + (b.x * sin)
+      y = mid-y + (a.y * cos) + (b.y * sin)
       {x, y}
 
   cards_down = value true
@@ -187,10 +195,15 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   window.playaz =\
   playaz = new RenderingArray G, (d, idx, {h}) ->
     # do these need to save off functions?
-    pos = playa-pos idx
-    x = transform pos, (p) -> "#{p.x}px"
-    y = transform pos, (p) -> "#{p.y}px"
-    h \div style: {
+    playa-pos = table-pos idx, playa-mid-w, playa-mid-h
+    bet-pos = table-pos idx, bet-mid-w, bet-mid-h
+    playa-x = transform playa-pos, (p) -> "#{p.x}px"
+    playa-y = transform playa-pos, (p) -> "#{p.y}px"
+    bet-x = transform bet-pos, (p) -> "#{p.x}px"
+    bet-y = transform bet-pos, (p) -> "#{p.y}px"
+
+    # TODO: this becomes the foto
+    h \div.playa style: {
       border: 'solid 1px #000'
       border-radius: '8px'
       # border-radius: '50%'
@@ -199,12 +212,25 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       position: \fixed
       width: '60px'
       height: '60px'
-      left: x
-      top: y
+      left: playa-x
+      top: playa-y
     },
       h \div.name, d.name
       h \div.state, d.state
       h \div.chips, d.chips
+      h \div.bet, style: {
+        border: 'solid 1px #000'
+        background: '#f06'
+        # border-radius: '8px'
+        border-radius: '50%'
+        margin-top: '-10px'
+        margin-left: '-10px'
+        position: \fixed
+        width: '20px'
+        height: '20px'
+        left: bet-x
+        top: bet-y
+      }
 
   # two things:
   # 1. RenderingArray should have a cleanup function (to clean up everything in the array)
@@ -212,8 +238,8 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   # this needs fixing
   playaz.obv_len num-playas
 
-  cards.push \AH, \2H, \3H #, \4H, \5H
-  hand.push \AS, \AD
+  # cards.push \AH, \2H, \3H #, \4H, \5H
+  # hand.push \AS, \AD
   # playaz.push 'kenny', 'jenny', 'jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde'
   # playaz.splice 0, 0, 'kenny', 'jenny', 'jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde'
   # test = [] # new ObservableArray
@@ -228,8 +254,8 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   ii = set-interval !->
     if p = more_playaz.shift!
-      # playaz.push p
-      if pp = table.add-player p, (200 + (Math.round Math.random! * 1000))
+      pp = table.add-player p, (700 + (Math.round Math.random! * 300))
+      if typeof pp is \object
         console.log 'adding', p, pp
         playaz.push pp
       else
@@ -237,8 +263,11 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
         more_playaz.unshift p
     else
       clear-interval ii
-      table.start-game!
-  , 2000
+      game := table.start-game!
+      cards.data game.board
+      hand.data my.cards
+      # TODO: add my prompts
+  , 200
 
   G.E.frame.aC [
 

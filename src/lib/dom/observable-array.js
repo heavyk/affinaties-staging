@@ -220,9 +220,11 @@ export class ObservableArray extends MixinEmitter(Array) {
   }
 
   empty () {
-    this.emit('change', { type: 'empty' })
-    if (this._o_length) this._o_length(0)
-    this.length = 0
+    if (this.length > 0) {
+      this.emit('change', { type: 'empty' })
+      if (this._o_length) this._o_length(0)
+      this.length = 0
+    }
     return this
   }
 
@@ -385,7 +387,12 @@ export class RenderingArray extends ObservableArray {
     if (fl >= 2) this._ctx = []
     if (fl >= 3) this._idx = []
 
-    this.d.on('change', (e) => {
+    // lastly, if data has length, then render and add each of them
+    this.data(data)
+  }
+
+  data (data) {
+    const onchange = (e) => {
       var v, t, i, j, len = this.length, fl = this.fl, type = e.type, a = this
       switch (type) {
         // TODO: in places where no swapping is done, just update this._d
@@ -504,35 +511,27 @@ export class RenderingArray extends ObservableArray {
           super[type]()
           break
       }
-    })
+    }
 
-    // lastly, if data has length, then render and add each of them
-    this.data(data)
-  }
-
-  data (data) {
     if (data instanceof ObservableArray) {
-      var i = 0, _d = []
+      var i = 0, len = data.length, _d = []
       // TODO: technically, I don't need to empty the array at all... just update the values of this._d for each one, then push on (or splice off) the difference
 
       // empty / cleanup the array
-      if (this.length) this.empty()
+      if (this.length > 0) this.empty()
 
-      for (; i < data.length; i++) {
-        _d.push(this.fn_call(data[i], i))
+      if (len > 0) {
+        for (; i < len; i++) _d.push(this.fn_call(data[i], i))
+        super.push(..._d)
       }
 
-      super.push(..._d)
-
-      if (this._o_length) this._o_length(data.length)
-      Object.defineProperty(this, 'obv_len', {
-        configurable: true,
-        // get: () => this._o_length || (this._o_length = value(this.d.length))
-        get: () => this.d.obv_len
-      })
-
+      if (this._o_length) this._o_length(len)
+      this.d.off('change', onchange)
       this.d = data
+      Object.defineProperty(this, 'obv_len', { configurable: true, get: () => this.d.obv_len })
+      data.on('change', onchange)
     }
+
     return this.d
   }
 
@@ -554,6 +553,7 @@ export class RenderingArray extends ObservableArray {
     }
   }
 
+  // TODO: check to see if I can add this manually to the prototype (instead of looping through every single call to constructor)
   // OBSOLETE (see constructor): replicate behaviour of ObservableArray
   // swap () { this.d.swap.apply(this.d, arguments) }
   // move () { this.d.move.apply(this.d, arguments) }

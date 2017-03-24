@@ -1,10 +1,6 @@
-import { value, transform, compute } from '../dom/observable'
-// import * as L from '../dom/observable-logic'
+import { value, object, transform, compute } from '../dom/observable'
 import { prompter } from '../dom/observable-logic'
 import { ObservableArray } from '../dom/observable-array'
-
-// TODO LIST
-//  - playa needs a prompter
 
 class Player {
   constructor (name, chips) {
@@ -25,16 +21,17 @@ class Player {
 }
 
 class Game {
-  constructor (smallBlind, bigBlind) {
+  constructor (smallBlind, bigBlind, playaz) {
     this.smallBlind = smallBlind
     this.bigBlind = bigBlind
+    this.playaz = playaz
     this.pot = value(0)
     // this.roundName = 'Deal' // Start the first round
     // this.betName = 'bet' // bet,raise,re-raise,cap
-    this.bets = []
-    this.roundBets = []
+    this.bets = new ObservableArray
+    this.roundBets = new ObservableArray
+    this.board = new ObservableArray
     this.deck = []
-    this.board = []
     this.reset()
   }
 
@@ -58,9 +55,9 @@ class Game {
     this.pot(0)
     // this.roundName = 'Deal' // Start the first round
     // this.betName = 'bet' // bet,raise,re-raise,cap
-    this.bets.length = 0
-    this.roundBets.length = 0
-    this.board.length = 0
+    this.bets.empty()
+    this.roundBets.empty()
+    this.board.empty()
   }
 
   getMaxBet () {
@@ -125,6 +122,8 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
         game(_game = new Game(smallBlind(), bigBlind()))
         state('deal')
       }
+
+      return game()
     },
     add_playa: (p) => {
       if (playaz.length < maxPlayers()) {
@@ -154,11 +153,10 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
   state((s, _s) => {
     // waiting, start_game, playing, game_done
     switch (s) {
-      case 'waiting':
-        // waiting for players to vote
-      break
+      // case 'waiting':
+      //   // waiting for players to vote
+      // break
       case 'deal':
-        // whoops.. this is supposed to go in game!
         let l = playaz.length
         let d = dealer_idx()
         let sb = (d + 1) % l // move this to transform
@@ -175,19 +173,30 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
           // TODO: prompt each playa for su bet
         }
         cur_playa((d + 3) % l)
-        state('flop')
+        // TODO: prompt for bets, then:
+        setTimeout(() => { state('flop') }, 100)
       break
       case 'flop':
-        // TODO: pull three cards from the deck and put them in the spaces
-        state('turn')
+        // put first three cards in the spaces (3)
+        _game.deck.pop() // burn one
+        _game.board.push(_game.deck.pop())
+        _game.deck.pop() // burn one
+        _game.board.push(_game.deck.pop())
+        _game.deck.pop() // burn one
+        _game.board.push(_game.deck.pop())
+        // TODO: prompt for bets, then: state('turn')
       break
       case 'turn':
-        // TODO: pull one card and put in space (4)
-        state('river')
+        // pull one card and put in space (4)
+        _game.deck.pop() // burn one
+        _game.board.push(_game.deck.pop())
+        // TODO: prompt for bets, then: state('river')
       break
       case 'river':
-        // TODO: pull one card and put in space (5)
-        state('showdown')
+        // pull one card and put in space (5)
+        _game.deck.pop() // burn one
+        _game.board.push(_game.deck.pop())
+        // TODO: prompt for bets, then: state('showdown')
       break
       case 'showdown':
         // TODO: check all of the playaz cards for the winner
