@@ -368,7 +368,6 @@ function swap (o, to, from) {
   o[to] = o[from]
   o[from] = t
 }
-// const ObservableArray_props = ['swap', 'move', 'set', 'unshift', 'push', 'splice', 'remove', 'replace', 'insert', 'sort', 'empty', 'pop', 'reverse', 'shift']
 
 export class RenderingArray extends ObservableArray {
   constructor (G, data, fn) {
@@ -377,10 +376,8 @@ export class RenderingArray extends ObservableArray {
     var fl = this.fl = fn.length
     this.G = G
     this.d = data instanceof ObservableArray ? data : (data = new ObservableArray)
-
-    // replicate behaviour of ObservableArray
-    for (let p of ['swap','move','set','unshift','push','splice','remove','replace','insert','sort','empty','pop','reverse','shift', 'setPath'])
-      this[p] = function () { return this.d[p].apply(this.d, arguments) }
+    // this should have cleanupFuncs in the context (which adds h/s cleanup to the list when it makes the context)
+    G.h.cleanupFuncs.push(() => { this.cleanup() })
 
     // where we store the id/data which gets passed to the rendering function
     if (fl >= 1) this._d = []
@@ -392,7 +389,7 @@ export class RenderingArray extends ObservableArray {
   }
 
   data (data) {
-    const onchange = (e) => {
+    const onchange = this._onchange = (e) => {
       var v, t, i, j, len = this.length, fl = this.fl, type = e.type, a = this
       switch (type) {
         // TODO: in places where no swapping is done, just update this._d
@@ -553,24 +550,17 @@ export class RenderingArray extends ObservableArray {
     }
   }
 
-  // TODO: check to see if I can add this manually to the prototype (instead of looping through every single call to constructor)
-  // OBSOLETE (see constructor): replicate behaviour of ObservableArray
-  // swap () { this.d.swap.apply(this.d, arguments) }
-  // move () { this.d.move.apply(this.d, arguments) }
-  // set () { this.d.set.apply(this.d, arguments) }
-  // unshift () { this.d.unshift.apply(this.d, arguments) }
-  // push () { this.d.push.apply(this.d, arguments) }
-  // splice () { this.d.splice.apply(this.d, arguments) }
-  // remove () { this.d.remove.apply(this.d, arguments) }
-  // replace () { this.d.replace.apply(this.d, arguments) }
-  // insert () { this.d.insert.apply(this.d, arguments) }
-  // sort () { this.d.sort.apply(this.d, arguments) }
-  // empty () { this.d.empty.apply(this.d, arguments) }
-  // pop () { this.d.pop.apply(this.d, arguments) }
-  // reverse () { this.d.reverse.apply(this.d, arguments) }
-  // shift () { this.d.shift.apply(this.d, arguments) }
-
+  cleanup () {
+    // clean up contexts (and remove any arrayFragment elements too)
+    this._onchange({type: 'empty'})
+    // stop listening to data changes (in case the data element is used in more than one place)
+    this.d.off('change', this._onchange)
+  }
 }
+
+let proto = RenderingArray.prototype
+for (let p of ['swap','move','set','unshift','push','splice','remove','replace','insert','sort','empty','pop','reverse','shift', 'setPath'])
+  proto[p] = function () { return this.d[p].apply(this.d, arguments) }
 
 // ==========================================
 // older, stinkier cacas (delete me)
