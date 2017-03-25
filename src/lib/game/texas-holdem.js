@@ -352,6 +352,7 @@ class Table extends EventEmitter {
     } else {
       part = this.game.roundBets[winners[0]]
     }
+
     for (i = 0; i < this.game.roundBets.length; i++) {
       if (this.game.roundBets[i] > part) {
         prize += part

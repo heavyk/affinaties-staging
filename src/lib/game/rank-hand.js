@@ -2,8 +2,9 @@ function rankKickers (noOfCards, ranks) {
   var kickerRank = 0
   var myRanks = []
   var rank = ''
+  var i = 0
 
-  for (var i = 0; i < ranks.length; i++) {
+  for (; i < ranks.length; i++) {
     rank = ranks[i]
 
     if (rank === 'A') { myRanks.push(0.2048) }
@@ -22,6 +23,8 @@ function rankKickers (noOfCards, ranks) {
   }
 
   myRanks.sort((a, b) => b - a)
+
+  if (noOfCards > myRanks.length) noOfCards = myRanks.length
 
   for (i = 0; i < noOfCards; i++) {
     kickerRank += myRanks[i]
@@ -422,19 +425,19 @@ export function rankHandInt (_cards) {
   // High Card
   if (rank === 0) {
     rank =
-       ~ranks.indexOf('A') ? 8 + rankKickers(remove(ranks, 'A'), 4) :
-       ~ranks.indexOf('K') ? 7 + rankKickers(remove(ranks, 'K'), 4) :
-       ~ranks.indexOf('Q') ? 6 + rankKickers(remove(ranks, 'Q'), 4) :
-       ~ranks.indexOf('J') ? 5 + rankKickers(remove(ranks, 'J'), 4) :
-       ~ranks.indexOf('T') ? 4 + rankKickers(remove(ranks, 'T'), 4) :
-       ~ranks.indexOf('9') ? 3 + rankKickers(remove(ranks, '9'), 4) :
-       ~ranks.indexOf('8') ? 2 + rankKickers(remove(ranks, '8'), 4) :
-       ~ranks.indexOf('7') ? 1 + rankKickers(remove(ranks, '7'), 4) : 0
+       ~ranks.indexOf('A') ? 8 + rankKickers(4, remove(ranks, 'A')) :
+       ~ranks.indexOf('K') ? 7 + rankKickers(4, remove(ranks, 'K')) :
+       ~ranks.indexOf('Q') ? 6 + rankKickers(4, remove(ranks, 'Q')) :
+       ~ranks.indexOf('J') ? 5 + rankKickers(4, remove(ranks, 'J')) :
+       ~ranks.indexOf('T') ? 4 + rankKickers(4, remove(ranks, 'T')) :
+       ~ranks.indexOf('9') ? 3 + rankKickers(4, remove(ranks, '9')) :
+       ~ranks.indexOf('8') ? 2 + rankKickers(4, remove(ranks, '8')) :
+       ~ranks.indexOf('7') ? 1 + rankKickers(4, remove(ranks, '7')) : 0
     if (rank !== 0) { message = 'High Card' }
   }
 
   // console.log('hand:', { rank, message })
-  return { rank, message }
+  return { v: rank, t: message }
 }
 
 export function rankHands (hands) {

@@ -262,7 +262,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   playaz.obv_len num-playas
   # push existing people on to the table
   playaz.push.apply playaz, pp
-  more_playaz = ['jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde']
+  more_playaz = ['jack', 'jill', 'billy', 'jane', 'bonnie', 'clyde']
 
   ii = set-interval !->
     if p = more_playaz.shift!
