@@ -114,12 +114,12 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   middle-area-ry = transform middle-area-height, (v) -> v / 2
   middle-area-rxs = transform middle-area-rx, (v) -> v - TABLE_STROKE2 # because two half strokes always equals the total stroke
   middle-area-rys = transform middle-area-ry, (v) -> v - TABLE_STROKE2 # because two half strokes always equals the total stroke
+
   table-padding = transform middle-area-width, (v) -> v * 0.15
-  table-padding (v) -> console.log 'table-padding', v
   playa-offset = transform middle-area-width, (v) -> v * 0.07
-  playa-offset (v) -> console.log 'playa-offset', v
   bet-offset = transform middle-area-width, (v) -> -(v * 0.07)
-  bet-offset (v) -> console.log 'bet-offset', v
+  # table-padding (v) -> console.log 'table-padding', v
+
   middle-area-card-margin = transform middle-area-width, (v) -> v * 0.025
   middle-area-card-width = compute [middle-area-width, middle-area-card-margin, table-padding], (w, m, p) -> ((w - p - p) / 5) - m
   middle-area-card-height = transform middle-area-card-width, (w) -> w * 1.45
@@ -137,8 +137,6 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   playa-mid-h = compute [middle-area-ry, playa-offset], (h, p) -> h + p
   bet-mid-w = compute [middle-area-rx, bet-offset], (w, b) -> w + b
   bet-mid-h = compute [middle-area-ry, bet-offset], (h, b) -> h + b
-  bet-mid-w (v) -> console.log 'bet-mid-w', v
-  playa-mid-w (v) -> console.log 'playa-mid-w', v
 
   hand-pos-x = (n) ->
     compute [G.width, middle-area-card-width, n], (w, cw, n) -> (w * 0.49) - (cw / 2) + ((cw / 5) * n)
@@ -196,9 +194,9 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   playaz = new RenderingArray G, (d, idx, {h}) ->
     # do these need to save off functions?
     playa-pos = table-pos idx, playa-mid-w, playa-mid-h
-    bet-pos = table-pos idx, bet-mid-w, bet-mid-h
     playa-x = transform playa-pos, (p) -> "#{p.x}px"
     playa-y = transform playa-pos, (p) -> "#{p.y}px"
+    bet-pos = table-pos idx, bet-mid-w, bet-mid-h
     bet-x = transform bet-pos, (p) -> "#{p.x}px"
     bet-y = transform bet-pos, (p) -> "#{p.y}px"
 
@@ -206,6 +204,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
     h \div.playa style: {
       border: 'solid 1px #000'
       border-radius: '8px'
+      # background: transform game.cur, (v) -> if v is idx! => 'rgba(255,0,0,.2)' else ''
       # border-radius: '50%'
       margin-top: '-30px'
       margin-left: '-30px'
@@ -218,38 +217,51 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       h \div.name, d.name
       h \div.state, d.state
       h \div.chips, d.chips
-      h \div.bet, style: {
-        border: 'solid 1px #000'
-        background: '#f06'
-        # border-radius: '8px'
-        border-radius: '50%'
-        margin-top: '-10px'
-        margin-left: '-10px'
-        position: \fixed
-        width: '20px'
-        height: '20px'
-        left: bet-x
-        top: bet-y
-      }
+      # h \div.bet, style: {
+      #   border: 'solid 1px #000'
+      #   background: '#f06'
+      #   # border-radius: '8px'
+      #   border-radius: '50%'
+      #   margin-top: '-10px'
+      #   margin-left: '-10px'
+      #   position: \fixed
+      #   width: '20px'
+      #   height: '20px'
+      #   left: bet-x
+      #   top: bet-y
+      # }
+
+  window.betz =\
+  betz = new RenderingArray G, (d, idx, {h}) ->
+    # do these need to save off functions?
+    bet-pos = table-pos idx, bet-mid-w, bet-mid-h
+    bet-x = transform bet-pos, (p) -> "#{p.x}px"
+    bet-y = transform bet-pos, (p) -> "#{p.y}px"
+
+    # _if d, false, 'folded',
+    #   _if d, true, 'all-in',
+    #     d # TODO: some sort of visual representation of amnt of chips
+    h \div.bet style: {
+      border: 'solid 1px #000'
+      background: '#f06'
+      # border-radius: '8px'
+      border-radius: '50%'
+      margin-top: '-10px'
+      margin-left: '-10px'
+      position: \fixed
+      width: '20px'
+      height: '20px'
+      left: bet-x
+      top: bet-y
+    }, transform d, (v) -> if v is false => 'X' else if v is true => 'all-in' else v
 
   # two things:
   # 1. RenderingArray should have a cleanup function (to clean up everything in the array)
-  # 2. perhaps it may be a good idea to clean up o_length when calling the above cleanup function
-  # this needs fixing
-  playaz.obv_len num-playas
+  # 2. perhaps it may be a good idea to clean up obv_len when calling the above cleanup function
 
-  # cards.push \AH, \2H, \3H #, \4H, \5H
-  # hand.push \AS, \AD
-  # playaz.push 'kenny', 'jenny', 'jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde'
-  # playaz.splice 0, 0, 'kenny', 'jenny', 'jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde'
-  # test = [] # new ObservableArray
-  # test.push.apply test, ['kenny', 'jenny', 'jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde']
-  # test.sort (a, b) ->
-  #   # console.log 'sort', a, b, a > b
-  #   # debugger
-  #   a > b
-  # console.log test, test.join ','
-  playaz.push.apply playaz, pp #'kenny', 'jenny'
+  playaz.obv_len num-playas
+  # push existing people on to the table
+  playaz.push.apply playaz, pp
   more_playaz = ['jack', 'jill', 'bob', 'jane', 'bonnie', 'clyde']
 
   ii = set-interval !->
@@ -263,10 +275,11 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
         more_playaz.unshift p
     else
       clear-interval ii
-      game := table.start-game!
+      game := window.game = table.start-game!
       cards.data game.board
       hand.data my.cards
-      # TODO: add my prompts
+      betz.data game.roundBets
+      # TODO: add prompts
   , 200
 
   G.E.frame.aC [
@@ -277,7 +290,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       for i til 5
         s \rect x: (space-pos-x i), y: (space-pos-y i), width: middle-area-space-width, height: middle-area-space-height, rx: 5, ry: 5, 'stroke-width': 0.5, stroke: '#fff', fill: 'none'
 
-    cards, hand, playaz
+    cards, hand, playaz, betz
 
     window.machina =\
     h \poem-state-machine, {width: 40, active: false}, (G) ->

@@ -1,21 +1,25 @@
 import { value, object, transform, compute } from '../dom/observable'
 import { prompter } from '../dom/observable-logic'
 import { ObservableArray } from '../dom/observable-array'
+import { rankHandInt } from './rank-hand'
 
 class Player {
   constructor (name, chips) {
     this.name = value(name)
     this.chips = value(chips)
-    this.state = value(null) // folded, all-in, waiting
-    // this.folded = false
-    // this.allIn = false
-    // this.talked = false
+    this.state = value(null) // folded, all-in, playing
     this.cards = new ObservableArray
     this.prompt = prompter((msg, options, response) => {
-      console.log(msg, '\n -', options.join('\n - '))
-      let answer = options[Math.floor(Math.random() * options.length)]
-      console.log(`answering: '${answer}' in 1s`)
-      setTimeout(() => { response(answer) }, 1000)
+      // TODO: wait for 'server' to reply back with the response...
+      // TODO: for my playa, set_responder to something that makes UI elements
+      console.log(this.name(), msg, options)
+      if (msg === 'bet') setTimeout(() => { response(Math.random() > 0.5 ? 'call' : 'fold') }, 100)
+      else if (msg === 'call') {
+        let bet = Math.round(options.min * 1.5)
+        setTimeout(() => { response(Math.random() > 0.5 ? (bet > this.chips() ? 'all-in' : bet) : 'call') }, 100)
+      }
+      // TODO: use rankHandInt to evaluate whether I should bet or not.
+      // TODO: implement a basic AI which makes decisions also based on others' bets (and their possible hand hank)
     })
   }
 }
@@ -26,7 +30,6 @@ class Game {
     this.bigBlind = bigBlind
     this.playaz = playaz
     this.pot = value(0)
-    // this.roundName = 'Deal' // Start the first round
     // this.betName = 'bet' // bet,raise,re-raise,cap
     this.bets = new ObservableArray
     this.roundBets = new ObservableArray
@@ -62,23 +65,23 @@ class Game {
 
   getMaxBet () {
     var maxBet = 0
-    for (var bet of this.bets) if (bet > maxBet) maxBet = bet
+    for (var bet of this.roundBets) if (bet > maxBet) maxBet = bet
     return maxBet
   }
 
 }
 
-function playa (name) {
-  return {
-    name,
-    prompt: prompter((msg, options, response) => {
-      console.log(msg, '\n -', options.join('\n - '))
-      let answer = options[Math.floor(Math.random() * options.length)]
-      console.log(`answering: '${answer}' in 1s`)
-      setTimeout(() => { response(answer) }, 1000)
-    })
-  }
-}
+// function playa (name) {
+//   return {
+//     name,
+//     prompt: prompter((msg, options, response) => {
+//       console.log(msg, '\n -', options.join('\n - '))
+//       let answer = options[Math.floor(Math.random() * options.length)]
+//       console.log(`answering: '${answer}' in 1s`)
+//       setTimeout(() => { response(answer) }, 1000)
+//     })
+//   }
+// }
 
 export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, _minBuyIn, _maxBuyIn) {
   const state = value('waiting')
@@ -97,9 +100,10 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
   const observz = new ObservableArray
   const betz = new ObservableArray
   const dealer_idx = value(0)
-  const small_blind_idx = compute([dealer_idx, playaz.obv_len], (dealer, num_playaz) => (dealer + 1) % num_playaz)
-  const big_blind_idx = compute([dealer_idx, playaz.obv_len], (dealer, num_playaz) => (dealer + 2) % num_playaz)
-  const cur_playa = value(0)
+  const sb_idx = compute([dealer_idx, playaz.obv_len], (dealer, num_playaz) => (dealer + 1) % num_playaz)
+  const bb_idx = compute([dealer_idx, playaz.obv_len], (dealer, num_playaz) => (dealer + 2) % num_playaz)
+  const cur_playa = value()
+  const min_bet = value()
 
   var _game
 
@@ -113,13 +117,56 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
       var p = new Player(name, chips)
       playaz.push(p)
       // p.show('join game?')
+      // get prompt replies
+      let unprompt = p.prompt((res) => {
+        // TODO: capped bets
+        let chips = p.chips()
+        let min = min_bet()
+        let i = playaz.indexOf(p)
 
-      return p || false
+        if (res === 'fold') {
+          p.cards.empty()
+          p.state('folded')
+          go_next(i, false)
+        } else if (res === 'call') {
+          if (chips < min) {
+            p.chips(0)
+            p.state('all-in')
+            go_next(i, -chips)
+          } else {
+            p.chips(chips - min)
+            p.state('playing')
+            go_next(i, min)
+          }
+        } else if (res === 'all-in') {
+          p.chips(0)
+          p.state('all-in')
+          go_next(i, -chips)
+        } else {
+          let bet = +res
+          if (bet >= min) {
+            p.chips(chips - bet)
+            p.state('playing')
+            go_next(i, bet)
+          } else {
+            p.prompt('bet', {min})
+          }
+        }
+      })
+
+      return p
     },
     startGame: () => {
       if (playaz.length > minPlayers()) {
         // TODO: send a starting game notification
-        game(_game = new Game(smallBlind(), bigBlind()))
+        _game = new Game(smallBlind(), bigBlind())
+        _game.d_idx = dealer_idx
+        _game.sb_idx = sb_idx
+        _game.bb_idx = bb_idx
+        _game.cur = cur_playa
+        _game.min = min_bet
+        _game.state = state
+        game(_game)
         state('deal')
       }
 
@@ -141,7 +188,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
           // this.emit
           // start game?
           // TODO: start game goes by consensus or it has a table leader (dealer?)
-          playaz[dealer()].prompt('start game?')
+          playaz[dealer_idx()].prompt('start game?')
         }
       } else {
         // return false
@@ -149,32 +196,94 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
     }
   }
 
+  let elligible_playa = (cur) => {
+    var min = min_bet()
+    var len = playaz.length
+    for (var j = 1; j < len; j++) {
+      let k = (cur + j) % len
+      let b = _game.roundBets[k]
+          // has not yet talked
+      if (b === null ||
+          // has already bet, but it's still below the minimum bet
+         (typeof b === 'number' && b >= 0 && b < min) ||
+          // exception to allow for bb to attempt to go again
+         (state() === 'deal' && k === bb_idx())) return k
+    }
+    return -1
+  }
+
+  let go_next = (i, bet) => {
+    var next
+    _game.roundBets.set(i, bet)
+    _game.bets.push({i, bet, t: Date.now()})
+    console.info(i, playaz[i].name(), bet === false ? 'folded' : bet < 0 ? `went all-in (${-bet})` : `bet (${bet})`)
+
+    if (bet > min_bet()) min_bet(bet)
+    if (~(next = elligible_playa(i))) {
+      setTimeout(() => { cur_playa(next) }, 100)
+    } else {
+      // add roundBets to pot & reset to 0 (if not folded or all-in)
+      var j = 0, pot = _game.pot(), l = playaz.length
+      for (; j < l; j++) {
+        let bet = _game.roundBets[j]
+        if (typeof bet === 'number') {
+          // TODO: for all-in bets, I think the max someone can win is his all-in amount. check into it, cause maybe this number needs to be saved
+          //       (actually, it is saved in the bet list... maybe it needs to be used on a winning condition though)
+          // we add all-in and bets to the pot
+          pot += bet > 0 ? bet : -bet
+          _game.roundBets.set(j, bet >= 0 ? null : true)
+        }
+      }
+      // increase the pot
+      _game.pot(pot)
+
+      // jump to the next stage
+      let s = state()
+      state(s === 'deal' ? 'flop' : s === 'flop' ? 'turn' : s === 'turn' ? 'river' : 'showdown')
+    }
+  }
+
+  cur_playa((i) => {
+    let p = playaz[i]
+    let min = min_bet()
+    let bet = _game.roundBets[i]
+    let l = playaz.length
+    // if (p.name() === 'dylan') debugger
+
+    // TODO: add timeout
+    p.state('waiting')
+    p.prompt(bet >= min && bet > 0 ? 'call' : 'bet', {min})
+  })
+
 
   state((s, _s) => {
     // waiting, start_game, playing, game_done
+    min_bet(0)
+    let d = dealer_idx()
     switch (s) {
-      // case 'waiting':
-      //   // waiting for players to vote
-      // break
+      case 'waiting':
+        // TODO: waiting for enough playaz to join - give them prompts n'stuff
+      break
       case 'deal':
         let l = playaz.length
-        let d = dealer_idx()
         let sb = (d + 1) % l // move this to transform
         let bb = (d + 2) % l // move this to transform
         for (let i = 0; i < l; i++) {
+          let playa = playaz[i]
           let bet = i === sb ? _game.smallBlind : i === bb ? _game.bigBlind : 0
-          betz.set(i, bet)
-          playaz[i].chips -= bet
-          playaz[i].cards.empty()
+          _game.roundBets.set(i, bet)
+          if (bet) playa.chips(playa.chips() - bet)
+          playa.cards.empty()
           _game.deck.pop() // burn one
-          playaz[i].cards.push(_game.deck.pop())
+          playa.cards.push(_game.deck.pop())
           _game.deck.pop() // burn one
-          playaz[i].cards.push(_game.deck.pop())
-          // TODO: prompt each playa for su bet
+          playa.cards.push(_game.deck.pop())
         }
+
+        // set min bet to BB
+        min_bet(_game.bigBlind)
+        // start one to the left of the BB
         cur_playa((d + 3) % l)
-        // TODO: prompt for bets, then:
-        setTimeout(() => { state('flop') }, 100)
       break
       case 'flop':
         // put first three cards in the spaces (3)
@@ -184,22 +293,26 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
         _game.board.push(_game.deck.pop())
         _game.deck.pop() // burn one
         _game.board.push(_game.deck.pop())
-        // TODO: prompt for bets, then: state('turn')
+        console.log('effective flop', 'next round in 2s')
+        setTimeout(() => { cur_playa(d + 1) }, 2000)
       break
       case 'turn':
         // pull one card and put in space (4)
         _game.deck.pop() // burn one
         _game.board.push(_game.deck.pop())
-        // TODO: prompt for bets, then: state('river')
+        console.log('effective turn', 'next round in 2s')
+        setTimeout(() => { cur_playa(d + 1) }, 2000)
       break
       case 'river':
         // pull one card and put in space (5)
         _game.deck.pop() // burn one
         _game.board.push(_game.deck.pop())
-        // TODO: prompt for bets, then: state('showdown')
+        console.log('effective river', 'next round in 2s')
+        setTimeout(() => { cur_playa(d + 1) }, 2000)
       break
       case 'showdown':
         // TODO: check all of the playaz cards for the winner
+        console.log('SHOWDOWN!!!')
       break
       case 'game_done':
         var g = game()
