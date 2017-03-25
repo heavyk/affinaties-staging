@@ -17,6 +17,7 @@ import { define_value } from '../utils'
 // (TODO) use isEqual function to compare values before setting the observable
 // (TODO) add better documentation for each function
 // (TODO) add a remove function to bind1, bind2
+// (TODO) add int_value (which has math functions add, mul, etc.)
 
 
 // bind a to b -- One Way Binding
@@ -58,9 +59,30 @@ export function value (initialValue) {
   // if the value is already an observable, then just return it
   if (typeof initialValue === 'function' && initialValue.observable === 'value') return initialValue
   var _val = initialValue, listeners = []
-  observable.set = function (val) {
-    emit(listeners, _val, _val = val === undefined ? _val : val)
+  observable.set = (val) => emit(listeners, _val, _val = val === undefined ? _val : val)
+  observable.observable = 'value'
+  return observable
+
+  function observable (val) {
+    return (
+      val === undefined ? _val                                                              // getter
+    // : typeof val !== 'function' ? emit(listeners, _val, _val = val)                             // this is the old way.. it'll always emit, even if the value is the same
+    : typeof val !== 'function' ? (!(_val === val) ? emit(listeners, _val, _val = val) : '') // setter (the new way - only sets if the value has changed)
+    : (listeners.push(val), (_val === undefined ? _val : val(_val)), function () {          // listener
+        remove(listeners, val)
+      })
+    )
   }
+}
+
+// An observable that stores a number value.
+export function number (initialValue) {
+  // if the value is already an observable, then just return it
+  if (typeof initialValue === 'function' && initialValue.observable === 'value') return initialValue
+  var _val = initialValue, listeners = []
+  observable.set = (val) => emit(listeners, _val, _val = val === undefined ? _val : val)
+  observable.add = (val) => observable(_val + (typeof val === 'function' ? val() : val))
+  observable.mul = (val) => observable(_val * (typeof val === 'function' ? val() : val))
   observable.observable = 'value'
   return observable
 
