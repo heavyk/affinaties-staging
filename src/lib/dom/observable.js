@@ -35,9 +35,10 @@ function emit (ary, val2, val) {
 }
 
 // remove a listener
-function remove (ary, item) {
+export function remove (ary, item) {
   var i = ary.indexOf(item)
   if (~i) setTimeout(function () { ary.splice(i, 1) }, 1)
+  // else debugger
 }
 
 // register a listener

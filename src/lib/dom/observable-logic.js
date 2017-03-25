@@ -1,4 +1,4 @@
-import { value, transform } from '../dom/observable'
+import { value, transform, remove } from '../dom/observable'
 
 export const _not = (v) => !v
 export const not = (observable) => transform(observable, _not)
@@ -38,18 +38,19 @@ export const not = (observable) => transform(observable, _not)
 
 
 export function prompter (msg, options, responder_fn) {
-  var _val, __msg = msg, __options = options, listeners = []
-  if (typeof msg === 'function') responder_fn = msg, __msg = null
+  var _val, __msg = msg, __options = options, __responder_fn = responder_fn, listeners = []
+  if (typeof msg === 'function') __responder_fn = msg, __msg = null
   prompter.observable = 'prompt'
+  prompter.set_responder = function (fn) { __responder_fn = fn }
   return prompter
 
-  function response (val) { all3(listeners, _val = val, __msg, __options) }
+  function answer (val) { all3(listeners, _val = val, __msg, __options) }
   function prompter (_msg, _options) {
     return (
-      _msg === undefined ? _val                                                                  // get last response
-    : typeof _msg !== 'function' ? responder_fn(__msg = _msg, __options = _options, response)    // send the responder_fn: the message, the options, and a chance to respond to it
-    : (listeners.push(_msg),                                                                     // another listener
-        (__msg && _options !== false ? all3(listeners, __msg, __options, response) : ''),        // call it with the previous response if one is given (if second arg isn't false)
+      _msg === undefined ? _val                                                                  // get last answer
+    : typeof _msg !== 'function' ? __responder_fn(__msg = _msg, __options = _options, answer)    // send the responder_fn: the message, the options, and a chance to respond to it
+    : (listeners.push(_msg),                                                                     // add another listener
+        (__msg && _options !== false ? all3(listeners, __msg, __options, answer) : ''),          // call it with the previous answer if one is given (if second arg isn't false)
         function () { remove(listeners, _msg) }                                                  // return an unlisten function
       )
     )
