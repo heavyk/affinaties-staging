@@ -108,8 +108,8 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   const TABLE_STROKE = 5.5
   const TABLE_STROKE2 = TABLE_STROKE * 2
 
-  middle-area-width = transform G.width, (v) -> 0 + ((v / S1) * S2)
-  middle-area-height = transform G.height, (v) -> 0 + ((v / S1) * S2)
+  middle-area-width = transform G.width, (v) -> (v / S1) * S2
+  middle-area-height = transform G.height, (v) -> (v / S1) * S2
   middle-area-rx = transform middle-area-width, (v) -> v / 2
   middle-area-ry = transform middle-area-height, (v) -> v / 2
   middle-area-rxs = transform middle-area-rx, (v) -> v - TABLE_STROKE2 # because two half strokes always equals the total stroke
@@ -119,6 +119,11 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   playa-offset = transform middle-area-width, (v) -> v * 0.07
   bet-offset = transform middle-area-width, (v) -> -(v * 0.07)
   # table-padding (v) -> console.log 'table-padding', v
+
+  playa-cards-width = value 30
+  playa-cards-height = transform playa-cards-width, (w) -> w * 1.45
+  playa-cards-margin = value 2
+  playa-cards-count = value 2
 
   middle-area-card-margin = transform middle-area-width, (v) -> v * 0.025
   middle-area-card-width = compute [middle-area-width, middle-area-card-margin, table-padding], (w, m, p) -> ((w - p - p) / 5) - m
@@ -138,20 +143,25 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   bet-mid-w = compute [middle-area-rx, bet-offset], (w, b) -> w + b
   bet-mid-h = compute [middle-area-ry, bet-offset], (h, b) -> h + b
 
-  hand-pos-x = (n) ->
-    compute [G.width, middle-area-card-width, n], (w, cw, n) -> (w * 0.49) - (cw / 2) + ((cw / 5) * n)
-  hand-pos-y = (n) ->
+  hand-pos-x = (i) ->
+    compute [G.width, middle-area-card-width, i], (w, cw, i) -> (w * 0.49) - (cw / 2) + ((cw / 5) * i)
+  hand-pos-y = (i) ->
     compute [G.height, middle-area-card-height], (h, ch) -> h - (ch * 0.2)
 
-  card-pos-x = (n) ->
-    compute [table-margin-sides, middle-area-card-width, middle-area-card-margin, table-padding, n], (tm, cw, cm, tp, n) -> TABLE_STROKE + tp + tm + (cw * n) + (cm * n) + 3
-  card-pos-y = (n) ->
-    compute [table-margin-top, middle-area-height, middle-area-card-height, table-padding, n], (tm, mh, ch, tp, n) -> TABLE_STROKE + tp + tm + ((mh - ch - tp - tp) / 2)
+  card-pos-x = (i) ->
+    compute [table-margin-sides, middle-area-card-width, middle-area-card-margin, table-padding, i], (tm, cw, cm, tp, i) -> TABLE_STROKE + tp + tm + (cw * i) + (cm * i) + 3
+  card-pos-y = (i) ->
+    compute [table-margin-top, middle-area-height, middle-area-card-height, table-padding, i], (tm, mh, ch, tp, i) -> TABLE_STROKE + tp + tm + ((mh - ch - tp - tp) / 2)
 
-  space-pos-x = (n) ->
-    compute [middle-area-space-width, middle-area-space-margin, table-padding], (cw, cm, tp) -> TABLE_STROKE + tp + (cw * n) + (cm * n) # - 3
-  space-pos-y = (n) ->
+  space-pos-x = (i) ->
+    compute [middle-area-space-width, middle-area-space-margin, table-padding], (cw, cm, tp) -> TABLE_STROKE + tp + (cw * i) + (cm * i) # - 3
+  space-pos-y = (i) ->
     compute [middle-area-height, middle-area-space-height, table-padding], (mh, ch, tp) -> TABLE_STROKE + tp + ((mh - ch - tp - tp) / 2)
+
+  playa-cards-pos-x = (i, playa-pos) ->
+    compute [playa-cards-width, playa-cards-margin, playa-cards-count, playa-pos, i], (cw, cm, n, p, i) -> p.x + (cw * i) + (cm * i) - (((cw * n) + (cm * (n - 1))) / 2)
+  playa-cards-pos-y = (n, playa-pos) ->
+    compute [playa-pos, n], (p, n) -> p.y + 33
 
   first-playa-angle = 150 #200
   last-playa-angle = 390 #340
@@ -196,10 +206,18 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
     playa-pos = table-pos idx, playa-mid-w, playa-mid-h
     playa-x = transform playa-pos, (p) -> "#{p.x}px"
     playa-y = transform playa-pos, (p) -> "#{p.y}px"
+    # playa-cards-x = transform playa-pos, (p) -> "#{p.x}px"
+    # playa-cards-y = transform playa-pos, (p) -> "#{p.y + 30}px"
     bet-pos = table-pos idx, bet-mid-w, bet-mid-h
     bet-x = transform bet-pos, (p) -> "#{p.x}px"
     bet-y = transform bet-pos, (p) -> "#{p.y}px"
 
+    window.lala =\
+    playa-cards = new RenderingArray G, d.cards, (id, idx, {h}) ->
+      h \poke-her-card, id, { width: playa-cards-width, x: (playa-cards-pos-x idx, playa-pos), y: (playa-cards-pos-y idx, playa-pos) }
+
+    # debugger
+    playa-cards.lala = true
     # TODO: this becomes the foto
     h \div.playa style: {
       border: 'solid 1px #000'
@@ -217,6 +235,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       h \div.name, d.name
       h \div.state, d.state
       h \div.chips, d.chips
+      h \div.cards, playa-cards
       # h \div.bet, style: {
       #   border: 'solid 1px #000'
       #   background: '#f06'
@@ -279,7 +298,10 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       cards.data game.board
       hand.data my.cards
       betz.data game.roundBets
-      # TODO: add prompts
+      # TODO: add prompt interface
+      # my.prompt.set_responder (msg, options, answer) ->
+      #   alert msg
+      # TODO: bind game obvs to table
   , 200
 
   G.E.frame.aC [

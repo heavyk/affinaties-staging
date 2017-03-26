@@ -2,6 +2,7 @@ import { value, number, object, transform, compute } from '../dom/observable'
 import { prompter } from '../dom/observable-logic'
 import { ObservableArray } from '../dom/observable-array'
 import { rankHandInt } from './rank-hand'
+import round from '../lodash/round'
 
 class Player {
   constructor (name, chips) {
@@ -12,10 +13,12 @@ class Player {
     this.prompt = prompter((msg, options, response) => {
       // TODO: wait for 'server' to reply back with the response...
       // TODO: for my playa, set_responder to something that makes UI elements
-      console.log(this.name(), msg, options)
-      if (msg === 'bet') setTimeout(() => { response(Math.random() > 0.5 ? 'call' : 'fold') }, 100)
+      let board_rank = rankHandInt(options.cards)
+      let hand_rank = rankHandInt(this.cards.concat(options.cards))
+      console.log(this.name(), msg, 'min:', options.min, hand_rank.t, hand_rank.v, hand_rank.v / board_rank.v)
+      if (msg === 'bet') setTimeout(() => { response(Math.random() < 0.7 ? 'call' : 'fold') }, 100)
       else if (msg === 'raise') {
-        let bet = Math.round(options.min * 1.5)
+        let bet = round(options.min + (Math.random() * 1.5 * options.min), -1)
         setTimeout(() => { response(Math.random() > 0.5 ? (bet > this.chips() ? 'all-in' : bet) : 'call') }, 100)
       }
       // TODO: use rankHandInt to evaluate whether I should bet or not.
@@ -119,7 +122,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
       playaz.push(p)
       // p.show('join game?')
       // get prompt replies
-      let unprompt = p.prompt((res) => {
+      let unprompt = p.prompt((res, msg, options) => {
         // TODO: capped bets
         let chips = p.chips()
         let min = min_bet()
@@ -150,7 +153,8 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
             p.state('playing')
             go_next(i, bet)
           } else {
-            p.prompt('bet', {min})
+            options.min = min
+            p.prompt('bet', options)
           }
         }
       })
@@ -205,7 +209,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
   }
 
   let calc_winners = () => {
-    var p, i = 0, len = playaz.length
+    var r, p, i = 0, len = playaz.length
     var winners = []
     var ranks = []
     for (; i < len; i++)
@@ -218,14 +222,22 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
       // pick the top ranks which are equal
       // if more than one playa wins, then split into parts
       // if all-in, then determine the max for each playa
+      // TODO: split the pot amongst the winners
       console.info('-----------')
-      for (let r of ranks) console.info(playaz[r.i].name(), r.v.v, r.v.t)
+      for (r of ranks) {
+        p = playaz[r.i]
+        p.state('winner')
+        console.info(p.name(), r.v.v, r.v.t)
+      }
     } else {
-      let r = ranks[0]
-      console.info('one winner', playaz[r.i].name(), r.v.v, r.v.t)
+      r = ranks[0]
+      p = playaz[r.i]
+      p.state('winner')
+      console.info('one winner', p.name(), r.v.v, r.v.t)
     }
 
-    debugger
+    // TODO: add winners to game
+    state('done')
   }
 
   let elligible_playa = (cur) => {
@@ -250,12 +262,17 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
     _game.bets.push({i, bet, t: Date.now()})
     console.info(i, playaz[i].name(), bet === false ? 'folded' : bet < 0 ? `went all-in (${-bet})` : `bet (${bet})`)
 
+    var min = min_bet()
     if (bet === false) active_playaz.add(-1)
-    if (bet > min_bet()) min_bet(bet)
+    if (bet > min) min_bet(bet)
+    else if (-bet > min) {
+      // case of all-in when also raising
+      min_bet(-bet)
+    }
 
     if (active_playaz() < 2) {
+      // everyone else has folded, so calculate the only winner and end the game
       calc_winners()
-      state('done')
     } else if (~(next = elligible_playa(i))) {
       setTimeout(() => { cur_playa(next) }, 100)
     } else {
@@ -290,7 +307,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
     if (typeof bet !== 'boolean') {
       // TODO: add timeout
       p.state('waiting')
-      p.prompt(bet >= min && bet > 0 ? 'raise' : 'bet', {min})
+      p.prompt(bet >= min && bet > 0 ? 'raise' : 'bet', {min, cards: Array.from(_game.board)})
     } else cur_playa.add(1)
   })
 
