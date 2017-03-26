@@ -12,7 +12,9 @@ class Player {
     this.cards = new ObservableArray
     this.prompt = prompter((msg, options, response) => {
       // TODO: wait for 'server' to reply back with the response...
-      if (options.cards.length) return setTimeout(() => { response('all-in') }, 100)
+      // TODO: fix all-in prize division. uncomment to test
+      // if (options.cards.length) return setTimeout(() => { response('all-in') }, 100)
+
       let board_rank = rankHandInt(options.cards)
       let hand_rank = rankHandInt(this.cards.concat(options.cards))
       console.log(this.name(), msg, 'min:', options.min, hand_rank.t, hand_rank.v, hand_rank.v / board_rank.v)

@@ -3,7 +3,7 @@
 # ``import load_sdk from '../lib/load-sdk-h'``
 ``import { s, h, doc, special_elements } from '../lib/dom/hyper-hermes'``
 ``import { ObservableArray, RenderingArray} from '../lib/dom/observable-array'``
-``import { value, transform, compute, px, observable_property } from '../lib/dom/observable'``
+``import { value, transform, compute, px, observable_property, bind1 } from '../lib/dom/observable'``
 ``import polarToCartesian from '../lib/calc/polarToCartesian'``
 # ``import xhr from '../lib/xhr'``
 ``import { Table, Player } from '../lib/game/texas-holdem'``
@@ -108,6 +108,22 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   const TABLE_STROKE = 5.5
   const TABLE_STROKE2 = TABLE_STROKE * 2
 
+  # table attributes
+  playa-cards-width = value 30
+  playa-cards-height = transform playa-cards-width, (w) -> w * 1.45
+  playa-cards-margin = value 2
+  playa-cards-count = value 2
+
+  # game bindings
+  _game =
+    d_idx: value!
+    sb_idx: value!
+    bb_idx: value!
+    cur: value!
+    min: value!
+    state: value!
+    pot: value!
+
   middle-area-width = transform G.width, (v) -> (v / S1) * S2
   middle-area-height = transform G.height, (v) -> (v / S1) * S2
   middle-area-rx = transform middle-area-width, (v) -> v / 2
@@ -118,12 +134,6 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   table-padding = transform middle-area-width, (v) -> v * 0.15
   playa-offset = transform middle-area-width, (v) -> v * 0.07
   bet-offset = transform middle-area-width, (v) -> -(v * 0.07)
-  # table-padding (v) -> console.log 'table-padding', v
-
-  playa-cards-width = value 30
-  playa-cards-height = transform playa-cards-width, (w) -> w * 1.45
-  playa-cards-margin = value 2
-  playa-cards-count = value 2
 
   middle-area-card-margin = transform middle-area-width, (v) -> v * 0.025
   middle-area-card-width = compute [middle-area-width, middle-area-card-margin, table-padding], (w, m, p) -> ((w - p - p) / 5) - m
@@ -140,8 +150,12 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   playa-mid-w = compute [middle-area-rx, playa-offset], (w, p) -> w + p
   playa-mid-h = compute [middle-area-ry, playa-offset], (h, p) -> h + p
+
   bet-mid-w = compute [middle-area-rx, bet-offset], (w, b) -> w + b
   bet-mid-h = compute [middle-area-ry, bet-offset], (h, b) -> h + b
+
+  pot-txt-x = transform middle-area-rx, (v) -> v
+  pot-txt-y = compute [middle-area-ry, middle-area-space-height], (v, sh) -> v - (sh * 1.5)
 
   hand-pos-x = (i) ->
     compute [G.width, middle-area-card-width, i], (w, cw, i) -> (w * 0.49) - (cw / 2) + ((cw / 5) * i)
@@ -206,23 +220,21 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
     playa-pos = table-pos idx, playa-mid-w, playa-mid-h
     playa-x = transform playa-pos, (p) -> "#{p.x}px"
     playa-y = transform playa-pos, (p) -> "#{p.y}px"
-    # playa-cards-x = transform playa-pos, (p) -> "#{p.x}px"
-    # playa-cards-y = transform playa-pos, (p) -> "#{p.y + 30}px"
     bet-pos = table-pos idx, bet-mid-w, bet-mid-h
     bet-x = transform bet-pos, (p) -> "#{p.x}px"
     bet-y = transform bet-pos, (p) -> "#{p.y}px"
 
-    window.lala =\
     playa-cards = new RenderingArray G, d.cards, (id, idx, {h}) ->
       h \poke-her-card, id, { width: playa-cards-width, x: (playa-cards-pos-x idx, playa-pos), y: (playa-cards-pos-y idx, playa-pos) }
 
-    # debugger
-    playa-cards.lala = true
     # TODO: this becomes the foto
     h \div.playa style: {
       border: 'solid 1px #000'
       border-radius: '8px'
-      # background: transform game.cur, (v) -> if v is idx! => 'rgba(255,0,0,.2)' else ''
+      # background: transform _game.cur, (v) -> if v is idx! => 'rgba(255,0,0,.2)' else ''
+      background: compute [_game.cur, idx], (cur, idx) ->
+        # debugger
+        if cur is idx => 'rgba(255,0,0,.2)' else ''
       # border-radius: '50%'
       margin-top: '-30px'
       margin-left: '-30px'
@@ -298,6 +310,10 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       cards.data game.board
       hand.data my.cards
       betz.data game.roundBets
+      for k, obv of _game
+        console.log 'binding', k
+        bind1 obv, game[k]
+
       # TODO: add prompt interface
       # my.prompt.set_responder (msg, options, answer) ->
       #   alert msg
@@ -311,6 +327,13 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       # 5 card spaces in the middle
       for i til 5
         s \rect x: (space-pos-x i), y: (space-pos-y i), width: middle-area-space-width, height: middle-area-space-height, rx: 5, ry: 5, 'stroke-width': 0.5, stroke: '#fff', fill: 'none'
+
+      s \text x: pot-txt-x, y: pot-txt-y,
+        s \tspan 'Pot: '
+        s \tspan _game.pot
+        # s \tspan ->
+        #   debugger
+        #   _game.pot
 
     cards, hand, playaz, betz
 
