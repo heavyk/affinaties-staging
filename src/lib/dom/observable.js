@@ -22,12 +22,15 @@ import { define_value } from '../utils'
 
 // bind a to b -- One Way Binding
 export function bind1 (a, b) {
-  a(b()); b(a)
+  a(b())
+  return b(a)
 }
 
 //bind a to b and b to a -- Two Way Binding
 export function bind2 (a, b) {
-  b(a()); a(b); b(a)
+  b(a())
+  var r0 = a(b), r1 = b(a)
+  return () => { r0(); r1() } // remove function
 }
 
 //trigger all listeners
@@ -38,7 +41,7 @@ function emit (ary, val2, val) {
 // remove a listener
 export function remove (ary, item) {
   var i = ary.indexOf(item)
-  if (~i) setTimeout(function () { ary.splice(i, 1) }, 1)
+  if (~i) setTimeout(() => { ary.splice(i, 1) }, 1)
   // else debugger
 }
 
@@ -65,10 +68,10 @@ export function value (initialValue) {
 
   function observable (val) {
     return (
-      val === undefined ? _val                                                              // getter
-    // : typeof val !== 'function' ? emit(listeners, _val, _val = val)                             // this is the old way.. it'll always emit, even if the value is the same
+      val === undefined ? _val                                                               // getter
+    // : typeof val !== 'function' ? emit(listeners, _val, _val = val)                       // this is the old way.. it'll always emit, even if the value is the same
     : typeof val !== 'function' ? (!(_val === val) ? emit(listeners, _val, _val = val) : '') // setter (the new way - only sets if the value has changed)
-    : (listeners.push(val), (_val === undefined ? _val : val(_val)), function () {          // listener
+    : (listeners.push(val), (_val === undefined ? _val : val(_val)), () => {                 // listener
         remove(listeners, val)
       })
     )
@@ -88,10 +91,10 @@ export function number (initialValue) {
 
   function observable (val) {
     return (
-      val === undefined ? _val                                                              // getter
-    // : typeof val !== 'function' ? emit(listeners, _val, _val = val)                             // this is the old way.. it'll always emit, even if the value is the same
+      val === undefined ? _val                                                               // getter
+    // : typeof val !== 'function' ? emit(listeners, _val, _val = val)                       // this is the old way.. it'll always emit, even if the value is the same
     : typeof val !== 'function' ? (!(_val === val) ? emit(listeners, _val, _val = val) : '') // setter (the new way - only sets if the value has changed)
-    : (listeners.push(val), (_val === undefined ? _val : val(_val)), function () {          // listener
+    : (listeners.push(val), (_val === undefined ? _val : val(_val)), () => {                 // listener
         remove(listeners, val)
       })
     )
@@ -143,7 +146,7 @@ export function property (model, key) {
     return (
       val === undefined ? model.get(key)
     : typeof val !== 'function' ? model.set(key, val)
-    : (on(model, 'change:'+key, val), val(model.get(key)), function () {
+    : (on(model, 'change:'+key, val), val(model.get(key)), () => {
         off(model, 'change:'+key, val)
       })
     )
@@ -161,7 +164,7 @@ export function transform (in_observable, down, up) {
     return (
       val === undefined ? down(in_observable())
     : typeof val !== 'function' ? in_observable((up || down)(val))
-    : in_observable(function (_val) { val(down(_val)) })
+    : in_observable((_val) => { val(down(_val)) })
     )
   }
 }
@@ -176,9 +179,7 @@ export function listen (element, event, attr, listener) {
   }
   on(element, event, onEvent)
   onEvent()
-  return function () {
-    off(element, event, onEvent)
-  }
+  return () => { off(element, event, onEvent) }
 }
 
 //observe html element - aliased as `input`
@@ -235,7 +236,7 @@ export function toggle (el, up_event, down_event) {
     return (
       val === undefined ? i
     : typeof val !== 'function' ? undefined //read only
-    : (on(el, up_event, onUp), on(el, down_event || up_event, onDown), val(i), function () {
+    : (on(el, up_event, onUp), on(el, down_event || up_event, onDown), val(i), () => {
         off(el, up_event, onUp); off(el, down_event || up_event, onDown)
       })
     )
@@ -246,48 +247,44 @@ export function error (message) {
   throw new Error(message)
 }
 
+// TODO: I believe this needs a remove function which removes all listeners
+//  (unfortunately, it requires the modification of value())
 export function compute (observables, compute) {
   var init = true
   var cur = new Array(observables.length)
+  var val = value()
 
-  var v = value()
-
-  forEach(observables, function (f, i) {
+  forEach(observables, (f, i) => {
     if (typeof f === 'function') {
       cur[i] = f()
-      f(function (val) {
+      f((v) => {
         var prev = cur[i]
-        cur[i] = val
-        if (init === false && prev !== val) v(compute.apply(null, cur))
+        cur[i] = v
+        if (init === false && prev !== v) val(compute.apply(null, cur))
       })
     } else {
       cur[i] = f
     }
   })
 
-  v(compute.apply(null, cur))
+  val(compute.apply(null, cur))
   init = false
-  // I see no reason why this is needed. disabled until I find a use for it.
-  // v(function () {
-  //   compute.apply(null, cur)
-  // })
 
-  return v
+  return val
 }
 
 export function boolean (observable, truthy, falsey) {
   return (
-    transform(observable, function (val) {
-      return val ? truthy : falsey
-    }, function (val) {
-      return val == truthy ? true : false
-    })
+    transform(observable,
+      (val) => val ? truthy : falsey,
+      (val) => val == truthy ? true : false
+    )
   )
 }
 
 export function event (element, attr, event, truthy) {
   event = event || 'keyup'
-  truthy = truthy || function (ev) { return ev.which === 13 && !ev.shiftKey }
+  truthy = truthy || ((ev) => ev.which === 13 && !ev.shiftKey)
   attr = attr || 'value'
   observable.observable = 'event'
   return observable
@@ -297,7 +294,7 @@ export function event (element, attr, event, truthy) {
     return (
       val === undefined ? val
     : typeof val !== 'function' ? undefined //read only
-    : (on(element, event, listener), function () {
+    : (on(element, event, listener), () => {
         off(element, event, listener)
       })
     )
