@@ -1,7 +1,6 @@
 'use strict'
 
-import { forEach } from './hyper-hermes'
-import { define_value } from '../utils'
+import { define_value, forEach } from '../utils'
 // import isEqual from '../lodash/isEqual'
 
 // knicked from: https://github.com/dominictarr/observable/blob/master/index.js

@@ -3,7 +3,7 @@
 // many modifications...
 // also took some inspiration from https://github.com/Raynos/mercury
 
-import { attribute, hover, focus, select, event, on, off } from './observable.js'
+import { attribute, hover, focus, select, event, on, off } from './observable'
 
 export const doc = window.document
 export const body = doc.body
@@ -24,7 +24,7 @@ export function txt (t) {
   return doc.createTextNode(t)
 }
 
-function context (createElement, arrayFragment) {
+function context (createElement) {
 
   var cleanupFuncs = []
 
@@ -39,9 +39,9 @@ function context (createElement, arrayFragment) {
     function item (l) {
       var r, s, i, o, k
       function parseClass (string) {
-        var m = string.split(/([\.#]?[a-zA-Z0-9_:-]+)/)
+        var v, m = string.split(/([\.#]?[a-zA-Z0-9_:-]+)/)
         if (/^\.|#/.test(m[1])) e = createElement('div')
-        forEach(m, function (v) {
+        for (v of m) {
           if (typeof v === 'string' && (i = v.length)) {
             if (!e) {
               e = createElement(v, args)
@@ -54,7 +54,7 @@ function context (createElement, arrayFragment) {
               }
             }
           }
-        })
+        }
       }
 
       if (l != null)
@@ -97,7 +97,7 @@ function context (createElement, arrayFragment) {
             e.htmlFor = attr_val
           } else if (k === 'class' && attr_val) {
             o = e.classList
-            if (Array.isArray(attr_val)) forEach(attr_val, (c) => { if (c) o.add(c) })
+            if (Array.isArray(attr_val)) for (s of attr_val) if (s) o.add(s)
             else o.add(attr_val)
           } else if (k === 'on') {
             if (typeof attr_val === 'object') {
@@ -222,45 +222,12 @@ export function isText (el) {
   return el && el.nodeType == 3
 }
 
-// micro-optimization: http://jsperf.com/for-vs-foreach/292
-export function forEach (arr, fn) {
-  for (var i = 0; i < arr.length; ++i) fn(arr[i], i)
-}
-
-export function forEachReverse (arr, fn) {
-  for (var i = arr.length - 1; i >= 0; i--) fn(arr[i], i)
-}
-
 export function arrayFragment (e, arr, cleanupFuncs) {
-  var frag = doc.createDocumentFragment()
+  var v, frag = doc.createDocumentFragment()
   var activeElement = (o) => o === (e.activeElement || doc.activeElement)
 
-  forEach(arr, function (_v) {
-    var i, v = _v
-    if (typeof v === 'function') {
-      i = v.observable === 'value' ? 1 : 0
-      v = i ? v.call(e) : v.call(this, e)
-    }
-
-    if (v) {
-      frag.appendChild(
-        isNode(v) ? v
-          : Array.isArray(v) ? arrayFragment(e, v, cleanupFuncs)
-          : txt(v)
-      )
-
-      if (i === 1) {
-        // assume it's an observable!
-        cleanupFuncs.push(_v(function (__v) {
-          if (isNode(__v) && v.parentElement) {
-            v.parentElement.replaceChild(__v, v), v = __v
-          } else {
-            v.textContent = __v
-          }
-        }))
-      }
-    }
-  })
+  // append nodes to the fragment, with parent node as e
+  for (v of arr) frag.appendChild(makeNode.call(e, v, cleanupFuncs))
 
   if (arr.observable === 'array') {
     // TODO: add a comment to know where the array begins and ends (a la angular)
@@ -351,8 +318,9 @@ export function arrayFragment (e, arr, cleanupFuncs) {
         console.log('unknown event', ev)
       }
     }
+
     arr.on('change', onchange)
-    cleanupFuncs.push(function () { arr.off('change', onchange) })
+    cleanupFuncs.push(() => { arr.off('change', onchange) })
   }
   return frag
 }
@@ -361,129 +329,6 @@ export function offsetOf (child) {
   var i = 0
   while ((child = child.previousSibling) != null) i++
   return i
-}
-
-export function svgArrayFragment (e, arr, cleanupFuncs) {
-  var activeElement = (o) => o === (e.activeElement || doc.activeElement)
-
-  forEach(arr, function (_v) {
-    var i, v = _v
-    if (typeof v === 'function') {
-      i = v.observable === 'value' ? 1 : 0
-      v = i ? v.call(e) : v.call(this, e)
-    }
-
-    if (v) {
-      e.appendChild(
-        isNode(v) ? v
-          : Array.isArray(v) ? svgArrayFragment(e, v, cleanupFuncs)
-          : txt(v)
-      )
-
-      if (i === 1) {
-        // assume it's an observable!
-        cleanupFuncs.push(_v(function (__v) {
-          if (isNode(__v) && v.parentElement) {
-            v.parentElement.replaceChild(__v, v), v = __v
-          } else {
-            v.textContent = __v
-          }
-        }))
-      }
-    }
-  })
-
-  if (typeof arr.observable === 'array') {
-    function onchange (ev) {
-      var i, j, o, oo
-      switch (ev.type) {
-      case 'unshift':
-        for (i = ev.values.length - 1; i >= 0; i--)
-          e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[0])
-        break
-      case 'push':
-        for (i = 0; i < ev.values.length; i++)
-          e.insertBefore(isNode(o = ev.values[i]) ? o : txt(o), arr[arr.length + ev.values.length - i - 1])
-        break
-      case 'pop':
-        e.removeChild(arr[arr.length-1])
-        break
-      case 'shift':
-        e.removeChild(arr[0])
-        break
-      case 'splice':
-        j = ev.idx
-        if (ev.remove) for (i = 0; i < ev.remove; i++)
-          e.removeChild(arr[j + i])
-        if (ev.add) for (i = 0; i < ev.add.length; i++)
-          e.insertBefore(isNode(o = ev.add[i]) ? o : txt(o), arr[j])
-        break
-      case 'sort':
-        // technically no longer used, but still exists mainly for comparison purposes
-        // although less element swaps are done, with quiksort, it may be taxing on paint performance...
-        // looking into it eventually :)
-        for (i = 0, oo = ev.orig; i < arr.length; i++) {
-          o = arr[i]
-          if (i !== (j = oo.indexOf(o))) {
-            if (activeElement(o) || o.focused === 1) i = 1
-            e.removeChild(o)
-            e.insertBefore(o, arr[i - 1])
-            if (i === 1) o.focus(), o.focused = 0
-          }
-        }
-        break
-      case 'replace':
-        o = ev.val
-        oo = ev.old
-        if (activeElement(o) || o.focused === 1) i = 1
-        if (activeElement(oo)) oo.focused = 1
-        e.replaceChild(o, oo)
-        if (i === 1) o.focus(), o.focused = 0
-        break
-      case 'insert':
-        e.insertBefore(ev.val, arr[ev.idx])
-        break
-      case 'reverse':
-        for (i = 0, j = +(arr.length / 2); i < j; i++)
-          arr.emit('change', {type: 'swap', from: i, to: arr.length - i - 1 })
-        break
-      case 'move':
-        o = arr[ev.from]
-        if (activeElement(o)) i = 1
-        e.insertBefore(o, arr[ev.to])
-        if (i === 1) o.focus()
-        break
-      case 'swap':
-        ev.j = h('div.swap', o = {s: {display: 'none'}})
-        ev.k = h('div.swap', o)
-        oo = arr[ev.from]
-        o = arr[ev.to]
-        if (activeElement(o)) i = 1
-        else if (activeElement(oo)) i = 2
-        e.replaceChild(ev.j, oo)
-        e.replaceChild(ev.k, o)
-        e.replaceChild(o, ev.j)
-        e.replaceChild(oo, ev.k)
-        if (i === 1) o.focus()
-        else if (i === 2) oo.focus()
-        break
-      case 'remove':
-        e.removeChild(arr[ev.idx])
-        break
-      case 'set':
-        e.replaceChild(ev.val, arr[ev.idx])
-        break
-      case 'empty':
-        for (i = 0; i < arr.length; i++)
-          e.removeChild(arr[i])
-        break
-      default:
-        console.log('unknown event', ev)
-      }
-    }
-    arr.on('change', onchange)
-    cleanupFuncs.push(function () { arr.off('change', onchange) })
-  }
 }
 
 export var special_elements = {}
@@ -495,7 +340,7 @@ export function dom_context () {
     return !~el.indexOf('-') ? doc.createElement(el)
       : (i = special_elements[el]) !== undefined ? new (customElements.get(el))(...args.splice(0, i || 2)) // 2 is default? I can't think of a good reason why it shouldn't be 1 or 0 ...
       : new (customElements.get(el))
-  }, arrayFragment)
+  })
 }
 
 export var h = dom_context()
@@ -504,7 +349,7 @@ h.context = dom_context
 export function svg_context () {
   return context(function (el) {
     return doc.createElementNS('http://www.w3.org/2000/svg', el)
-  }, svgArrayFragment)
+  })
 }
 
 export var s = svg_context()
@@ -520,14 +365,13 @@ export function obvNode (v, cleanupFuncs = []) {
   var r, e = this
   if (typeof v === 'function') {
     var i = v.observable && v.observable === 'value' ? 1 : 0
-    var o = i ? v.call(e) : v.call(e, e) // observable / scope function
+    var o = i ? v.call(e) : v.call(e, e) // call the observable / scope function
+    // if it returns anything, we'll append the value (node, array, observable, or some text)
     if (o !== undefined) {
       r = e.aC(o, cleanupFuncs)
     }
-    // assume we want to make a scope...
-    // call the function and if it returns an element, or an array, appendChild
-    if (i) { // assume it's an observable!
-      // create a comment to be replaced by the observable, if it's still undefined
+    if (i) { // it's an observable!
+      // if the observable does not yet have a value, create a comment to be replaced by the value as soon as it comes
       if (!r) r = e.aC(doc.createComment('obv'), cleanupFuncs)
 
       // TODO: allow for an observable-array implementation
@@ -545,7 +389,6 @@ export function obvNode (v, cleanupFuncs = []) {
       }))
     }
     r = makeNode.call(e, r, cleanupFuncs)
-    // r = e.aC(r, cleanupFuncs)
   } else {
     r = makeNode.call(e, v, cleanupFuncs)
   }

@@ -575,5 +575,3 @@ export function isCopy (other) {
   }
   return true
 }
-
-export default ObservArray

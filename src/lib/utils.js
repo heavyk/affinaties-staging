@@ -1,4 +1,13 @@
 
+// micro-optimization: http://jsperf.com/for-vs-foreach/292
+export function forEach (arr, fn) {
+  for (var i = 0; i < arr.length; ++i) fn(arr[i], i)
+}
+
+export function forEachReverse (arr, fn) {
+  for (var i = arr.length - 1; i >= 0; i--) fn(arr[i], i)
+}
+
 export function parents (el, name) {
   while (el && el.nodeName.toLowerCase() !== name) {
     el = el.parentNode
