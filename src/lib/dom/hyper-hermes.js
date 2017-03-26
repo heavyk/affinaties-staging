@@ -166,8 +166,9 @@ function context (createElement, arrayFragment) {
                 }
               })(s, attr_val[s])
             }
-          } else if (k.substr(0, 5) === "data-") {
-            e.setAttribute(k, attr_val)
+          // not necessary because the following clause will work just fine (e[k] is no longer set derectly)
+          // } else if (k.substr(0, 5) === "data-") {
+          //   e.setAttribute(k, attr_val)
           } else if (typeof attr_val !== 'undefined') {
             // for namespaced attributes, such as xlink:href
             // (I'm really not aware of any others than xlink... PRs accepted!)
@@ -191,26 +192,7 @@ function context (createElement, arrayFragment) {
           }
         })(l[k], k)
       } else if (typeof l === 'function') {
-        i = l.observable && l.observable === 'value' ? 1 : 0
-        o = i ? l.call(e) : l.call(this, e)
-        if (o !== undefined) {
-          r = e.aC(o, cleanupFuncs)
-        }
-        // assume we want to make a scope...
-        // call the function and if it returns an element, or an array, appendChild
-        if (r && i) {
-          // assume it's an observable!
-          // TODO: allow for an observable-array implementation
-          cleanupFuncs.push(l(function (v) {
-            // console.log(v)
-            if (isNode(v) && r.parentElement) {
-              r.parentElement.replaceChild(v, r), r = v
-            // TODO: observable-array cleanup
-            } else {
-              r.textContent = v
-            }
-          }))
-        }
+        r = obvNode.call(e, l, cleanupFuncs)
       }
 
       return r
@@ -528,12 +510,53 @@ export function svg_context () {
 export var s = svg_context()
 s.context = svg_context
 
+export function makeNode (v, cleanupFuncs) {
+  return isNode(v) ? v
+    : Array.isArray(v) ? arrayFragment(this, v, cleanupFuncs)
+    : txt(v)
+}
+
+export function obvNode (v, cleanupFuncs = []) {
+  var r, e = this
+  if (typeof v === 'function') {
+    var i = v.observable && v.observable === 'value' ? 1 : 0
+    var o = i ? v.call(e) : v.call(e, e) // observable / scope function
+    if (o !== undefined) {
+      r = e.aC(o, cleanupFuncs)
+    }
+    // assume we want to make a scope...
+    // call the function and if it returns an element, or an array, appendChild
+    if (i) { // assume it's an observable!
+      // create a comment to be replaced by the observable, if it's still undefined
+      if (!r) r = e.aC(doc.createComment('obv'), cleanupFuncs)
+
+      // TODO: allow for an observable-array implementation
+      cleanupFuncs.push(v((val) => {
+        // TODO: check observable-array cleanup
+        if (r.parentElement === e) {
+          val = makeNode.call(e, val, cleanupFuncs)
+          e.replaceChild(val, r), r = val
+        } else {
+          // shouldn't happen, but maybe if removing the node from the dom, this could happen.
+          // prolly will want to remove itself from the listeners
+          // o = v, o()
+          debugger
+        }
+      }))
+    }
+    r = makeNode.call(e, r, cleanupFuncs)
+    // r = e.aC(r, cleanupFuncs)
+  } else {
+    r = makeNode.call(e, v, cleanupFuncs)
+  }
+  return r
+}
+
 // shortcut to append multiple children (w/ cleanupFuncs)
 HTMLElement.prototype.aC =
-SVGElement.prototype.aC = function (v, cleanupFuncs = []) {
-  return this.appendChild(isNode(v) ? v
-    : Array.isArray(v) ? arrayFragment(this, v, cleanupFuncs)
-    : txt(v))
+SVGElement.prototype.aC =
+function (v, cleanupFuncs) {
+  return this.appendChild(obvNode.call(this, v, cleanupFuncs))
 }
 
 export default h
