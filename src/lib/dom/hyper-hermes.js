@@ -70,7 +70,7 @@ function context (createElement, arrayFragment) {
         || l instanceof RegExp ) {
           e.appendChild(r = txt(l.toString()))
       } else if (Array.isArray(l)) {
-        forEach(l, item)
+        e.aC(l, cleanupFuncs)
       } else if (isNode(l) || l instanceof window.Text) {
         e.appendChild(r = l)
       } else if (typeof l === 'object') {
@@ -171,6 +171,8 @@ function context (createElement, arrayFragment) {
           } else if (typeof attr_val !== 'undefined') {
             // for namespaced attributes, such as xlink:href
             // (I'm really not aware of any others than xlink... PRs accepted!)
+            // ref: http://stackoverflow.com/questions/7379319/how-to-use-creatensresolver-with-lookupnamespaceuri-directly
+            // ref: https://developer.mozilla.org/en-US/docs/Web/API/Document/createNSResolver
             if (~(i = k.indexOf(':'))) {
               if (k.substr(0, i) === 'xlink') {
                 e.setAttributeNS('http://www.w3.org/1999/xlink', k.substr(++i), attr_val)
@@ -192,10 +194,7 @@ function context (createElement, arrayFragment) {
         i = l.observable && l.observable === 'value' ? 1 : 0
         o = i ? l.call(e) : l.call(this, e)
         if (o !== undefined) {
-          r = isNode(o) ? o
-            : Array.isArray(o) ? arrayFragment(e, o, cleanupFuncs)
-            : txt(o)
-          if (r) e.appendChild(r)
+          r = e.aC(o, cleanupFuncs)
         }
         // assume we want to make a scope...
         // call the function and if it returns an element, or an array, appendChild
@@ -282,6 +281,7 @@ export function arrayFragment (e, arr, cleanupFuncs) {
   })
 
   if (arr.observable === 'array') {
+    // TODO: add a comment to know where the array begins and ends (a la angular)
     function onchange (ev) {
       var i, j, o, oo
       switch (ev.type) {
@@ -505,21 +505,12 @@ export function svgArrayFragment (e, arr, cleanupFuncs) {
 }
 
 export var special_elements = {}
-// var special_elements = ['poem', 'hyper']
-// function is_special (el) {
-//   var s, i = 0
-//   for (; i < special_elements.length; i++) {
-//     s = special_elements[i]
-//     if (el.substr(0, s.length) === s) return true
-//   }
-// }
 
 export function dom_context () {
   return context(function (el, args) {
     var i
 
     return !~el.indexOf('-') ? doc.createElement(el)
-      // : is_special(el) ? new (customElements.get(el))(args.shift(), args.shift())
       : (i = special_elements[el]) !== undefined ? new (customElements.get(el))(...args.splice(0, i || 2)) // 2 is default? I can't think of a good reason why it shouldn't be 1 or 0 ...
       : new (customElements.get(el))
   }, arrayFragment)
@@ -538,12 +529,11 @@ export var s = svg_context()
 s.context = svg_context
 
 // shortcut to append multiple children (w/ cleanupFuncs)
-HTMLElement.prototype.aC = function (v, cleanupFuncs) {
-  this.appendChild(
-    isNode(v) ? v
-      : Array.isArray(v) ? arrayFragment(this, v, cleanupFuncs || [])
-      : txt(v)
-  )
+HTMLElement.prototype.aC =
+SVGElement.prototype.aC = function (v, cleanupFuncs = []) {
+  return this.appendChild(isNode(v) ? v
+    : Array.isArray(v) ? arrayFragment(this, v, cleanupFuncs)
+    : txt(v))
 }
 
 export default h
