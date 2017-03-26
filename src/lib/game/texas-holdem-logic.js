@@ -12,6 +12,7 @@ class Player {
     this.cards = new ObservableArray
     this.prompt = prompter((msg, options, response) => {
       // TODO: wait for 'server' to reply back with the response...
+      if (options.cards.length) return setTimeout(() => { response('all-in') }, 100)
       let board_rank = rankHandInt(options.cards)
       let hand_rank = rankHandInt(this.cards.concat(options.cards))
       console.log(this.name(), msg, 'min:', options.min, hand_rank.t, hand_rank.v, hand_rank.v / board_rank.v)
@@ -73,7 +74,7 @@ class Game {
   playaBetTotal (i) {
     var b, total = 0
     for (b of this.bets) {
-      if (b.i === i) total += b.v
+      if (b.i === i) total += Math.abs(b.v)
     }
     return total
   }
@@ -101,6 +102,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
   const cur_playa = number()
   const min_bet = number()
   const active_playaz = number()
+  const all_in_playaz = number()
 
   var _game
 
@@ -167,6 +169,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
         _game.state = state
         game(_game)
         state('deal')
+        all_in_playaz(0)
         active_playaz(num)
         active_playaz((num) => {
           let c = 0
@@ -201,10 +204,16 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
     }
   }
 
+  let goto_next_round = () => {
+    let s = state()
+    state(s === 'deal' ? 'flop' : s === 'flop' ? 'turn' : s === 'turn' ? 'river' : 'showdown')
+  }
+
   let calc_winners = () => {
     var r, p, i = 0, m = playaz.length
     var ranks = []
     var pot = _game.pot()
+    console.info('pot', pot)
     for (; i < m; i++)
       if ((p = playaz[i]).state() !== 'folded')
         ranks.push({i, v: rankHandInt(_game.board.concat(p.cards)) })
@@ -298,13 +307,12 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
     _game.bets.push({i, v: bet, t: Date.now()})
     console.info(i, playaz[i].name(), bet === false ? 'folded' : bet < 0 ? `went all-in (${-bet})` : `bet (${bet})`)
 
-    var min = min_bet()
     if (bet === false) active_playaz.add(-1)
+    else if (bet < 0) all_in_playaz.add(1)
+
+    var min = min_bet()
     if (bet > min) min_bet(bet)
-    else if (-bet > min) {
-      // case of all-in when also raising
-      min_bet(-bet)
-    }
+    else if (-bet > min) min_bet(-bet)
 
     if (active_playaz() < 2) {
       // everyone else has folded, so calculate the only winner and end the game
@@ -314,7 +322,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
     } else {
       // end of round
       // add roundBets to pot & reset roundBets to null (if not folded or all-in)
-      var j = 0, pot = _game.pot(), l = playaz.length
+      var j = 0, pot = 0, l = playaz.length
       for (; j < l; j++) {
         let bet = _game.roundBets[j]
         if (typeof bet === 'number') {
@@ -326,11 +334,11 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
         }
       }
       // increase the pot
-      _game.pot(pot)
+      console.info('addding', pot, 'to the pot')
+      _game.pot.add(pot)
 
       // jump to the next stage
-      let s = state()
-      state(s === 'deal' ? 'flop' : s === 'flop' ? 'turn' : s === 'turn' ? 'river' : 'showdown')
+      goto_next_round()
     }
   }
 
@@ -343,8 +351,12 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
     if (typeof bet !== 'boolean') {
       // TODO: add timeout
       p.state('waiting')
-      p.prompt(bet >= min && bet > 0 ? 'raise' : 'bet', {min, cards: Array.from(_game.board)})
-    } else cur_playa((i+1) % playaz.length)
+      p.prompt(bet >= min && bet > 0 ? 'raise' : 'bet', {min, cards: _game.board.slice(0)})
+    } else {
+      console.log ('active:', active_playaz(), 'all-in:', all_in_playaz())
+      if (active_playaz() === all_in_playaz()) goto_next_round()
+      else cur_playa((i+1) % playaz.length)
+    }
   })
 
 
@@ -377,7 +389,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
         // set min bet to BB
         min_bet(_game.bigBlind)
         // start one to the left of the BB
-        cur_playa((d + 3) % l)
+        cur_playa.set((d + 3) % l)
       break
       case 'flop':
         // put first three cards in the spaces (3)
@@ -388,21 +400,21 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
         _game.deck.pop() // burn one
         _game.board.push(_game.deck.pop())
         console.log('effective flop', 'next round in 2s')
-        setTimeout(() => { cur_playa(d + 1) }, 2000)
+        setTimeout(() => { cur_playa.set(d + 1) }, 2000)
       break
       case 'turn':
         // pull one card and put in space (4)
         _game.deck.pop() // burn one
         _game.board.push(_game.deck.pop())
         console.log('effective turn', 'next round in 2s')
-        setTimeout(() => { cur_playa(d + 1) }, 2000)
+        setTimeout(() => { cur_playa.set(d + 1) }, 2000)
       break
       case 'river':
         // pull one card and put in space (5)
         _game.deck.pop() // burn one
         _game.board.push(_game.deck.pop())
         console.log('effective river', 'next round in 2s')
-        setTimeout(() => { cur_playa(d + 1) }, 2000)
+        setTimeout(() => { cur_playa.set(d + 1) }, 2000)
       break
       case 'showdown':
         console.log('SHOWDOWN!!!')

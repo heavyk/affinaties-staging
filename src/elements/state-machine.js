@@ -86,7 +86,7 @@ export default class StateMachine extends PathEmitter(HTMLElement) {
 
   now (nextState) {
     if (nextState[0] !== '/') nextState = camelize(nextState)
-    console.log(this.localName, this.state, '->', nextState)
+    if (this.state) console.log(this.localName, this.state, '->', nextState)
     return new Promise((resolve, reject) => {
       var fn, data = {}, els, loading_els, state
       if (typeof this.state === 'string' && typeof (fn = this.states[this.state + '#exit']) === 'function') {
@@ -223,13 +223,7 @@ export default class StateMachine extends PathEmitter(HTMLElement) {
   }
 
   context () {
-    // TODO: context should be a function which is created at a lower level somewhere... (also use it in the plugin-boilerplate)
     return this._ctx || (this._ctx = context({h, s}))
-    // var ctx, self = this
-    // return self._ctx || (Object.defineProperties((ctx = {}), {
-    //   h: define_getter(() => self._h || (self._h = h.context())),
-    //   s: define_getter(() => self._s || (self._s = s.context())),
-    // }), self._ctx = ctx)
   }
 
   get observables () {
