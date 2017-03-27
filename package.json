@@ -30,7 +30,7 @@
     "dropzone": "^4.3.0",
     "eases": "^1.0.8",
     "electron": "^1.6.2",
-    "electron-builder": "^16.3.0",
+    "electron-builder": "^16.4.2",
     "electron-packager": "^8.6.0",
     "electron-rebuild": "^1.5.7",
     "engine.io-client": "^2.1.1",
@@ -50,7 +50,7 @@
     "postcss-import": "^9.1.0",
     "precss": "^1.4.0",
     "promise": "^7.1.1",
-    "provinces": "^1.9.0",
+    "provinces": "^1.10.0",
     "psy": "^1.8.1",
     "source-map-support": "^0.4.14",
     "spin.js": "^2.3.2",
@@ -70,6 +70,7 @@
     "get-size": "^2.0.2",
     "gyronorm": "^2.0.6",
     "hjs-webpack": "^8.4.3",
+    "holderjs": "^2.9.4",
     "isotope-layout": "^3.0.3",
     "magic-string": "^0.19.0",
     "minions.css": "^0.3.1",
@@ -83,7 +84,7 @@
     "source-map": "^0.5.6",
     "source-map-loader": "^0.2.0",
     "usb": "^1.2.0",
-    "webpack": "^2.3.1",
+    "webpack": "^2.3.2",
     "webtorrent": "^0.98.14"
   }
 }

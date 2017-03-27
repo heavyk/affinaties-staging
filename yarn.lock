@@ -1012,10 +1012,6 @@ chalk@^1.0.0, chalk@^1.1.0, chalk@^1.1.1, chalk@^1.1.3:
     strip-ansi "^3.0.0"
     supports-color "^2.0.0"
 
-chinesecities@~0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/chinesecities/-/chinesecities-0.0.2.tgz#20ec48b052ba48f921b8aae2855074a6490b4c8e"
-
 chokidar@^1.0.0, chokidar@^1.4.3:
   version "1.6.1"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-1.6.1.tgz#2f4447ab5e96e50fb3d789fd90d4c72e0e4c70c2"
@@ -1706,22 +1702,22 @@ electron-builder-core@15.6.3:
   version "15.6.3"
   resolved "https://registry.yarnpkg.com/electron-builder-core/-/electron-builder-core-15.6.3.tgz#c43e5ed38d249317a5bcf21c2c1d56ba1bf9ed3a"
 
-electron-builder-http@15.6.3, electron-builder-http@~15.6.3:
-  version "15.6.3"
-  resolved "https://registry.yarnpkg.com/electron-builder-http/-/electron-builder-http-15.6.3.tgz#f941a9b25245a3ae678eeb11e02cce59759402e6"
+electron-builder-http@16.4.0, electron-builder-http@~16.4.0:
+  version "16.4.0"
+  resolved "https://registry.yarnpkg.com/electron-builder-http/-/electron-builder-http-16.4.0.tgz#9be0088736120801c18deb79c9f0532af62e94cb"
   dependencies:
     debug "2.6.3"
     fs-extra-p "^4.1.0"
 
-electron-builder-util@16.0.0, electron-builder-util@~16.0.0:
-  version "16.0.0"
-  resolved "https://registry.yarnpkg.com/electron-builder-util/-/electron-builder-util-16.0.0.tgz#c8e87676a7cf7085ad75433335c10b58518dcfa7"
+electron-builder-util@16.4.0, electron-builder-util@~16.4.0:
+  version "16.4.0"
+  resolved "https://registry.yarnpkg.com/electron-builder-util/-/electron-builder-util-16.4.0.tgz#9f79640f5ed694c7998bb096363308f7f09f04a1"
   dependencies:
     "7zip-bin" "^2.0.4"
     bluebird-lst "^1.0.2"
     chalk "^1.1.3"
     debug "2.6.3"
-    electron-builder-http "~15.6.3"
+    electron-builder-http "~16.4.0"
     fs-extra-p "^4.1.0"
     ini "^1.3.4"
     is-ci "^1.0.10"
@@ -1730,9 +1726,9 @@ electron-builder-util@16.0.0, electron-builder-util@~16.0.0:
     stat-mode "^0.2.2"
     tunnel-agent "^0.6.0"
 
-electron-builder@^16.3.0:
-  version "16.3.0"
-  resolved "https://registry.yarnpkg.com/electron-builder/-/electron-builder-16.3.0.tgz#cb237f2bdb44c32275ce60bda415bbeffba6d660"
+electron-builder@^16.4.2:
+  version "16.4.2"
+  resolved "https://registry.yarnpkg.com/electron-builder/-/electron-builder-16.4.2.tgz#6e54808e6ceb6ba586a4d790e933083e702ce74d"
   dependencies:
     "7zip-bin" "^2.0.4"
     ajv "^5.0.4-beta.0"
@@ -1742,11 +1738,11 @@ electron-builder@^16.3.0:
     chromium-pickle-js "^0.2.0"
     cuint "^0.2.2"
     electron-builder-core "15.6.3"
-    electron-builder-http "15.6.3"
-    electron-builder-util "16.0.0"
+    electron-builder-http "16.4.0"
+    electron-builder-util "16.4.0"
     electron-download-tf "4.1.1"
     electron-macos-sign "~1.6.0"
-    electron-publish "16.0.0"
+    electron-publish "16.4.0"
     fs-extra-p "^4.1.0"
     hosted-git-info "^2.4.1"
     is-ci "^1.0.10"
@@ -1844,14 +1840,14 @@ electron-packager@^8.6.0:
     sanitize-filename "^1.6.0"
     semver "^5.3.0"
 
-electron-publish@16.0.0:
-  version "16.0.0"
-  resolved "https://registry.yarnpkg.com/electron-publish/-/electron-publish-16.0.0.tgz#5caa8d17e76e55725e0e137e7fd21824d34d473a"
+electron-publish@16.4.0:
+  version "16.4.0"
+  resolved "https://registry.yarnpkg.com/electron-publish/-/electron-publish-16.4.0.tgz#e02ff2a6095c29983d9e150515d69f2bde90a908"
   dependencies:
     bluebird-lst "^1.0.2"
     chalk "^1.1.3"
-    electron-builder-http "~15.6.3"
-    electron-builder-util "~16.0.0"
+    electron-builder-http "~16.4.0"
+    electron-builder-util "~16.4.0"
     fs-extra-p "^4.1.0"
     mime "^1.3.4"
     progress-ex "^2.0.0"
@@ -1981,7 +1977,7 @@ es6-promise@^4.0.5:
   version "4.0.5"
   resolved "https://registry.yarnpkg.com/es6-promise/-/es6-promise-4.0.5.tgz#7882f30adde5b240ccfa7f7d78c548330951ae42"
 
-escape-html@~1.0.3:
+escape-html@~1.0.1, escape-html@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/escape-html/-/escape-html-1.0.3.tgz#0258eae4d3d0c0974de1c169188ef0051d1d1988"
 
@@ -2602,6 +2598,12 @@ hjs-webpack@^8.4.3:
 hoek@2.x.x:
   version "2.16.3"
   resolved "https://registry.yarnpkg.com/hoek/-/hoek-2.16.3.tgz#20bb7403d3cea398e91dc4710a8ff1b8274a25ed"
+
+holderjs@^2.9.4:
+  version "2.9.4"
+  resolved "https://registry.yarnpkg.com/holderjs/-/holderjs-2.9.4.tgz#a165dbc2532ebff975491312259d0c520c059898"
+  dependencies:
+    shaven "^0.8.1"
 
 home-or-tmp@^1.0.0:
   version "1.0.0"
@@ -4544,11 +4546,9 @@ promise@^7.1.1:
   dependencies:
     asap "~2.0.3"
 
-provinces@^1.9.0:
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/provinces/-/provinces-1.9.0.tgz#52919000d391bc4ac9b3abec2d828cae1a2fe0ae"
-  dependencies:
-    chinesecities "~0.0.2"
+provinces@^1.10.0:
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/provinces/-/provinces-1.10.0.tgz#17b603402cfc1081e0307dc332cb1c3fa491554e"
 
 proxy-addr@~1.1.2:
   version "1.1.2"
@@ -5119,6 +5119,12 @@ shasum@^1.0.0:
     json-stable-stringify "~0.0.0"
     sha.js "~2.4.4"
 
+shaven@^0.8.1:
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/shaven/-/shaven-0.8.1.tgz#0f42d4fb32c4048349ff9ee9c296f5effb2dcaaf"
+  dependencies:
+    escape-html "~1.0.1"
+
 shebang-regex@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-1.0.0.tgz#da42f49740c0b42db2ca9728571cb190c98efea3"
@@ -5221,9 +5227,9 @@ sort-keys@^1.0.0:
   dependencies:
     is-plain-obj "^1.0.0"
 
-source-list-map@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/source-list-map/-/source-list-map-1.0.1.tgz#cc1fc17122ae0a51978024c2cc0f8c35659026b8"
+source-list-map@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/source-list-map/-/source-list-map-1.1.1.tgz#1a33ac210ca144d1e561f906ebccab5669ff4cb4"
 
 source-list-map@~0.1.0, source-list-map@~0.1.7:
   version "0.1.8"
@@ -6026,11 +6032,11 @@ webpack-sources@^0.1.0:
     source-list-map "~0.1.7"
     source-map "~0.5.3"
 
-webpack-sources@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/webpack-sources/-/webpack-sources-0.2.0.tgz#fea93ba840f16cdd3f246f0ee95f88a9492c69fb"
+webpack-sources@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/webpack-sources/-/webpack-sources-0.2.3.tgz#17c62bfaf13c707f9d02c479e0dcdde8380697fb"
   dependencies:
-    source-list-map "^1.0.1"
+    source-list-map "^1.1.1"
     source-map "~0.5.3"
 
 webpack@^1.12.14:
@@ -6053,9 +6059,9 @@ webpack@^1.12.14:
     watchpack "^0.2.1"
     webpack-core "~0.6.0"
 
-webpack@^2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-2.3.1.tgz#55bce8baffe7c1f9dc3029adc048643b448318a8"
+webpack@^2.3.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-2.3.2.tgz#7d521e6f0777a3a58985c69425263fdfe977b458"
   dependencies:
     acorn "^4.0.4"
     acorn-dynamic-import "^2.0.0"
@@ -6075,7 +6081,7 @@ webpack@^2.3.1:
     tapable "~0.2.5"
     uglify-js "^2.8.5"
     watchpack "^1.3.1"
-    webpack-sources "^0.2.0"
+    webpack-sources "^0.2.3"
     yargs "^6.0.0"
 
 webtorrent@^0.98.14:
