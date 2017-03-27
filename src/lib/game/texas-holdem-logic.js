@@ -360,8 +360,8 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
         for (let i = 0; i < l; i++) {
           let playa = playaz[i]
           let bet = i === sb ? _game.smallBlind : i === bb ? _game.bigBlind : 0
-          _game.bets.set(i, bet)
-          _game.prevBets.set(i, null)
+          _game.bets.push(bet)
+          _game.prevBets.push(0)
           if (bet) playa.chips(playa.chips() - bet)
           playa.cards.empty()
           _game.deck.pop() // burn one

@@ -113,8 +113,8 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   # table attributes
   playa-cards-width = value 30
   playa-cards-margin = value 2
-  first-playa-angle = 150 #200
-  last-playa-angle = 390 #340
+  first-playa-angle = 150
+  last-playa-angle = 390
 
   # attributes which should be determined by the game logic
   playa-cards-count = value 2
@@ -183,10 +183,10 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   space-pos-y = (i) ->
     compute [middle-area-height, board-spaces-height, table-padding], (mh, ch, tp) -> TABLE_STROKE + tp + ((mh - ch - tp - tp) / 2)
 
-  playa-cards-pos-x = (i, playa-pos) ->
-    compute [playa-cards-width, playa-cards-margin, playa-cards-count, playa-pos, i], (cw, cm, n, p, i) -> p.x + (cw * i) + (cm * i) - (((cw * n) + (cm * (n - 1))) / 2)
-  playa-cards-pos-y = (n, playa-pos) ->
-    compute [playa-pos, n], (p, n) -> p.y + 33
+  playa-cards-pos-x = (i, pos) ->
+    compute [playa-cards-width, playa-cards-margin, playa-cards-count, pos, i], (cw, cm, n, p, i) -> p.x + (cw * i) + (cm * i) - (((cw * n) + (cm * (n - 1))) / 2)
+  playa-cards-pos-y = (n, pos) ->
+    compute [pos, n], (p, n) -> p.y + 33
 
   table-pos = (i, cx, cy) ->
     compute [table-abs-cx, table-abs-cy, cx, cy, first-playa-angle, last-playa-angle, i, num-playas, max-playas], (abs-cx, abs-cy, cx, cy, a0, a1, i, n, m) ->
@@ -223,16 +223,12 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   window.playaz =\
   playaz = new RenderingArray G, (d, idx, {h}) ->
     # do these need to save off functions?
-    playa-pos = table-pos idx, playa-cx, playa-cy
-    playa-x = transform playa-pos, (p) -> "#{p.x}px"
-    playa-y = transform playa-pos, (p) -> "#{p.y}px"
-
-    bet-pos = table-pos idx, bet-cx, bet-cy
-    bet-x = transform bet-pos, (p) -> "#{p.x}px"
-    bet-y = transform bet-pos, (p) -> "#{p.y}px"
+    pos = table-pos idx, playa-cx, playa-cy
+    x = transform pos, (p) -> "#{p.x}px"
+    y = transform pos, (p) -> "#{p.y}px"
 
     playa-cards = new RenderingArray G, d.cards, (id, idx, {h}) ->
-      h \poke-her-card, id, { width: playa-cards-width, x: (playa-cards-pos-x idx, playa-pos), y: (playa-cards-pos-y idx, playa-pos) }
+      h \poke-her-card, id, { width: playa-cards-width, x: (playa-cards-pos-x idx, pos), y: (playa-cards-pos-y idx, pos) }
 
     # TODO: this becomes the foto
     h \div.playa style: {
@@ -248,50 +244,58 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       position: \fixed
       width: '60px'
       height: '60px'
-      left: playa-x
-      top: playa-y
+      left: x
+      top: y
     },
       h \div.name, d.name
       h \div.state, d.state
       h \div.chips, d.chips
       h \div.cards, playa-cards
-      # h \div.bet, style: {
-      #   border: 'solid 1px #000'
-      #   background: '#f06'
-      #   # border-radius: '8px'
-      #   border-radius: '50%'
-      #   margin-top: '-10px'
-      #   margin-left: '-10px'
-      #   position: \fixed
-      #   width: '20px'
-      #   height: '20px'
-      #   left: bet-x
-      #   top: bet-y
-      # }
 
   window.betz =\
   betz = new RenderingArray G, (d, idx, {h}) ->
     # do these need to save off functions?
-    bet-pos = table-pos idx, bet-cx, bet-cy
-    bet-x = transform bet-pos, (p) -> "#{p.x}px"
-    bet-y = transform bet-pos, (p) -> "#{p.y}px"
+    pos = table-pos idx, bet-cx, bet-cy
+    x = transform pos, (p) -> "#{p.x}px"
+    y = transform pos, (p) -> "#{p.y}px"
 
-    # _if d, false, 'folded',
-    #   _if d, true, 'all-in',
-    #     d # TODO: some sort of visual representation of amnt of chips
+    # TODO: some sort of visual representation of amnt of chips
     h \div.bet style: {
+      display: transform d, (v) -> if !v => 'none' else ''
       border: 'solid 1px #000'
       background: '#f06'
-      # border-radius: '8px'
-      border-radius: '50%'
-      margin-top: '-10px'
-      margin-left: '-10px'
+      border-radius: '6px'
+      margin-top: '-12px'
+      margin-left: '-12px'
+      padding: '2px'
       position: \fixed
-      width: '20px'
+      # width: '20px'
       height: '20px'
-      left: bet-x
-      top: bet-y
+      left: x
+      top: y
     }, transform d, (v) -> if v is false => 'X' else if v is true => 'all-in' else v
+
+  window.prev-betz =\
+  prev-betz = new RenderingArray G, (d, idx, {h}) ->
+    # do these need to save off functions?
+    pos = table-pos idx, prev-bet-cx, prev-bet-cy
+    x = transform pos, (p) -> "#{p.x}px"
+    y = transform pos, (p) -> "#{p.y}px"
+
+    # TODO: some sort of visual representation of amnt of chips
+    h \div.prev-bet style: {
+      border: 'solid 1px #000'
+      background: '#f06'
+      border-radius: '6px'
+      margin-top: '-12px'
+      margin-left: '-12px'
+      padding: '2px'
+      position: \fixed
+      # width: '20px'
+      height: '20px'
+      left: x
+      top: y
+    }, d #transform d, (v) -> if v is false => 'X' else if v is true => 'all-in' else v
 
   # two things:
   # 1. RenderingArray should have a cleanup function (to clean up everything in the array)
@@ -317,6 +321,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       cards.data game.board
       hand.data my.cards
       betz.data game.bets
+      prev-betz.data game.prev-bets
 
       # TODO: add prompt interface
       # my.prompt.set_responder (msg, options, answer) ->
@@ -344,7 +349,11 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
         s \tspan 'Pot: '
         s \tspan _game.pot
 
-    cards, hand, playaz, betz
+    h \.cards cards
+    h \.hand hand
+    h \.playaz playaz
+    h \.betz betz
+    h \.prev-betz prev-betz
 
     window.machina =\
     h \poem-state-machine, {width: 40, active: false}, (G) ->
