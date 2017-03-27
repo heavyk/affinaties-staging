@@ -41,3 +41,8 @@ img.avatar {
 }
 
 /* unbreakable Kimmy Schmidt */
+
+text {
+  text-anchor: middle;
+  font-size: 150%;
+}

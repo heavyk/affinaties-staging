@@ -107,6 +107,8 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   const TABLE_STROKE = 5.5
   const TABLE_STROKE2 = TABLE_STROKE * 2
+  const SPACE_MARGIN = 1
+  const SPACE_MARGIN2 = SPACE_MARGIN * 2
 
   # table attributes
   playa-cards-width = value 30
@@ -139,9 +141,9 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   middle-area-card-width = compute [middle-area-width, middle-area-card-margin, table-padding], (w, m, p) -> ((w - p - p) / 5) - m
   middle-area-card-height = transform middle-area-card-width, (w) -> w * 1.45
 
-  middle-area-space-width = transform middle-area-card-width, (w) -> w + 3 + 3
-  middle-area-space-height = transform middle-area-card-height, (h) -> h + 3 + 3
-  middle-area-space-margin = transform middle-area-card-margin, (m) -> m - 3 - 3
+  middle-area-space-width = transform middle-area-card-width, (w) -> w + SPACE_MARGIN2
+  middle-area-space-height = transform middle-area-card-height, (h) -> h + SPACE_MARGIN2
+  middle-area-space-margin = transform middle-area-card-margin, (m) -> m - SPACE_MARGIN2
 
   table-margin-sides = transform G.width, (v) -> v / S1
   table-margin-top = transform G.height, (v) -> v / S3
@@ -155,7 +157,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   bet-mid-h = compute [middle-area-ry, bet-offset], (h, b) -> h + b
 
   pot-txt-x = transform middle-area-rx, (v) -> v
-  pot-txt-y = compute [middle-area-ry, middle-area-space-height], (v, sh) -> v - (sh * 1.5)
+  pot-txt-y = compute [middle-area-ry, middle-area-space-height], (v, sh) -> v - (sh * 1.0)
 
   hand-pos-x = (i) ->
     compute [G.width, middle-area-card-width, i], (w, cw, i) -> (w * 0.49) - (cw / 2) + ((cw / 5) * i)
@@ -163,12 +165,12 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
     compute [G.height, middle-area-card-height], (h, ch) -> h - (ch * 0.2)
 
   card-pos-x = (i) ->
-    compute [table-margin-sides, middle-area-card-width, middle-area-card-margin, table-padding, i], (tm, cw, cm, tp, i) -> TABLE_STROKE + tp + tm + (cw * i) + (cm * i) + 3
+    compute [table-margin-sides, middle-area-card-width, middle-area-card-margin, table-padding, i], (tm, cw, cm, tp, i) -> TABLE_STROKE + tp + tm + (cw * i) + (cm * i) + SPACE_MARGIN
   card-pos-y = (i) ->
     compute [table-margin-top, middle-area-height, middle-area-card-height, table-padding, i], (tm, mh, ch, tp, i) -> TABLE_STROKE + tp + tm + ((mh - ch - tp - tp) / 2)
 
   space-pos-x = (i) ->
-    compute [middle-area-space-width, middle-area-space-margin, table-padding], (cw, cm, tp) -> TABLE_STROKE + tp + (cw * i) + (cm * i) # - 3
+    compute [middle-area-space-width, middle-area-space-margin, table-padding], (cw, cm, tp) -> TABLE_STROKE + tp + (cw * i) + (cm * i)
   space-pos-y = (i) ->
     compute [middle-area-height, middle-area-space-height, table-padding], (mh, ch, tp) -> TABLE_STROKE + tp + ((mh - ch - tp - tp) / 2)
 
@@ -331,9 +333,6 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       s \text x: pot-txt-x, y: pot-txt-y,
         s \tspan 'Pot: '
         s \tspan _game.pot
-        # s \tspan ->
-        #   debugger
-        #   _game.pot
 
     cards, hand, playaz, betz
 

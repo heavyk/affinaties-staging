@@ -2,13 +2,14 @@ import { value, number, object, transform, compute } from '../dom/observable'
 import { prompter } from '../dom/observable-logic'
 import { ObservableArray } from '../dom/observable-array'
 import { rankHandInt } from './rank-hand'
+import { shuffled_deck } from './deck'
 import round from '../lodash/round'
 
 class Player {
   constructor (name, chips) {
     this.name = value(name)
     this.chips = number(chips)
-    this.state = value(null) // folded, all-in, playing
+    this.state = value() // folded, all-in, playing
     this.cards = new ObservableArray
     this.prompt = prompter((msg, options, response) => {
       // TODO: wait for 'server' to reply back with the response...
@@ -43,20 +44,7 @@ class Game {
   }
 
   reset () {
-    var deck = ['AS','KS','QS','JS','TS','9S','8S','7S','6S','5S','4S','3S','2S',
-                'AH','KH','QH','JH','TH','9H','8H','7H','6H','5H','4H','3H','2H',
-                'AD','KD','QD','JD','TD','9D','8D','7D','6D','5D','4D','3D','2D',
-                'AC','KC','QC','JC','TC','9C','8C','7C','6C','5C','4C','3C','2C']
-
-    // Shuffle the deck array with Fisher-Yates
-    var i, j, tempi, tempj
-    for (i = 0; i < deck.length; i++) {
-      j = Math.floor(Math.random() * (i + 1))
-      tempi = deck[i]
-      tempj = deck[j]
-      deck[i] = tempj
-      deck[j] = tempi
-    }
+    var deck = shuffled_deck()
 
     this.deck.splice.apply(this.deck, [0, this.deck.length].concat(deck))
     this.pot(0)
@@ -335,9 +323,12 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
           _game.roundBets.set(j, bet >= 0 ? null : true)
         }
       }
+
       // increase the pot
-      console.info('addding', pot, 'to the pot')
-      _game.pot.add(pot)
+      if (pot !== 0) {
+        console.info('addding', pot, 'to the pot')
+        _game.pot.add(pot)
+      }
 
       // jump to the next stage
       goto_next_round()
