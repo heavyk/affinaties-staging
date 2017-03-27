@@ -278,6 +278,7 @@ export class ObservableArray extends MixinEmitter(Array) {
 
   set (idx, val) {
     idx = idx >>> 0
+    // if (idx >= this.length) debugger // what should be done for sparse arrays?
     if (eq(this[idx], val)) return
     this.emit('change', { type: 'set', idx, val })
     this[idx] = val

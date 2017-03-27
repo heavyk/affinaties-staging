@@ -3,6 +3,11 @@ import { value, transform, remove } from '../dom/observable'
 export const _not = (v) => !v
 export const not = (observable) => transform(observable, _not)
 
+// maybe express logic like this:
+// # _if d, false, 'folded',
+// #   _if d, true, 'all-in',
+// #     d
+
 // TODO: add: compute [n0, n1, ...], (n0, n1, ...) -> n0 + n1 + ...
 //  - probably a good implementation will be to just re-implement compute with adding arr.reduce((v, sum) => v + sum, 0)
 // TODO: subtract, multiply ???

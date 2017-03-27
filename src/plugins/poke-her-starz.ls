@@ -262,15 +262,6 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
     # TODO: some sort of visual representation of amnt of chips
     h \div.bet style: {
       display: transform d, (v) -> if !v => 'none' else ''
-      border: 'solid 1px #000'
-      background: '#f06'
-      border-radius: '6px'
-      margin-top: '-12px'
-      margin-left: '-12px'
-      padding: '2px'
-      position: \fixed
-      # width: '20px'
-      height: '20px'
       left: x
       top: y
     }, transform d, (v) -> if v is false => 'X' else if v is true => 'all-in' else v
@@ -284,15 +275,6 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
     # TODO: some sort of visual representation of amnt of chips
     h \div.prev-bet style: {
-      border: 'solid 1px #000'
-      background: '#f06'
-      border-radius: '6px'
-      margin-top: '-12px'
-      margin-left: '-12px'
-      padding: '2px'
-      position: \fixed
-      # width: '20px'
-      height: '20px'
       left: x
       top: y
     }, d #transform d, (v) -> if v is false => 'X' else if v is true => 'all-in' else v

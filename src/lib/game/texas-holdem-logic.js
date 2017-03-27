@@ -85,7 +85,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
   const dealer_idx = value(0)
   const sb_idx = compute([dealer_idx, playaz.obv_len], (dealer, num_playaz) => (dealer + 1) % num_playaz)
   const bb_idx = compute([dealer_idx, playaz.obv_len], (dealer, num_playaz) => (dealer + 2) % num_playaz)
-  const cur_playa = number()
+  const cur_playa = value()
   const min_bet = number()
   const active_playaz = number()
   const all_in_playaz = number()
@@ -263,6 +263,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
     }
 
     // TODO: add winners to game
+    cur_playa(false)
     state('done')
   }
 
@@ -326,19 +327,20 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
   }
 
   cur_playa((i) => {
-    let p = playaz[i]
-    let min = min_bet()
-    let bet = _game.bets[i]
-    // if (p.name() === 'dylan') debugger
+    if (typeof i === 'number') {
+      var p = playaz[i]
+      var min = min_bet()
+      var bet = _game.bets[i]
 
-    if (typeof bet !== 'boolean') {
-      // TODO: add timeout
-      p.state('waiting')
-      p.prompt(bet >= min && bet > 0 ? 'raise' : 'bet', {min, cards: _game.board.slice(0)})
-    } else {
-      console.log ('active:', active_playaz(), 'all-in:', all_in_playaz())
-      if (active_playaz() === all_in_playaz()) goto_next_round()
-      else cur_playa((i+1) % playaz.length)
+      if (typeof bet !== 'boolean') {
+        p.state('waiting')
+        // TODO: add timeout & fold if timed out (I think this is the cerrect punishment, anyway)
+        p.prompt(bet >= min && bet > 0 ? 'raise' : 'bet', {min, cards: _game.board.slice(0), timeout: 60000}, () => { go_next(i, false) })
+      } else {
+        console.log ('active:', active_playaz(), 'all-in:', all_in_playaz())
+        if (active_playaz() === all_in_playaz()) goto_next_round()
+        else cur_playa((i+1) % playaz.length)
+      }
     }
   })
 
@@ -346,7 +348,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
   state((s, _s) => {
     // waiting, start_game, playing, game_done
     min_bet(0)
-    let d = dealer_idx()
+    let dealer = dealer_idx()
     switch (s) {
       case 'waiting':
         // TODO: waiting for enough playaz to join - give them prompts n'stuff
@@ -355,8 +357,8 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
       // in-game states:
       case 'deal':
         let l = playaz.length
-        let sb = (d + 1) % l // move this to transform
-        let bb = (d + 2) % l // move this to transform
+        let sb = (dealer + 1) % l // move this to transform
+        let bb = (dealer + 2) % l // move this to transform
         for (let i = 0; i < l; i++) {
           let playa = playaz[i]
           let bet = i === sb ? _game.smallBlind : i === bb ? _game.bigBlind : 0
@@ -373,7 +375,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
         // set min bet to BB
         min_bet(_game.bigBlind)
         // start one to the left of the BB
-        cur_playa.set((d + 3) % l)
+        cur_playa.set((bb + 1) % l)
       break
       case 'flop':
         // put first three cards in the spaces (3)
@@ -384,21 +386,21 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
         _game.deck.pop() // burn one
         _game.board.push(_game.deck.pop())
         console.log('effective flop', 'next round in 2s')
-        setTimeout(() => { cur_playa.set(d + 1) }, 2000)
+        setTimeout(() => { cur_playa.set(dealer + 1) }, 2000)
       break
       case 'turn':
         // pull one card and put in space (4)
         _game.deck.pop() // burn one
         _game.board.push(_game.deck.pop())
         console.log('effective turn', 'next round in 2s')
-        setTimeout(() => { cur_playa.set(d + 1) }, 2000)
+        setTimeout(() => { cur_playa.set(dealer + 1) }, 2000)
       break
       case 'river':
         // pull one card and put in space (5)
         _game.deck.pop() // burn one
         _game.board.push(_game.deck.pop())
         console.log('effective river', 'next round in 2s')
-        setTimeout(() => { cur_playa.set(d + 1) }, 2000)
+        setTimeout(() => { cur_playa.set(dealer + 1) }, 2000)
       break
       case 'showdown':
         console.log('SHOWDOWN!!!')
