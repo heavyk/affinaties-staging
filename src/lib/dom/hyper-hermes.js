@@ -24,6 +24,10 @@ export function txt (t) {
   return doc.createTextNode(t)
 }
 
+export function comment (t) {
+  return doc.createComment(t)
+}
+
 function context (createElement) {
 
   var cleanupFuncs = []
@@ -74,7 +78,7 @@ function context (createElement) {
       } else if (isNode(l) || l instanceof window.Text) {
         e.appendChild(r = l)
       } else if (typeof l === 'object') {
-        for (k in l) (function (attr_val, _key) {
+        for (k in l) ((attr_val, _key) => {
           // convert short attributes to long versions. s -> style, c -> className
           var k = short_attrs[_key] || _key
           if (typeof attr_val === 'function') {
@@ -82,11 +86,14 @@ function context (createElement) {
             // if (/^on\w+/.test(k)) {
             if (k.substr(0, 2) === 'on') {
               add_event(e, k.substr(2), attr_val, false)
+            } else if (k.substr(0, 2) === 'imm') {
+              add_event(e, k.substr(3), attr_val, true)
             } else {
               // observable
               if ((s = attr_val()) != null) e.setAttribute(k, s)
+              if (typeof s === 'number' && isNaN(s)) debugger
               // console.log('set-attribute', k, s)
-              cleanupFuncs.push(attr_val(function (v) {
+              cleanupFuncs.push(attr_val((v) => {
                 if (v != null) e.setAttribute(k, v)
                 // console.log('set attribute', k, '->', v)
               }))
@@ -99,24 +106,20 @@ function context (createElement) {
             o = e.classList
             if (Array.isArray(attr_val)) for (s of attr_val) if (s) o.add(s)
             else o.add(attr_val)
-          } else if (k === 'on') {
+          } else if ((i = (k === 'on')) || k === 'imm') {
+            // 'imm' is used to denote the capture phase of event propagation
+            // see: http://stackoverflow.com/a/10654134 to understand the capture / bubble phases
             if (typeof attr_val === 'object') {
               for (s in attr_val)
                 if (typeof (o = attr_val[s]) === 'function')
-                  add_event(e, s, o, false)
-            }
-          } else if (k === 'capture') {
-            if (typeof attr_val === 'object') {
-              for (s in attr_val)
-                if (typeof (o = attr_val[s]) === 'function')
-                  add_event(e, s, o, true)
+                  add_event(e, s, o, i ? false : true)
             }
           } else if (k === 'html') {
             e.innerHTML = attr_val
           // ------------------ testing ---------------
           } else if (k === 'observe') {
-            setTimeout((function (attr_val, e) {
-              for (s in attr_val) (function (s, v) {
+            setTimeout(((attr_val, e) => {
+              for (s in attr_val) ((s, v) => {
                 // observable
                 switch (s) {
                   case 'input':
@@ -151,12 +154,12 @@ function context (createElement) {
               e.style.cssText = attr_val
             } else {
               // if I use setProperty, then, 'borderRadius' will not work. (which is nice when using LiveScript, cause then the property does not need to be quoted)
-              for (s in attr_val) (function (s, v) {
+              for (s in attr_val) ((s, v) => {
                 if (typeof v === 'function') {
                   // observable
                   // e.style.setProperty(s, v())
                   e.style[s] = v()
-                  cleanupFuncs.push(v(function (val) {
+                  cleanupFuncs.push(v((val) => {
                     // e.style.setProperty(s, val)
                     e.style[s] = val
                   }))
@@ -177,6 +180,8 @@ function context (createElement) {
             if (~(i = k.indexOf(':'))) {
               if (k.substr(0, i) === 'xlink') {
                 e.setAttributeNS('http://www.w3.org/1999/xlink', k.substr(++i), attr_val)
+              } else {
+                console.error('unknown namespace for attribute:', k)
               }
             // } else if (k === 'src' && e.tagName === 'IMG' && ~attr_val.indexOf('holder.js')) {
             //   e.dataset.src = attr_val
@@ -185,6 +190,7 @@ function context (createElement) {
             //   //   require('holderjs').run({images: e})
             //   // },0)
             } else {
+              // this won't work for svgs. for example, s('rect', {cx: 5}) will fail, as cx is a read-only property
               // e[k] = attr_val
               // console.log('set-attribute', k, attr_val)
               e.setAttribute(k, attr_val)
@@ -205,7 +211,7 @@ function context (createElement) {
   }
 
   h.cleanupFuncs = cleanupFuncs
-  h.cleanup = function () {
+  h.cleanup = () => {
     for (var i = 0; i < cleanupFuncs.length; i++) {
       cleanupFuncs[i]()
     }
@@ -334,7 +340,7 @@ export function offsetOf (child) {
 export var special_elements = {}
 
 export function dom_context () {
-  return context(function (el, args) {
+  return context((el, args) => {
     var i
 
     return !~el.indexOf('-') ? doc.createElement(el)
@@ -347,7 +353,7 @@ export var h = dom_context()
 h.context = dom_context
 
 export function svg_context () {
-  return context(function (el) {
+  return context((el) => {
     return doc.createElementNS('http://www.w3.org/2000/svg', el)
   })
 }
@@ -372,7 +378,7 @@ export function obvNode (v, cleanupFuncs = []) {
     }
     if (i) { // it's an observable!
       // if the observable does not yet have a value, create a comment to be replaced by the value as soon as it comes
-      if (!r) r = e.aC(doc.createComment('obv'), cleanupFuncs)
+      if (!r) r = e.aC(comment('obv'), cleanupFuncs)
 
       // TODO: allow for an observable-array implementation
       cleanupFuncs.push(v((val) => {

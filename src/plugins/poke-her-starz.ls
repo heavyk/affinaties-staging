@@ -112,9 +112,15 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   # table attributes
   playa-cards-width = value 30
-  playa-cards-height = transform playa-cards-width, (w) -> w * 1.45
   playa-cards-margin = value 2
+  first-playa-angle = 150 #200
+  last-playa-angle = 390 #340
+
+  # attributes which should be determined by the game logic
   playa-cards-count = value 2
+  num-spaces = value 5
+  max-playas = value 8
+  num-playas = value 2
 
   # game bindings
   _game =
@@ -128,64 +134,62 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   middle-area-width = transform G.width, (v) -> (v / S1) * S2
   middle-area-height = transform G.height, (v) -> (v / S1) * S2
-  middle-area-rx = transform middle-area-width, (v) -> v / 2
-  middle-area-ry = transform middle-area-height, (v) -> v / 2
-  middle-area-rxs = transform middle-area-rx, (v) -> v - TABLE_STROKE2 # because two half strokes always equals the total stroke
-  middle-area-rys = transform middle-area-ry, (v) -> v - TABLE_STROKE2 # because two half strokes always equals the total stroke
+  middle-area-cx = transform middle-area-width, (v) -> v / 2
+  middle-area-cy = transform middle-area-height, (v) -> v / 2
 
   table-padding = transform middle-area-width, (v) -> v * 0.15
-  playa-offset = transform middle-area-width, (v) -> v * 0.07
-  bet-offset = transform middle-area-width, (v) -> -(v * 0.07)
-
-  middle-area-card-margin = transform middle-area-width, (v) -> v * 0.025
-  middle-area-card-width = compute [middle-area-width, middle-area-card-margin, table-padding], (w, m, p) -> ((w - p - p) / 5) - m
-  middle-area-card-height = transform middle-area-card-width, (w) -> w * 1.45
-
-  middle-area-space-width = transform middle-area-card-width, (w) -> w + SPACE_MARGIN2
-  middle-area-space-height = transform middle-area-card-height, (h) -> h + SPACE_MARGIN2
-  middle-area-space-margin = transform middle-area-card-margin, (m) -> m - SPACE_MARGIN2
-
   table-margin-sides = transform G.width, (v) -> v / S1
   table-margin-top = transform G.height, (v) -> v / S3
-  table-middle-x = compute [table-margin-sides, middle-area-rx], (tm, rx) -> tm + rx #- TABLE_PADDING
-  table-middle-y = compute [table-margin-top, middle-area-ry], (tm, ry) -> tm + ry #- TABLE_PADDING
+  table-rx = transform middle-area-cx, (v) -> v - TABLE_STROKE2 # because two half strokes always equals the total stroke
+  table-ry = transform middle-area-cy, (v) -> v - TABLE_STROKE2 # because two half strokes always equals the total stroke
+  table-abs-cx = compute [table-margin-sides, middle-area-cx], (tm, cx) -> tm + cx
+  table-abs-cy = compute [table-margin-top, middle-area-cy], (tm, cy) -> tm + cy
 
-  playa-mid-w = compute [middle-area-rx, playa-offset], (w, p) -> w + p
-  playa-mid-h = compute [middle-area-ry, playa-offset], (h, p) -> h + p
+  board-cards-margin = transform middle-area-width, (v) -> v * 0.025
+  board-cards-width = compute [middle-area-width, board-cards-margin, table-padding, num-spaces], (w, m, p, ns) -> ((w - p - p) / ns) - m
+  board-cards-height = transform board-cards-width, (w) -> w * 1.45
 
-  bet-mid-w = compute [middle-area-rx, bet-offset], (w, b) -> w + b
-  bet-mid-h = compute [middle-area-ry, bet-offset], (h, b) -> h + b
+  board-spaces-width = transform board-cards-width, (w) -> w + SPACE_MARGIN2
+  board-spaces-height = transform board-cards-height, (h) -> h + SPACE_MARGIN2
+  board-spaces-margin = transform board-cards-margin, (m) -> m - SPACE_MARGIN2
 
-  pot-txt-x = transform middle-area-rx, (v) -> v
-  pot-txt-y = compute [middle-area-ry, middle-area-space-height], (v, sh) -> v - (sh * 1.0)
+  playa-radius = transform middle-area-width, (v) -> v * 0.07
+  playa-cx = compute [middle-area-cx, playa-radius], (w, p) -> w + p
+  playa-cy = compute [middle-area-cy, playa-radius], (h, p) -> h + p
+
+  bet-radius = transform middle-area-width, (v) -> -(v * 0.05)
+  bet-cx = compute [middle-area-cx, bet-radius], (w, b) -> w + b
+  bet-cy = compute [middle-area-cy, bet-radius], (h, b) -> h + b
+
+  prev-bet-radius = transform middle-area-width, (v) -> -(v * 0.09)
+  prev-bet-cx = compute [middle-area-cx, prev-bet-radius], (w, b) -> w + b
+  prev-bet-cy = compute [middle-area-cy, prev-bet-radius], (h, b) -> h + b
+
+  pot-txt-x = transform middle-area-cx, (v) -> v
+  pot-txt-y = compute [middle-area-cy, board-spaces-height], (v, sh) -> v - (sh * 1.0)
 
   hand-pos-x = (i) ->
-    compute [G.width, middle-area-card-width, i], (w, cw, i) -> (w * 0.49) - (cw / 2) + ((cw / 5) * i)
+    compute [G.width, board-cards-width, i], (w, cw, i) -> (w * 0.49) - (cw / 2) + ((cw / 5) * i)
   hand-pos-y = (i) ->
-    compute [G.height, middle-area-card-height], (h, ch) -> h - (ch * 0.2)
+    compute [G.height, board-cards-height], (h, ch) -> h - (ch * 0.2)
 
   card-pos-x = (i) ->
-    compute [table-margin-sides, middle-area-card-width, middle-area-card-margin, table-padding, i], (tm, cw, cm, tp, i) -> TABLE_STROKE + tp + tm + (cw * i) + (cm * i) + SPACE_MARGIN
+    compute [table-margin-sides, board-cards-width, board-cards-margin, table-padding, i], (tm, cw, cm, tp, i) -> TABLE_STROKE + tp + tm + (cw * i) + (cm * i) + SPACE_MARGIN
   card-pos-y = (i) ->
-    compute [table-margin-top, middle-area-height, middle-area-card-height, table-padding, i], (tm, mh, ch, tp, i) -> TABLE_STROKE + tp + tm + ((mh - ch - tp - tp) / 2)
+    compute [table-margin-top, middle-area-height, board-cards-height, table-padding, i], (tm, mh, ch, tp, i) -> TABLE_STROKE + tp + tm + ((mh - ch - tp - tp) / 2)
 
   space-pos-x = (i) ->
-    compute [middle-area-space-width, middle-area-space-margin, table-padding], (cw, cm, tp) -> TABLE_STROKE + tp + (cw * i) + (cm * i)
+    compute [board-spaces-width, board-spaces-margin, table-padding], (bsw, bsm, tp) -> TABLE_STROKE + tp + (bsw * i) + (bsm * i)
   space-pos-y = (i) ->
-    compute [middle-area-height, middle-area-space-height, table-padding], (mh, ch, tp) -> TABLE_STROKE + tp + ((mh - ch - tp - tp) / 2)
+    compute [middle-area-height, board-spaces-height, table-padding], (mh, ch, tp) -> TABLE_STROKE + tp + ((mh - ch - tp - tp) / 2)
 
   playa-cards-pos-x = (i, playa-pos) ->
     compute [playa-cards-width, playa-cards-margin, playa-cards-count, playa-pos, i], (cw, cm, n, p, i) -> p.x + (cw * i) + (cm * i) - (((cw * n) + (cm * (n - 1))) / 2)
   playa-cards-pos-y = (n, playa-pos) ->
     compute [playa-pos, n], (p, n) -> p.y + 33
 
-  first-playa-angle = 150 #200
-  last-playa-angle = 390 #340
-  max-playas = value 8
-  num-playas = value 2
-
-  table-pos = (i, mid-w, mid-h) ->
-    compute [table-middle-x, table-middle-y, mid-w, mid-h, first-playa-angle, last-playa-angle, i, num-playas, max-playas], (mid-x, mid-y, mid-w, mid-h, a0, a1, i, n, m) ->
+  table-pos = (i, cx, cy) ->
+    compute [table-abs-cx, table-abs-cy, cx, cy, first-playa-angle, last-playa-angle, i, num-playas, max-playas], (abs-cx, abs-cy, cx, cy, a0, a1, i, n, m) ->
       max_arc = a1 - a0
       if n < 2
         angle = ((max_arc / 2) + a0)
@@ -200,29 +204,30 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       # http://stackoverflow.com/questions/39098308/how-to-use-two-coordinates-draw-an-ellipse-with-javascript
       cos = Math.cos angle
       sin = Math.sin angle
-      a = x: mid-w, y: 0
-      b = x: 0,     y: mid-h
-      x = mid-x + (a.x * cos) + (b.x * sin)
-      y = mid-y + (a.y * cos) + (b.y * sin)
+      a = x: cx, y: 0
+      b = x: 0,  y: cy
+      x = abs-cx + (a.x * cos) + (b.x * sin)
+      y = abs-cy + (a.y * cos) + (b.y * sin)
       {x, y}
 
   cards_down = value true
 
   window.hand =\
   hand = new RenderingArray G, (id, idx, {h}) ->
-    h \poke-her-card, id, { width: middle-area-card-width, x: (hand-pos-x idx), y: (hand-pos-y idx), down: cards_down }
+    h \poke-her-card, id, { width: board-cards-width, x: (hand-pos-x idx), y: (hand-pos-y idx), down: cards_down }
 
   window.cards =\
   cards = new RenderingArray G, (id, idx, {h}) ->
-    h \poke-her-card, id, { width: middle-area-card-width, x: (card-pos-x idx), y: (card-pos-y idx) }
+    h \poke-her-card, id, { width: board-cards-width, x: (card-pos-x idx), y: (card-pos-y idx) }
 
   window.playaz =\
   playaz = new RenderingArray G, (d, idx, {h}) ->
     # do these need to save off functions?
-    playa-pos = table-pos idx, playa-mid-w, playa-mid-h
+    playa-pos = table-pos idx, playa-cx, playa-cy
     playa-x = transform playa-pos, (p) -> "#{p.x}px"
     playa-y = transform playa-pos, (p) -> "#{p.y}px"
-    bet-pos = table-pos idx, bet-mid-w, bet-mid-h
+
+    bet-pos = table-pos idx, bet-cx, bet-cy
     bet-x = transform bet-pos, (p) -> "#{p.x}px"
     bet-y = transform bet-pos, (p) -> "#{p.y}px"
 
@@ -267,7 +272,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   window.betz =\
   betz = new RenderingArray G, (d, idx, {h}) ->
     # do these need to save off functions?
-    bet-pos = table-pos idx, bet-mid-w, bet-mid-h
+    bet-pos = table-pos idx, bet-cx, bet-cy
     bet-x = transform bet-pos, (p) -> "#{p.x}px"
     bet-y = transform bet-pos, (p) -> "#{p.y}px"
 
@@ -299,7 +304,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   ii = set-interval !->
     if p = more_playaz.shift!
-      pp = table.add-player p, (700 + (Math.round Math.random! * 300))
+      pp = table.add-player p, 1000 #(700 + (Math.round Math.random! * 300))
       if typeof pp is \object
         console.log 'adding', p, pp
         playaz.push pp
@@ -311,26 +316,31 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       game := window.game = table.start-game!
       cards.data game.board
       hand.data my.cards
-      betz.data game.roundBets
-      for k, obv of _game
-        console.log 'binding', k
-        bind1 obv, game[k]
+      betz.data game.bets
 
       # TODO: add prompt interface
       # my.prompt.set_responder (msg, options, answer) ->
       #   alert msg
-      # TODO: bind game obvs to table
+
+      # TODO: when game is over unbind the listeners
+      # bind to game values
+      unbind_game_obvs =\
+      for k, obv of _game
+        bind1 obv, game[k]
+
   , 200
 
   G.E.frame.aC [
 
-    s \svg width: middle-area-width, height: middle-area-height, s: {position: \fixed, left: table-margin-sides, top: table-margin-top},
-      s \ellipse cx: middle-area-rx, cy: middle-area-ry, rx: middle-area-rxs, ry: middle-area-rys, fill: '#252', stroke: '#652507', 'stroke-width': TABLE_STROKE2
-      # 5 card spaces in the middle
-      for i til 5
-        s \rect x: (space-pos-x i), y: (space-pos-y i), width: middle-area-space-width, height: middle-area-space-height, rx: 5, ry: 5, 'stroke-width': 0.5, stroke: '#fff', fill: 'none'
+    s \svg.table width: middle-area-width, height: middle-area-height, s: {position: \fixed, left: table-margin-sides, top: table-margin-top},
+      s \ellipse cx: middle-area-cx, cy: middle-area-cy, rx: table-rx, ry: table-ry, s: {fill: '#252', stroke: '#652507', stroke-width: TABLE_STROKE2}
 
-      s \text x: pot-txt-x, y: pot-txt-y,
+      # 5 card spaces in the middle
+      # TODO: turn this into a RenderingArray
+      for i til num-spaces!
+        s \rect x: (space-pos-x i), y: (space-pos-y i), width: board-spaces-width, height: board-spaces-height, rx: 5, ry: 5, s: {stroke-width: 0.5, stroke: '#fff', fill: 'none'}
+
+      s \text.pot x: pot-txt-x, y: pot-txt-y,
         s \tspan 'Pot: '
         s \tspan _game.pot
 

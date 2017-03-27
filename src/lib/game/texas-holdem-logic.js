@@ -37,7 +37,8 @@ class Game {
     this.playaz = playaz
     this.pot = number()
     this.bets = new ObservableArray
-    this.roundBets = new ObservableArray
+    this.prevBets = new ObservableArray
+    this.moves = new ObservableArray
     this.board = new ObservableArray
     this.deck = []
     this.reset()
@@ -51,19 +52,14 @@ class Game {
     // this.roundName = 'Deal' // Start the first round
     // this.betName = 'bet' // bet,raise,re-raise,cap
     this.bets.empty()
-    this.roundBets.empty()
+    this.prevBets.empty()
+    this.moves.empty()
     this.board.empty()
   }
 
-  // getMaxBet () {
-  //   var maxBet = 0
-  //   for (var bet of this.roundBets) if (bet > maxBet) maxBet = bet
-  //   return maxBet
-  // }
-
   playaBetTotal (i) {
     var b, total = 0
-    for (b of this.bets) {
+    for (b of this.moves) {
       if (b.i === i) total += Math.abs(b.v)
     }
     return total
@@ -161,11 +157,6 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
         state('deal')
         all_in_playaz(0)
         active_playaz(num)
-        active_playaz((num) => {
-          let c = 0
-          for (let p of playaz) if (p.state() !== 'folded') c++
-          if (num !== c) debugger
-        })
       }
 
       return game()
@@ -280,7 +271,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
     var len = playaz.length
     for (var j = 1; j < len; j++) {
       let k = (cur + j) % len
-      let b = _game.roundBets[k]
+      let b = _game.bets[k]
           // has not yet talked
       if (b === null ||
           // has already bet, but it's still below the minimum bet
@@ -293,8 +284,8 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
 
   let go_next = (i, bet) => {
     var next
-    _game.roundBets.set(i, bet)
-    _game.bets.push({i, v: bet, t: Date.now()})
+    _game.bets.set(i, bet)
+    _game.moves.push({i, v: bet, t: Date.now()})
     console.info(i, playaz[i].name(), bet === false ? 'folded' : bet < 0 ? `went all-in (${-bet})` : `bet (${bet})`)
 
     if (bet === false) active_playaz.add(-1)
@@ -311,16 +302,15 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
       setTimeout(() => { cur_playa(next) }, 100)
     } else {
       // end of round
-      // add roundBets to pot & reset roundBets to null (if not folded or all-in)
-      var j = 0, pot = 0, l = playaz.length
-      for (; j < l; j++) {
-        let bet = _game.roundBets[j]
+      // add bets to pot & reset bets to null (if not folded or all-in)
+      var j = 0, pot = 0, b
+      for (; j < playaz.length; j++) {
+        let bet = _game.bets[j]
         if (typeof bet === 'number') {
-          // TODO: for all-in bets, I think the max someone can win is his all-in amount. check into it, cause maybe this number needs to be saved
-          //       (actually, it is saved in the bet list... maybe it needs to be used on a winning condition though)
           // we add all-in and bets to the pot
-          pot += bet > 0 ? bet : -bet
-          _game.roundBets.set(j, bet >= 0 ? null : true)
+          pot += (b = bet > 0 ? bet : -bet)
+          if (b > 0) _game.prevBets.set(j, _game.prevBets[j] + b)
+          _game.bets.set(j, bet >= 0 ? null : true)
         }
       }
 
@@ -338,7 +328,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
   cur_playa((i) => {
     let p = playaz[i]
     let min = min_bet()
-    let bet = _game.roundBets[i]
+    let bet = _game.bets[i]
     // if (p.name() === 'dylan') debugger
 
     if (typeof bet !== 'boolean') {
@@ -370,7 +360,8 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
         for (let i = 0; i < l; i++) {
           let playa = playaz[i]
           let bet = i === sb ? _game.smallBlind : i === bb ? _game.bigBlind : 0
-          _game.roundBets.set(i, bet)
+          _game.bets.set(i, bet)
+          _game.prevBets.set(i, null)
           if (bet) playa.chips(playa.chips() - bet)
           playa.cards.empty()
           _game.deck.pop() // burn one
