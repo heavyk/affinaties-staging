@@ -145,7 +145,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   table-abs-cx = compute [table-margin-sides, middle-area-cx], (tm, cx) -> tm + cx
   table-abs-cy = compute [table-margin-top, middle-area-cy], (tm, cy) -> tm + cy
 
-  board-cards-margin = transform middle-area-width, (v) -> v * 0.025
+  board-cards-margin = transform middle-area-width, (v) -> v * 0.015
   board-cards-width = compute [middle-area-width, board-cards-margin, table-padding, num-spaces], (w, m, p, ns) -> ((w - p - p) / ns) - m
   board-cards-height = transform board-cards-width, (w) -> w * 1.45
 
@@ -157,11 +157,15 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   playa-cx = compute [middle-area-cx, playa-radius], (w, p) -> w + p
   playa-cy = compute [middle-area-cy, playa-radius], (h, p) -> h + p
 
+  button-radius = transform middle-area-width, (v) -> -(v * 0.02)
+  button-cx = compute [middle-area-cx, button-radius], (w, b) -> w + b
+  button-cy = compute [middle-area-cy, button-radius], (h, b) -> h + b
+
   bet-radius = transform middle-area-width, (v) -> -(v * 0.05)
   bet-cx = compute [middle-area-cx, bet-radius], (w, b) -> w + b
   bet-cy = compute [middle-area-cy, bet-radius], (h, b) -> h + b
 
-  prev-bet-radius = transform middle-area-width, (v) -> -(v * 0.09)
+  prev-bet-radius = transform middle-area-width, (v) -> -(v * 0.11)
   prev-bet-cx = compute [middle-area-cx, prev-bet-radius], (w, b) -> w + b
   prev-bet-cy = compute [middle-area-cy, prev-bet-radius], (h, b) -> h + b
 
@@ -188,8 +192,10 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   playa-cards-pos-y = (n, pos) ->
     compute [pos, n], (p, n) -> p.y + 33
 
-  table-pos = (i, cx, cy) ->
-    compute [table-abs-cx, table-abs-cy, cx, cy, first-playa-angle, last-playa-angle, i, num-playas, max-playas], (abs-cx, abs-cy, cx, cy, a0, a1, i, n, m) ->
+  table-pos = (i, cx, cy, rel) ->
+    compute [(if rel => middle-area-cx else table-abs-cx), (if rel => middle-area-cy else table-abs-cy), cx, cy, first-playa-angle, last-playa-angle, i, num-playas, max-playas],
+    (abs-cx, abs-cy, cx, cy, a0, a1, i, n, m) ->
+      if i ~= null => i = 0
       max_arc = a1 - a0
       if n < 2
         angle = ((max_arc / 2) + a0)
@@ -210,6 +216,10 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
       y = abs-cy + (a.y * cos) + (b.y * sin)
       {x, y}
 
+  sb-btn-transform = transform (table-pos _game.sb_idx, button-cx, button-cy, true), (p) -> "translate(#{p.x} #{p.y}) scale(.7)"
+  bb-btn-transform = transform (table-pos _game.bb_idx, button-cx, button-cy, true), (p) -> "translate(#{p.x} #{p.y}) scale(.7)"
+  d-btn-transform = transform (table-pos _game.d_idx, button-cx, button-cy, true), (p) -> "translate(#{p.x} #{p.y}) scale(.7)"
+
   cards_down = value true
 
   window.hand =\
@@ -224,9 +234,6 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   playaz = new RenderingArray G, (d, idx, {h}) ->
     # do these need to save off functions?
     pos = table-pos idx, playa-cx, playa-cy
-    x = transform pos, (p) -> "#{p.x}px"
-    y = transform pos, (p) -> "#{p.y}px"
-
     playa-cards = new RenderingArray G, d.cards, (id, idx, {h}) ->
       h \poke-her-card, id, { width: playa-cards-width, x: (playa-cards-pos-x idx, pos), y: (playa-cards-pos-y idx, pos) }
 
@@ -234,18 +241,14 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
     h \div.playa style: {
       border: 'solid 1px #000'
       border-radius: '8px'
-      # background: transform _game.cur, (v) -> if v is idx! => 'rgba(255,0,0,.2)' else ''
-      background: compute [_game.cur, idx], (cur, idx) ->
-        # debugger
-        if cur is idx => 'rgba(255,0,0,.2)' else ''
-      # border-radius: '50%'
+      background: compute [_game.cur, idx], (cur, idx) -> if cur is idx => 'rgba(255,0,0,.2)' else ''
       margin-top: '-30px'
       margin-left: '-30px'
       position: \fixed
       width: '60px'
       height: '60px'
-      left: x
-      top: y
+      left: transform pos, (p) -> "#{p.x}px"
+      top: transform pos, (p) -> "#{p.y}px"
     },
       h \div.name, d.name
       h \div.state, d.state
@@ -256,28 +259,24 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   betz = new RenderingArray G, (d, idx, {h}) ->
     # do these need to save off functions?
     pos = table-pos idx, bet-cx, bet-cy
-    x = transform pos, (p) -> "#{p.x}px"
-    y = transform pos, (p) -> "#{p.y}px"
 
     # TODO: some sort of visual representation of amnt of chips
     h \div.bet style: {
       display: transform d, (v) -> if !v => 'none' else ''
-      left: x
-      top: y
+      left: transform pos, (p) -> "#{p.x}px"
+      top: transform pos, (p) -> "#{p.y}px"
     }, transform d, (v) -> if v is false => 'X' else if v is true => 'all-in' else v
 
   window.prev-betz =\
   prev-betz = new RenderingArray G, (d, idx, {h}) ->
     # do these need to save off functions?
     pos = table-pos idx, prev-bet-cx, prev-bet-cy
-    x = transform pos, (p) -> "#{p.x}px"
-    y = transform pos, (p) -> "#{p.y}px"
 
     # TODO: some sort of visual representation of amnt of chips
     h \div.prev-bet style: {
-      left: x
-      top: y
-    }, d #transform d, (v) -> if v is false => 'X' else if v is true => 'all-in' else v
+      left: transform pos, (p) -> "#{p.x}px"
+      top: transform pos, (p) -> "#{p.y}px"
+    }, d
 
   # two things:
   # 1. RenderingArray should have a cleanup function (to clean up everything in the array)
@@ -320,7 +319,24 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   G.E.frame.aC [
 
     s \svg.table width: middle-area-width, height: middle-area-height, s: {position: \fixed, left: table-margin-sides, top: table-margin-top},
+      s 'symbol#chip' viewBox: '0 0 42 42',
+        s \circle cx: 21 cy: 21 r: 20.5 stroke: '#000' stroke-width: 1 fill: '#FFF'
+        s \path fill: '#FF0000' stroke: '#231F20' stroke-miterlimit: 10 d: 'M20.813,41.506c-3,0.004-6.767-0.883-10-2.75L31.188,3.25c-3.234-1.867-6.377-2.753-10.377-2.75L20.813,41.506L20.813,41.506z M38.851,10.915c1.503,2.597,2.618,6.302,2.618,10.035L0.532,21.057c0,3.735,0.804,6.899,2.807,10.362L38.851,10.915L38.851,10.915z M3.339,10.589c1.497-2.6,4.148-5.418,7.381-7.284l20.561,35.398c3.234-1.867,5.573-4.146,7.57-7.611L3.339,10.589L3.339,10.589z'
+        s \circle cx: 21 cy: 21 r: 15 stroke: '#000' stroke-width: 1 fill: '#FFF'
+
+      # table area
       s \ellipse cx: middle-area-cx, cy: middle-area-cy, rx: table-rx, ry: table-ry, s: {fill: '#252', stroke: '#652507', stroke-width: TABLE_STROKE2}
+
+      s \g.sb-btn transform: sb-btn-transform, style: {display: transform _game.sb_idx, ((v) -> if v ~= null => 'none' else '')},
+        s \use 'xlink:href': '#chip', width: 42, height: 42, x: -21, y: -21, overflow: 'visible'
+
+      s \g.bb-btn transform: bb-btn-transform, style: {display: transform _game.bb_idx, ((v) -> if v ~= null => 'none' else '')},
+        s \use 'xlink:href': '#chip', width: 42, height: 42, x: -21, y: -21, overflow: 'visible'
+        s \use 'xlink:href': '#chip', width: 42, height: 42, x: -21, y: -21, overflow: 'visible', transform: 'translate(9 5)'
+
+      s \g.d-btn transform: d-btn-transform, style: {display: transform _game.d_idx, ((v) -> (console.log v); if v ~= null => 'none' else '')},
+        s \circle cx: 0, cy: 0, r: 20.5, s: {fill: '#fff', stroke: '#231F20', stroke-miterlimit: 10}
+        s \text x: 0, y: 0, s: {font-family: 'DejaVu Sans, sans-serif', font-weight: 'bold', font-size: 8}, 'DEALER'
 
       # 5 card spaces in the middle
       # TODO: turn this into a RenderingArray
