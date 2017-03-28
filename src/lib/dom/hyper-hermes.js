@@ -20,13 +20,8 @@ TODO ITEMS:
 // add your own (or utilise this to make your code smaller!)
 export var short_attrs = { s: 'style', c: 'class' }
 
-export function txt (t) {
-  return doc.createTextNode(t)
-}
-
-export function comment (t) {
-  return doc.createComment(t)
-}
+export const txt = (t) => doc.createTextNode(t)
+export const comment = (t) => doc.createComment(t)
 
 function context (createElement) {
 
@@ -198,7 +193,7 @@ function context (createElement) {
           }
         })(l[k], k)
       } else if (typeof l === 'function') {
-        r = obvNode.call(e, l, cleanupFuncs)
+        r = obvNode(e, l, cleanupFuncs)
       }
 
       return r
@@ -233,7 +228,7 @@ export function arrayFragment (e, arr, cleanupFuncs) {
   var activeElement = (o) => o === (e.activeElement || doc.activeElement)
 
   // append nodes to the fragment, with parent node as e
-  for (v of arr) frag.appendChild(makeNode.call(e, v, cleanupFuncs))
+  for (v of arr) frag.appendChild(makeNode(e, v, cleanupFuncs))
 
   if (arr.observable === 'array') {
     // TODO: add a comment to know where the array begins and ends (a la angular)
@@ -361,14 +356,12 @@ export function svg_context () {
 export var s = svg_context()
 s.context = svg_context
 
-export function makeNode (v, cleanupFuncs) {
-  return isNode(v) ? v
-    : Array.isArray(v) ? arrayFragment(this, v, cleanupFuncs)
-    : txt(v)
-}
+export const makeNode = (e, v, cleanupFuncs) => isNode(v) ? v
+  : Array.isArray(v) ? arrayFragment(e, v, cleanupFuncs)
+  : txt(v)
 
-export function obvNode (v, cleanupFuncs = []) {
-  var r, e = this
+export const obvNode = (e, v, cleanupFuncs = []) => {
+  var r
   if (typeof v === 'function') {
     var i = v.observable && v.observable === 'value' ? 1 : 0
     var o = i ? v.call(e) : v.call(e, e) // call the observable / scope function
@@ -384,7 +377,7 @@ export function obvNode (v, cleanupFuncs = []) {
       cleanupFuncs.push(v((val) => {
         // TODO: check observable-array cleanup
         if (r.parentElement === e) {
-          val = makeNode.call(e, val, cleanupFuncs)
+          val = makeNode(e, val, cleanupFuncs)
           e.replaceChild(val, r), r = val
         } else {
           // shouldn't happen, but maybe if removing the node from the dom, this could happen.
@@ -394,9 +387,9 @@ export function obvNode (v, cleanupFuncs = []) {
         }
       }))
     }
-    r = makeNode.call(e, r, cleanupFuncs)
+    r = makeNode(e, r, cleanupFuncs)
   } else {
-    r = makeNode.call(e, v, cleanupFuncs)
+    r = makeNode(e, v, cleanupFuncs)
   }
   return r
 }
@@ -405,7 +398,5 @@ export function obvNode (v, cleanupFuncs = []) {
 HTMLElement.prototype.aC =
 SVGElement.prototype.aC =
 function (v, cleanupFuncs) {
-  return this.appendChild(obvNode.call(this, v, cleanupFuncs))
+  return this.appendChild(obvNode(this, v, cleanupFuncs))
 }
-
-export default h

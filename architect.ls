@@ -313,7 +313,8 @@ process_poem = (path) !->
         #   console.log "wrote:", stats
     .catch (e) ->
       # console.log \catch, e.message.substr 0, 1000
-      console.log \catch, if e.to-string => e.to-string! else e.stack
+      console.log 'error compiling', poem.dest
+      console.log if e.to-string => e.to-string! else e.stack
       poem.processing = false
     .then ->
       if path = poem.css

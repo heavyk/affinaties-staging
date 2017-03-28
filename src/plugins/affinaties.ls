@@ -1,8 +1,7 @@
 ``import pluginBoilerplate from '../lib/plugins/plugin-boilerplate'``
-``import h from '../lib/dom/hyper-hermes'``
 ``import load_sdk from '../lib/load-sdk-h'``
-``import { s } from '../lib/dom/hyper-hermes'``
-``import ObservArray from '../lib/dom/observable-array'``
+``import { h, s } from '../lib/dom/hyper-hermes'``
+``import { ObservableArray } from '../lib/dom/observable-array'``
 ``import { value, input, attribute, transform, compute } from '../lib/dom/observable'``
 ``import xhr from '../lib/xhr'``
 # ``import Packer from '../lib/packery/Packer'``

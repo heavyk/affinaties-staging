@@ -263,6 +263,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
     }
 
     // TODO: add winners to game
+    // _game.pot(0)
     cur_playa(false)
     state('done')
   }
@@ -348,6 +349,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
   state((s, _s) => {
     // waiting, start_game, playing, game_done
     min_bet(0)
+    if (_game) _game.moves.push({s, t: Date.now()})
     let dealer = dealer_idx()
     switch (s) {
       case 'waiting':
