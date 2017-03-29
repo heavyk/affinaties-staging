@@ -285,8 +285,16 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
   }
 
   let go_next = (i, bet) => {
-    var next
-    _game.bets.set(i, bet)
+    var next, existing_bet = _game.bets[i] || 0
+    if (typeof existing_bet !== 'number') debugger
+    if (typeof bet === 'number') {
+      _game.bets.set(i, (bet > 0 ? bet : -bet) + existing_bet)
+    } else { // bet === false
+      if (bet !== false) debugger
+      _game.prevBets.set(_game.prevBets[i] + existing_bet)
+      _game.bets.set(i, bet)
+    }
+
     _game.moves.push({i, v: bet, t: Date.now()})
     console.info(i, playaz[i].name(), bet === false ? 'folded' : bet < 0 ? `went all-in (${-bet})` : `bet (${bet})`)
 
@@ -307,7 +315,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
       // add bets to pot & reset bets to null (if not folded or all-in)
       var j = 0, pot = 0, b
       for (; j < playaz.length; j++) {
-        let bet = _game.bets[j]
+        bet = _game.bets[j]
         if (typeof bet === 'number') {
           // we add all-in and bets to the pot
           pot += (b = bet > 0 ? bet : -bet)
