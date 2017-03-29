@@ -248,28 +248,40 @@ export function error (message) {
 
 // TODO: I believe this needs a remove function which removes all listeners
 //  (unfortunately, it requires the modification of value())
+// TODO: now that I can remove the listeners to observables, figure out where this is actually useful
 export function compute (observables, compute) {
-  var init = true
-  var cur = new Array(observables.length)
-  var val = value()
+  var init = 1, l = observables.length
+  var cur = new Array(l)
+  var listeners = [], removables = [], _val, f
 
-  forEach(observables, (f, i) => {
+  for (let i = 0; i < l; i++) {
+    f = observables[i]
     if (typeof f === 'function') {
-      cur[i] = f()
-      f((v) => {
+      removables.push(f((v) => {
         var prev = cur[i]
         cur[i] = v
-        if (init === false && prev !== v) val(compute.apply(null, cur))
-      })
+        if (prev !== v && init === 0) observable(compute.apply(null, cur))
+      }))
     } else {
       cur[i] = f
     }
-  })
+  }
 
-  val(compute.apply(null, cur))
-  init = false
+  _val = compute.apply(null, cur)
+  observable.observable = 'value'
+  init = 0
 
-  return val
+  return observable
+
+  function observable (val) {
+    return (
+      val === undefined ? _val                                                               // getter
+    : typeof val !== 'function' ? (!(_val === val) ? emit(listeners, _val, _val = val) : '') // setter (the new way - only sets if the value has changed)
+    : (listeners.push(val), (_val === undefined ? _val : val(_val)), () => {                 // listener
+        remove(listeners, val)
+      })
+    )
+  }
 }
 
 export function boolean (observable, truthy, falsey) {
