@@ -400,3 +400,5 @@ SVGElement.prototype.aC =
 function (v, cleanupFuncs) {
   return this.appendChild(obvNode(this, v, cleanupFuncs))
 }
+
+export default h

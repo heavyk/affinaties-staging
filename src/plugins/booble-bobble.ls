@@ -7,7 +7,7 @@
 ``import random from '../lib/lodash/random'``
 ``import isEqual from '../lib/lodash/isEqual'``
 ``import { h, s } from '../lib/dom/hyper-hermes'``
-``import ObservArray from '../lib/dom/observable-array'``
+``import { ObservableArray } from '../lib/dom/observable-array'``
 ``import { value, attribute, transform, compute } from '../lib/dom/observable'``
 ``import floatingTip from '../lib/decorators/floating-tip'``
 ``import describeConeSection from '../lib/svg/describeConeSection'``
@@ -428,7 +428,7 @@ booble-bobble = ({config, G, set_config, set_data}) !->
               s \feBlend, in: \SourceGraphic in2: \blurOut, mode: \normal
 
         * s \g.boobles, !->
-            els = new ObservArray
+            els = new ObservableArray
             set_boobles (n) !->
               console.log \n, n
               max_x = G.width! - scoreboard_width!
@@ -486,10 +486,10 @@ booble-bobble = ({config, G, set_config, set_data}) !->
               e.prevent-default!
               opts =
                 header: header_text = value 'header text'
-              svg-modal G, opts, ({s, h}) ->
+              svg-modal G, opts, ({h}) ->
                 h \div.menu,
                   h \div.menu-inner, null,
-                    h \button, "button 1", capture: touchstart: -> console.log \button1
+                    h \button, "button 1", imm: touchstart: -> console.log \button1
                     h \button, "button 2", on: touchstart: -> console.log \button2
                     h \button, "button 3", on: touchstart: -> console.log \button3
               console.log \modal.menu
@@ -507,7 +507,7 @@ booble-bobble = ({config, G, set_config, set_data}) !->
 
 
         * s \g.options, transform: options_transform, (el) !->
-            els = new ObservArray
+            els = new ObservableArray
             set_boobles (n) !->
               const min_boobles = G.min_boobles!
               const max_boobles = G.max_boobles!

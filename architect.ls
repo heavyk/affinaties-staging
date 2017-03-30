@@ -6,10 +6,10 @@ tmp_dir = Path.join __dirname, \priv \build
 out_dir = Path.join __dirname, \priv \static
 
 poems =
-  # 'plugins/booble-bobble.js':
-  #   dest: 'plugins/booble-bobble.js'
-  #   webpack:
-  #     stuff: true
+  'plugins/booble-bobble.js':
+    dest: 'plugins/booble-bobble.js'
+    webpack:
+      stuff: true
   # 'plugins/zibble-zabble.js':
   #   dest: 'plugins/zibble-zabble.js'
   # 'plugins/mastering-the-zodiac.js':
@@ -22,11 +22,14 @@ poems =
   #   dest: 'plugins/vertele-portada.js'
   # 'plugins/test-jsx.js':
   #   dest: 'plugins/test-jsx.js'
-  'plugins/affinaties.js':
-    dest: 'plugins/affinaties.js'
-  'plugins/mop-great-again.js':
-    dest: 'plugins/mop-great-again.js'
-    css: 'plugins/mop-great-again.css'
+  # 'plugins/affinaties.js':
+  #   dest: 'plugins/affinaties.js'
+  # 'plugins/mop-great-again.js':
+  #   dest: 'plugins/mop-great-again.js'
+  #   css: 'plugins/mop-great-again.css'
+  'plugins/metatrons-compass.js':
+    dest: 'plugins/metatrons-compass.js'
+    css: 'plugins/metatrons-compass.css'
   'plugins/poke-her-starz.js':
     dest: 'plugins/poke-her-starz.js'
     css: 'plugins/poke-her-starz.css'
