@@ -40,7 +40,31 @@ img.avatar {
   border-radius: 4px;
 }
 
-/* unbreakable Kimmy Schmidt */
+.tooltip-arrow {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  margin-left: -5px;
+  border: solid transparent;
+  border-width: 0 5px 5px;
+  border-bottom-color: #000;
+}
+.tooltip-inner {
+  max-width: 200px;
+  padding: 3px 8px;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  background-color: #000;
+  border-radius: 4px;
+}
+
+.tooltip-outer {
+  z-index: 100;
+}
+
 
 /*tspan.pot */
 text {

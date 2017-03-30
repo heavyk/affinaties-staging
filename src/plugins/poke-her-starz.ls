@@ -56,50 +56,15 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   # G.orientation (v) !-> console.log 'orientation', v
 
   table = holdem_table 50, 100, 4, 10, 100, 1000
-  var game
-  # table.add-player 'kenny', 1000
-
   console.log 'table', table
+  var game
 
-  # table = new Table 50, 100, 4, 10, 100, 1000 # smallBlind, bigBlind, minPlayers, maxPlayers, minBuyIn, maxBuyIn
   pp = [
-    my = table.add-player 'k-prime', 1000
+    my =\
+    table.add-player 'k-prime', 1000
     table.add-player 'bob', 1000
     table.add-player 'dylan', 1000
   ]
-  # console.log \start, table.start-game!
-
-  if p = table.players
-    # deal
-    p.0.Call!
-    p.1.Call!
-    p.2.Call!
-    p.3.Call!
-
-    # flop
-    p.0.Call!
-    p.1.Call!
-    p.2.Call!
-    p.3.Call!
-
-    # turn
-    p.1.Bet 2
-    p.0.Bet 50
-    p.2.Bet 50
-    p.3.Call!
-    # needed to finish the round because jane (p.1) only bet 2 which does not match the maxBet amount (50)
-    p.1.Call!
-
-    # river
-    p.0.Call!
-    p.1.Call!
-    p.2.Call!
-    p.3.Call!
-    # showdown!!
-    # show winners
-    console.log table.game
-
-
 
   const S1 = 11
   const S2 = 9
@@ -352,6 +317,20 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
     h \.playaz playaz
     h \.betz betz
     h \.prev-betz prev-betz
+
+    # tip =\
+    # h \.tooltip-outer, s: { position: \absolute, left: '200px', top: '200px' },
+    #   h \.tooltip-arrow
+    #   h \.tooltip-inner,
+    #     h \.prompt-text, "a prompt??"
+    #     h \.prompt-button, h \button, "a button"
+
+    prompter-panel =\
+    h \.prompter s: {position: \absolute, left: 0, top: '800px' height: '150px', width: '100%', overflow: \hidden, background: 'rgba(0,10,200,.5)' },
+      h \span.bet, "bet:"
+      h \span.call, h \button "call"
+      h \span.raise, h \button "raise"
+      h \span.all-in, h \button "all-in"
 
     window.machina =\
     h \poem-state-machine, {width: 40, active: false}, (G) ->
