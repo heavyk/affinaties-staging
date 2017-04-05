@@ -1,0 +1,60 @@
+@import "basscss";
+
+body {
+  background: #7649bf;
+}
+
+/* tooltips */
+#T {
+  position:absolute;
+  display:block;
+}
+#Tcont {
+  display:block;
+  padding: 2px 12px 3px 7px;
+  margin:5px;
+  background:#666;
+  color:#fff;
+  border: solid 1px #ccc;
+  border-radius: 12px;
+}
+
+
+div.top-bar {
+  /*width: 103%;*/
+  background-color: #c66;
+  height: 50px;
+}
+
+img.avatar {
+  border-radius: 6px;
+}
+
+.a-05 {
+  transition: all 0.5s ease-in-out;
+}
+
+.search-box {
+  padding: 5px;
+  border: 1px solid #666;
+  border-radius: 4px;
+}
+
+/* unbreakable Kimmy Schmidt */
+
+/*tspan.pot */
+text {
+  text-anchor: middle;
+  font-size: 150%;
+}
+
+div.bet, div.prev-bet {
+  border: solid 1px #000;
+  background: #f06;
+  border-radius: 6px;
+  margin-top: -12px;
+  margin-left: -12px;
+  padding: 2px 4px;
+  position: fixed;
+  height: 20px;
+}
