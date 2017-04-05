@@ -15,7 +15,7 @@ import concat from './concat'
  * @api public
  */
 
-function many (ev, times, fn) {
+export function many (ev, times, fn) {
   var self = this
 
   function wrap () {
@@ -40,7 +40,7 @@ function many (ev, times, fn) {
  * @api public
  */
 
-function once (ev, fn) {
+export function once (ev, fn) {
   this.many(ev, 1, fn)
   return this
 }
@@ -55,7 +55,7 @@ function once (ev, fn) {
  * @api public
  */
 
-function hasListener (fns, fn) {
+export function hasListener (fns, fn) {
   if (!fn && 'function' === typeof fns) return true
   else if (fn && 'function' === typeof fns && fn == fns) return true
   else if (fns.length === 0) return false
@@ -64,19 +64,19 @@ function hasListener (fns, fn) {
   else return true
 }
 
-function bindEvent (ev, target) {
+export function bindEvent (ev, target) {
   var proxy = eventProxy.call(this, ev, target)
   this.on(ev, proxy)
   return this
 }
 
-function unbindEvent (ev, target) {
+export function unbindEvent (ev, target) {
   var proxy = eventProxy.call(this, ev, target)
   this.off(ev, proxy)
   return this
 }
 
-function proxyEvent (ev, ns, target) {
+export function proxyEvent (ev, ns, target) {
   if (arguments.length === 2) target = ns, ns = null
   var drip = this._drip || {},
     listen = !drip.delimeter
@@ -91,7 +91,7 @@ function proxyEvent (ev, ns, target) {
   return this
 }
 
-function unproxyEvent (ev, ns, target) {
+export function unproxyEvent (ev, ns, target) {
   if (arguments.length === 2) target = ns, ns = null
   var drip = this._drip || {},
     listen = !drip.delimeter

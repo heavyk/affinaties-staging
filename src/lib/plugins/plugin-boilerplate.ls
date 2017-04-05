@@ -1,7 +1,7 @@
 ``import defaults from '../lodash/defaultsDeep'``
 ``import { value } from '../dom/observable'``
 ``import { ResizeSensor } from '../dom/css-element-queries'``
-``import { h, s, doc, body, IS_LOCAL } from '../dom/hyper-hermes'``
+``import { h, s, doc, body, win, IS_LOCAL } from '../dom/hyper-hermes'``
 
 
 parse-json = (s) ->
@@ -40,19 +40,19 @@ plugin-boilerplate = (frame, id, _config, _data, DEFAULT_CONFIG, _onload) ->
 
 
   G = {}
-  G.E = E = {frame, doc.body, window} # elements
-  G.T = T = {} # text
-  G.S = S = {} # streams
-  G.C = C = {} # config
-  G.O = O = {} # occurance / occasion (events)
-  G.D = D = {} # data (not really necessary)
+  G.E = E = {frame, doc.body, win} # elements
+  # G.T = T = {} # text
+  # G.S = S = {} # streams
+  # G.C = C = {} # config
+  # G.O = O = {} # occurance / occasion (events)
+  # G.D = D = {} # data (not really necessary)
 
   G.s = s.context!
   G.h = h.context!
   G.s.context = s.context
   G.h.context = h.context
 
-  window.G = G
+  win.G = G
 
   # TODO: get device orientation
   # https://crosswalk-project.org/documentation/tutorials/screens.html
@@ -66,7 +66,7 @@ plugin-boilerplate = (frame, id, _config, _data, DEFAULT_CONFIG, _onload) ->
   G.width = value _width = frame.client-width || config.width || 300
   G.height = value _height = frame.client-height || config.height || 300
 
-  if (_dpr = Math.round (window.device-pixel-ratio || 1)) > 4
+  if (_dpr = Math.round (win.device-pixel-ratio || 1)) > 4
     _dpr = 4
   G.dpr = value _dpr
 
@@ -132,7 +132,7 @@ plugin-boilerplate = (frame, id, _config, _data, DEFAULT_CONFIG, _onload) ->
 
     # if this script was added in the header, wait for it, else load it soon(tm)
     if doc.body => set-timeout loader, 1
-    else window.addEventListener \DOMContentLoaded, loader, false
+    else win.addEventListener \DOMContentLoaded, loader, false
 
   args
 

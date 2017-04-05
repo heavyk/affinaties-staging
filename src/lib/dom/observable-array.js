@@ -1,4 +1,4 @@
-import { MixinEmitter } from '../drip/emitter'
+import MixinEmitter from '../drip/MixinEmitter'
 import { define_getter, define_value } from '../utils'
 import { value, object, observable_property } from './observable'
 import eq from '../lodash/isEqual'

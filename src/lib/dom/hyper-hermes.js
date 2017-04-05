@@ -6,6 +6,7 @@
 import { attribute, hover, focus, select, event, on, off } from './observable'
 
 export const doc = window.document
+export const win = window
 export const body = doc.body
 export const IS_LOCAL = ~doc.location.host.indexOf('localhost')
 
