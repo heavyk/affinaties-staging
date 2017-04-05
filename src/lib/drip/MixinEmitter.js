@@ -1,7 +1,7 @@
 
 import common from './common'
 
-export default var MixinEmitter = Base => {
+export var MixinEmitter = Base => {
   var EE = class extends Base {
 
     /**
@@ -324,3 +324,5 @@ export default var MixinEmitter = Base => {
 
   return EE
 }
+
+export default MixinEmitter
