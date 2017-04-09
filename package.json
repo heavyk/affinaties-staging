@@ -19,7 +19,7 @@
   "devDependencies": {
     "autoprefixer-core": "^6.0.1",
     "babelfish": "^1.1.2",
-    "browserify": "^14.1.0",
+    "browserify": "^14.3.0",
     "co-child-process": "^1.1.0",
     "co-fs-extra": "^1.2.1",
     "co-fs-plus": "^0.3.1",
@@ -30,10 +30,10 @@
     "dropzone": "^4.3.0",
     "eases": "^1.0.8",
     "electron": "^1.6.2",
-    "electron-builder": "^16.4.2",
+    "electron-builder": "^16.8.2",
     "electron-packager": "^8.6.0",
     "electron-rebuild": "^1.5.7",
-    "engine.io-client": "^2.1.1",
+    "engine.io-client": "^3.0.0",
     "gemini-scrollbar": "^1.5.0",
     "genny": "^0.5.6",
     "http-proxy": "^1.16.2",
@@ -50,7 +50,7 @@
     "postcss-import": "^9.1.0",
     "precss": "^1.4.0",
     "promise": "^7.1.1",
-    "provinces": "^1.10.0",
+    "provinces": "^1.11.0",
     "psy": "^1.8.1",
     "source-map-support": "^0.4.14",
     "spin.js": "^2.3.2",
@@ -69,7 +69,7 @@
     "crc": "^3.4.4",
     "get-size": "^2.0.2",
     "gyronorm": "^2.0.6",
-    "hjs-webpack": "^8.4.3",
+    "hjs-webpack": "^9.1.0",
     "holderjs": "^2.9.4",
     "isotope-layout": "^3.0.3",
     "magic-string": "^0.19.0",
@@ -82,9 +82,10 @@
     "sander": "^0.6.0",
     "simple-array-diff": "^1.1.0",
     "source-map": "^0.5.6",
-    "source-map-loader": "^0.2.0",
+    "source-map-loader": "^0.2.1",
+    "spotify-sdk": "^1.0.0-beta2",
     "usb": "^1.2.0",
-    "webpack": "^2.3.2",
-    "webtorrent": "^0.98.14"
+    "webpack": "^2.3.3",
+    "webtorrent": "^0.98.16"
   }
 }
