@@ -38,16 +38,18 @@ foto = ({h}, opts = {}) ->
   src = value opts.src
   h \img {src, width: px, height: px}
 
-# palabras:
-# membership --> clout
-# pertenecia --> palanca
 
-# TODO: otro plugin: playaz-club
 metatrons-compass = ({config, G, set_config, set_data}) ->
   {h, s} = window.G = G
   G.width (v, old_width) !-> console.log \width, old_width, '->', v
-  # G.orientation (v) !-> console.log 'orientation', v
 
+  # move to a two-stage model where:
+  # 1. the number of circles necessary to implement the layers count is added
+  # 2. the positions/sizes of the circles are updated afterward (according to the width/height of the window)
+
+  # next:
+  # 1. allow for shapes to be drawn on the circles (eg. metatron's cube, tree of life, etc.)
+  # 2. give the plugin a small interface to modify the layer count, colors, etc.
 
   window.circles =\
   circles = new RenderingArray G, (d, idx, {s}) ->
@@ -73,134 +75,28 @@ metatrons-compass = ({config, G, set_config, set_data}) ->
       x = r2 * Math.sin (i*inc) * HALF_PI
       y = r2 * Math.cos (i*inc) * HALF_PI
       if i < 6 => circles.push {x: cx + x, y: cy + y, r}
-      if i < 6 => circles.push {x: cx + x, y: cy + y, r: _r}
+      # if i < 6 => circles.push {x: cx + x, y: cy + y, r: _r}
       if num_between > 0
         if last_x isnt null
           for j from 1 to num_between
             t = j / (num_between+1)
+            # fast ???
+            # v0 + t * (v1 - v0)
+            xx = last_x + t * (x - last_x)
+            yy = last_y + t * (y - last_y)
+
+            # precise
+            # (1 - t) * v0 + t * v1
             xx = (1 - t) * last_x + t * x
             yy = (1 - t) * last_y + t * y
             circles.push {x: cx + xx, y: cy + yy, r, fill: 'rgba(120,60,60,.5)'}
-            circles.push {x: cx + xx, y: cy + yy, r: _r, fill: 'rgba(120,60,60,.5)'}
+            # circles.push {x: cx + xx, y: cy + yy, r: _r, fill: 'rgba(120,60,60,.5)'}
         last_x = x
         last_y = y
 
   G.E.frame.aC [
-
     s \svg.grid width: G.width, height: G.height, s: {background: '#333'}, #, s: {position: \fixed, left: table-margin-sides, top: table-margin-top},
       s \g.circles, circles
-
-    window.machina =\
-    h \poem-state-machine, {width: 40, active: false}, (G) ->
-      {h} = G
-      # o = @observables
-      # style
-      @style '''
-      :host {
-        color: #f00;
-        position: absolute;
-      }
-      '''
-
-      # attrs:
-      # width = @attr \width, 40
-      height = @attr \height, 40
-      img-height = @attr \img-height, 40#, true
-
-      # computed:
-      search-width = compute [G.width], (w) -> w / 3
-      search-left = compute [G.width], (w) -> w / 3
-
-      # components:
-      common-div = h \div.common, "common div"
-      search-box = h \input.search-box.a-05,
-        type: \text
-        placeholder: 'search...'
-        style:
-          opacity: 0.4
-          position: \fixed
-          width: px search-width
-          left: px search-left
-        observe:
-          input: (v) !->
-            console.log \observed.input, v
-          focus: (v) !->
-            search-box.style.top = "#{if v => 0 else -10}px"
-            search-box.style.opacity = if v => 1 else 0.4
-          keyup: (v) !->
-            console.log 'send it!!', v
-          # 'keyup.event': (ev) -> ev.which is 13 and not ev.shift-key
-
-      # h \img.avatar,
-      #   src: 'https://secure.gravatar.com/avatar/4e9e35e45c14daca038165a11cde7464'
-      #   style:
-      #     position: \absolute
-      #     width: img_width |> px
-      #     height: img_height |> px
-      #     top: img_padding |> px
-      #     left: top_right |> px
-      arr = []
-
-      # states:
-      '/': ->
-        # splash screen + menu
-        # logo + slogan
-        h \div "poke her starz"
-
-      '/table/:id/lala': ({id}) ->
-        h \div, "table: #{id}"
-
-      '/tables': ->
-        tables = new RenderingArray G, (id, idx, {h}) ->
-
-        h \div "tables:"
-
-      disconnected: !->
-        console.log \disconnected!
-
-
-    # h \div.top-bar.col-12, ->
-    #   img_width = value 40
-    #   img_height = value 40
-    #   img_padding = value 5
-    #   border_width = compute [img_width, img_padding], (w, ib) -> w + (ib)
-    #   top_right = compute [G.width, img_width, img_padding], (w, iw, ip) -> w - iw - ip
-    #   bar_height = compute [img_height, img_padding], (h, p) -> h + (2 * p)
-    #
-    #
-    #   return [
-    #     # search-box
-    #     h \img.avatar,
-    #       src: 'https://secure.gravatar.com/avatar/4e9e35e45c14daca038165a11cde7464'
-    #       style:
-    #         position: \fixed
-    #         width: img_width |> px
-    #         height: img_height |> px
-    #         top: img_padding |> px
-    #         left: top_right |> px
-    #   ]
-    #   # h \g.opus-list, ->
-    #   #   console.log \opus
-    #   #   window.rects = rects = new ObservArray
-    #   #   for v in abstract_art.value
-    #   #     width = v.thumbnail.width
-    #   #     height = v.thumbnail.height
-    #   #     # rect = new Rect
-    #   #     # console.log v.name
-    #   #     # console.log v.accent-color, width, height
-    #   #     r = new CustomRect {width, height}
-    #   #     # r = h \custom-rect {width, height}
-    #   #     rects.push r
-    #   #
-    #   #   # for r in rects
-    #   #   #   console.log \rect, r.x, r.y
-    #   #   pack rects, in-place: true
-    #   #   # for r in rects
-    #   #   #   console.log \rect, r.x, r.y, r.width, r.height
-    #   #   return rects
-    #   # h \div.some-list, ->
-
-    ]
-    #</svg>
+  ]
 
 plugin-boilerplate null, \testing, {}, {}, DEFAULT_CONFIG, metatrons-compass
