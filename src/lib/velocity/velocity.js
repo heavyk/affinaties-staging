@@ -43,23 +43,6 @@ var IE = (function () {
   }
 })()
 
-/* rAF shim. Gist: https://gist.github.com/julianshapiro/9497513 */
-var rAFShim = (function () {
-  var timeLast = 0
-
-  return window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (callback) {
-    var timeCurrent = (new Date()).getTime(),
-      timeDelta
-
-    /* Dynamically set delay on a per-tick basis to match 60fps. */
-    /* Technique by Erik Moller. MIT license: https://gist.github.com/paulirish/1579671 */
-    timeDelta = Math.max(0, 16 - (timeCurrent - timeLast))
-    timeLast = timeCurrent + timeDelta
-
-    return setTimeout(function () { callback(timeCurrent + timeDelta); }, timeDelta)
-  }
-})()
-
 /* Array compacting. Copyright Lo-Dash. MIT License: https://github.com/lodash/lodash/blob/master/LICENSE.txt */
 function compactSparseArray (array) {
   var index = -1,
@@ -69,7 +52,7 @@ function compactSparseArray (array) {
   while (++index < length) {
     var value = array[index]
 
-    if (value) {
+    if (value !== undefined) {
       result.push(value)
     }
   }
@@ -2872,8 +2855,9 @@ Velocity.animate = animate
     Timing
 **************/
 
+import requestAnimationFrame from '../dom/request-animation-frame'
 /* Ticker function. */
-var ticker = window.requestAnimationFrame || rAFShim
+var ticker = requestAnimationFrame
 
 /* Inactive browser tabs pause rAF, which results in all active animations immediately sprinting to their completion states when the tab refocuses.
    To get around this, we dynamically switch rAF to setTimeout (which the browser *doesn't* pause) when the tab loses focus. We skip this for mobile
@@ -2891,7 +2875,7 @@ if (!Velocity.State.isMobile && document.hidden !== undefined) {
       /* The rAF loop has been paused by the browser, so we manually restart the tick. */
       tick()
     } else {
-      ticker = window.requestAnimationFrame || rAFShim
+      ticker = requestAnimationFrame || rAFShim
     }
   })
 }

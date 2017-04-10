@@ -217,16 +217,18 @@ var ElementQueries = function () {
     var defaultImageId = 0
     var lastActiveImage = -1
     var loadedImages = []
+    var element_children = element.children
 
-    for (var i in element.children) {
-      if (!element.children.hasOwnProperty(i)) continue
+    for (var i in element_children) {
+      if (!element_children.hasOwnProperty(i)) continue
+      var child = element_children[i]
 
-      if (element.children[i].tagName && element.children[i].tagName.toLowerCase() === 'img') {
-        children.push(element.children[i])
+      if (child.tagName && child.tagName.toLowerCase() === 'img') {
+        children.push(child)
 
-        var minWidth = element.children[i].getAttribute('min-width') || element.children[i].getAttribute('data-min-width')
-        // var minHeight = element.children[i].getAttribute('min-height') || element.children[i].getAttribute('data-min-height')
-        var src = element.children[i].getAttribute('data-src') || element.children[i].getAttribute('url')
+        var minWidth = child.getAttribute('min-width') || child.getAttribute('data-min-width')
+        // var minHeight = child.getAttribute('min-height') || child.getAttribute('data-min-height')
+        var src = child.getAttribute('data-src') || child.getAttribute('url')
 
         sources.push(src)
 
@@ -238,9 +240,9 @@ var ElementQueries = function () {
 
         if (!minWidth) {
           defaultImageId = children.length - 1
-          element.children[i].style.display = 'block'
+          child.style.display = 'block'
         } else {
-          element.children[i].style.display = 'none'
+          child.style.display = 'none'
         }
       }
     }
@@ -319,8 +321,7 @@ var ElementQueries = function () {
    * @param {String} css
    */
   function extractQuery (css) {
-    var match
-    var smatch
+    var match, smatch
     css = css.replace(/'/g, '"')
     while (null !== (match = regex.exec(css))) {
       smatch = match[1] + match[3]
@@ -337,21 +338,19 @@ var ElementQueries = function () {
    */
   function readRules (rules) {
     var selector = ''
-    if (!rules) {
-      return
-    }
+    if (!rules) return
     if ('string' === typeof rules) {
       rules = rules.toLowerCase()
-      if (-1 !== rules.indexOf('min-width') || -1 !== rules.indexOf('max-width')) {
+      if (~rules.indexOf('min-width') || ~rules.indexOf('max-width')) {
         extractQuery(rules)
       }
     } else {
       for (var i = 0, j = rules.length; i < j; i++) {
         if (1 === rules[i].type) {
           selector = rules[i].selectorText || rules[i].cssText
-          if (-1 !== selector.indexOf('min-height') || -1 !== selector.indexOf('max-height')) {
+          if (~selector.indexOf('min-height') || ~selector.indexOf('max-height')) {
             extractQuery(selector)
-          }else if (-1 !== selector.indexOf('min-width') || -1 !== selector.indexOf('max-width')) {
+          } else if (~selector.indexOf('min-width') || ~selector.indexOf('max-width')) {
             extractQuery(selector)
           }
         } else if (4 === rules[i].type) {
