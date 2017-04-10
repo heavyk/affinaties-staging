@@ -8,16 +8,9 @@ import { parseUri, parseQS, parseHash, parseJSON, camelize, define_getter } from
 import { pathVars, pathToRegExp, pathToStrictRegExp } from '../lib/router-utils'
 
 const basePath = window.location.pathname
-// var path = '/table/:table?/:somethin?'
-// var tester = parseUri('/table/1234/lala')
-// console.log(pathVars(path), pathToRegExp(path).test(tester.path), pathToStrictRegExp(path).test(tester.path))
-// console.log(pathVars(path), tester.path.match(pathToRegExp(path)), tester.path.match(pathToStrictRegExp(path)))
-
 const _observables = new WeakMap
 
-window.camelize = camelize
-
-export default class StateMachine extends PathEmitter(HTMLElement) {
+export default class PoemStateMachine extends PathEmitter(HTMLElement) {
   disconnectedCallback () {
     var done = () => {
       if (this._els) this._els.empty(), this._els = null
@@ -31,7 +24,7 @@ export default class StateMachine extends PathEmitter(HTMLElement) {
   }
 
   connectedCallback () {
-    var self = this, fn = this.body
+    var self = this, fn = self.body
     if (typeof fn === 'function') {
       let p, pv, v, vars = [],
         map = this.map = [],
@@ -111,15 +104,14 @@ export default class StateMachine extends PathEmitter(HTMLElement) {
       }
 
       var put_els = (els) => {
-        var i, j, k, shadow
+        var i, j, k, e, shadow
         if (els == null) return
         if (!(shadow = this.shadow)) {
           shadow = this.shadow = this.attachShadow({mode: 'open'})
         }
 
         if (!this._els) {
-          this._els = new ObservableArray(...els)
-          shadow.appendChild(arrayFragment(shadow, this._els, this._ctx.h.cleanupFuncs))
+          shadow.aC((this._els = new ObservableArray(...els)), this._ctx.h.cleanupFuncs)
         } else {
           // DESIRE: do some sort of intelligent dom diffing instead of this hack
           if (this._els.length !== els.length) for (j = 0; j < this._els.length; j++) {
@@ -130,25 +122,26 @@ export default class StateMachine extends PathEmitter(HTMLElement) {
           // TESTME - this should be tested throughly
           for (i = 0; i < els.length; i++) {
             var exists = false
+            e = els[i]
             for (var j = 0; j < this._els.length; j++) {
-              if (els[i] === this._els[j]) {
+              if (e === this._els[j]) {
                 exists = true
                 if (i !== j) {
-                  if (~(k = this._els.indexOf(els[i])))
+                  if (~(k = this._els.indexOf(e)))
                     this._els.move(k, i)
-                  else this._els.replace(j, els[i])
+                  else this._els.replace(j, e)
                   break
                 } // else do nothing
               } else if (i === j) {
                 exists = true
-                if (~(k = this._els.indexOf(els[i])))
+                if (~(k = this._els.indexOf(e)))
                   this._els.move(k, i)
-                else this._els.replace(j, els[i])
+                else this._els.replace(j, e)
               }
             }
 
             if (exists === false) {
-              this._els.insert(i, els[i])
+              this._els.insert(i, e)
             }
           }
         }
@@ -234,3 +227,8 @@ export default class StateMachine extends PathEmitter(HTMLElement) {
     _observables.set(this, v)
   }
 }
+
+import { special_elements } from '../lib/dom/hyper-hermes'
+
+special_elements['poem-state-machine'] = 2 // id, opts
+window.customElements.define('poem-state-machine', PoemStateMachine)

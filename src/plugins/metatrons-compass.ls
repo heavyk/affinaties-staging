@@ -1,19 +1,8 @@
 ``import pluginBoilerplate from '../lib/plugins/plugin-boilerplate'``
 # ``import load_sdk from '../lib/load-sdk-h'``
-``import { doc, special_elements } from '../lib/dom/hyper-hermes'``
 ``import { ObservableArray, RenderingArray} from '../lib/dom/observable-array'``
 ``import { value, transform, compute, px, observable_property, bind1 } from '../lib/dom/observable'``
-``import polarToCartesian from '../lib/calc/polarToCartesian'``
-# ``import xhr from '../lib/xhr'``
-# ``import { rand, rand2, randomId, randomEl, randomIds, randomPos, randomDate, randomCharactor, between, lipsum, word, obj } from '../lib/random'``
-
-``import StateMachine from '../elements/state-machine'``
-
-# special_elements['poke-her-card'] = 2 # opts, fn
-special_elements['poem-state-machine'] = 2 # opts, fn
-window.custom-elements.define \poem-state-machine, StateMachine
-# window.custom-elements.define \poem-modal, Modal
-# window.custom-elements.define \poke-her-card, Card
+# ``import polarToCartesian from '../lib/calc/polarToCartesian'``
 
 const HALF_PI = Math.PI / 180
 const DEFAULT_CONFIG =
@@ -40,7 +29,7 @@ foto = ({h}, opts = {}) ->
 
 
 metatrons-compass = ({config, G, set_config, set_data}) ->
-  {h, s} = window.G = G
+  {h, s} = G
   G.width (v, old_width) !-> console.log \width, old_width, '->', v
 
   # move to a two-stage model where:

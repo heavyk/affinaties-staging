@@ -335,26 +335,29 @@ export function offsetOf (child) {
 
 export var special_elements = {}
 
-export function dom_context () {
-  return context((el, args) => {
+export var h = dom_context(1)
+export function dom_context (no_cleanup) {
+  var ctx = context((el, args) => {
     var i
 
     return !~el.indexOf('-') ? doc.createElement(el)
       : (i = special_elements[el]) !== undefined ? new (customElements.get(el))(...args.splice(0, i || 2)) // 2 is default? I can't think of a good reason why it shouldn't be 1 or 0 ...
       : new (customElements.get(el))
   })
+  if (!no_cleanup) h.cleanupFuncs.push(() => ctx.cleanup())
+  return ctx
 }
 
-export var h = dom_context()
 h.context = dom_context
 
-export function svg_context () {
-  return context((el) => {
-    return doc.createElementNS('http://www.w3.org/2000/svg', el)
-  })
+export var s = svg_context(1)
+export function svg_context (no_cleanup) {
+  var ctx = context((el) => doc.createElementNS('http://www.w3.org/2000/svg', el))
+
+  if (!no_cleanup) s.cleanupFuncs.push(() => ctx.cleanup())
+  return ctx
 }
 
-export var s = svg_context()
 s.context = svg_context
 
 export const makeNode = (e, v, cleanupFuncs) => isNode(v) ? v
@@ -396,8 +399,9 @@ export const obvNode = (e, v, cleanupFuncs = []) => {
 }
 
 // shortcut to append multiple children (w/ cleanupFuncs)
-HTMLElement.prototype.aC =
-SVGElement.prototype.aC =
+// HTMLElement.prototype.aC =
+// SVGElement.prototype.aC =
+Node.prototype.aC =
 function (v, cleanupFuncs) {
   return this.appendChild(obvNode(this, v, cleanupFuncs))
 }

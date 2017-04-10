@@ -1,7 +1,5 @@
 ``import pluginBoilerplate from '../lib/plugins/plugin-boilerplate'``
-# ``import h from '../lib/dom/hyper-hermes'``
 # ``import load_sdk from '../lib/load-sdk-h'``
-``import { s, h, doc, special_elements } from '../lib/dom/hyper-hermes'``
 ``import { ObservableArray, RenderingArray} from '../lib/dom/observable-array'``
 ``import { value, transform, compute, px, observable_property, bind1 } from '../lib/dom/observable'``
 ``import polarToCartesian from '../lib/calc/polarToCartesian'``
@@ -11,21 +9,15 @@
 ``import { rankHandInt } from '../lib/game/rank-hand'``
 # ``import { rand, rand2, randomId, randomEl, randomIds, randomPos, randomDate, randomCharactor, between, lipsum, word, obj } from '../lib/random'``
 
-``import StateMachine from '../elements/state-machine'``
-# ``import { Modal } from '../elements/state-machine'``
+``import '../elements/poem-state-machine'``
 ``import '../elements/svg/poke-her-card'``
 # ``import '../elements/svg/poke-her-playa'``
-
-# special_elements['poke-her-card'] = 2 # opts, fn
-special_elements['poem-state-machine'] = 2 # opts, fn
-window.custom-elements.define \poem-state-machine, StateMachine
-# window.custom-elements.define \poem-modal, Modal
-# window.custom-elements.define \poke-her-card, Card
 
 const HALF_PI = Math.PI / 180
 const DEFAULT_CONFIG =
   lala: 1155
 
+# TODO: move this to a custom-element
 foto_size = (size) ->
   _px = 0
   switch size
@@ -51,7 +43,7 @@ foto = ({h}, opts = {}) ->
 
 # TODO: otro plugin: playaz-club
 poke-her-starz = ({config, G, set_config, set_data}) ->
-  window.G = G
+  {s, h} = G
   G.width (v, old_width) !-> console.log \width, old_width, '->', v
   # G.orientation (v) !-> console.log 'orientation', v
 
@@ -72,7 +64,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   const TABLE_STROKE = 5.5
   const TABLE_STROKE2 = TABLE_STROKE * 2
-  const SPACE_MARGIN = 1
+  const SPACE_MARGIN = 2
   const SPACE_MARGIN2 = SPACE_MARGIN * 2
 
   # table attributes
@@ -189,7 +181,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
 
   window.hand =\
   hand = new RenderingArray G, (id, idx, {h}) ->
-    h \poke-her-card, id, { width: board-cards-width, x: (hand-pos-x idx), y: (hand-pos-y idx), down: cards_down }
+    h \poke-her-card, id, { width: board-cards-width, x: (hand-pos-x idx), y: (hand-pos-y idx), down: cards_down, touchflip: true }
 
   window.cards =\
   cards = new RenderingArray G, (id, idx, {h}) ->

@@ -152,8 +152,8 @@ export function property (model, key) {
   }
 }
 
-export function transform (in_observable, down, up) {
-  if (typeof in_observable !== 'function')
+export function transform (obv, down, up) {
+  if (typeof obv !== 'function')
     error('transform expects an observable')
 
   observable.observable = 'value'
@@ -161,9 +161,9 @@ export function transform (in_observable, down, up) {
 
   function observable (val) {
     return (
-      val === undefined ? down(in_observable())
-    : typeof val !== 'function' ? in_observable((up || down)(val))
-    : in_observable((_val) => { val(down(_val)) })
+      val === undefined ? down(obv())
+    : typeof val !== 'function' ? obv((up || down)(val))
+    : obv((_val) => { val(down(_val)) })
     )
   }
 }

@@ -1,4 +1,5 @@
-import StateMachine from '../state-machine'
+// import StateMachine from '../poem-state-machine'
+import PoemBase from '../poem-base'
 
 import { touch, hover, mousedown } from '../../lib/dom/observable'
 import { _not } from '../../lib/dom/observable-logic'
@@ -6,8 +7,13 @@ import { _not } from '../../lib/dom/observable-logic'
 // use `require` instead of import, to allow for bundle partitioning
 const CARDS = require('../assets/playing-cards')
 
-class Card extends StateMachine {
-  constructor (id, opts) {
+// TODO: remove all non-observable params before passing it to the super
+const options = ['touchflip']
+
+class Card extends PoemBase {
+  constructor (id, opts = {}) {
+    var touchflip
+    if (touchflip = opts.touchflip) delete opts.touchflip
     super(opts, (G) => {
       if (typeof id === 'function') {
         // `id` is an observable
@@ -16,7 +22,7 @@ class Card extends StateMachine {
       } else if (id != null) {
         this._id = id
       }
-      
+
       var svg = CARDS[this._id].call(this, G)
 
       // maintain aspect ratio
@@ -26,20 +32,15 @@ class Card extends StateMachine {
       _h((v) => { _w(v * 1 / 1.45) })
 
       // if the card is face down, then allow for mouse/touch to show the cards (eg. cards in your hand)
-      // I don't like that it's only bound if the bound value is true... there should be another way of determining if the cards can be flipped
-      const down = this.attr('down')
-      if (down()) {
+      if (touchflip) {
+        const down = this.attr('down')
         G.h.cleanupFuncs.push(
           touch(svg)(this.attr_transform(down, _not)),
           mousedown(svg)(this.attr_transform(down, _not))
         )
       }
 
-      return {
-        '/': () => {
-          return svg
-        },
-      }
+      return svg
     })
   }
 

@@ -66,8 +66,7 @@ img.avatar {
 }
 
 
-/*tspan.pot */
-text {
+text/*.pot */ {
   text-anchor: middle;
   font-size: 150%;
 }
