@@ -207,7 +207,7 @@ process_src = (path) !->
 
       output = if opts.json => res else res.code
     catch e
-      console.error e
+      console.error "error compiling: #{origin} ::", e
 
   | \js =>
     # for now, no transformations are done...
@@ -231,7 +231,6 @@ process_src = (path) !->
   #   process.chdir CWD
 
   if output
-    # console.log "writing:", dest
     Fs.write-file-sync dest, output, \utf-8
 
 process_css = (path) !->
@@ -280,6 +279,17 @@ process_poem = (path) !->
         sander.write-file webpack_src, code
         sander.write-file "#{webpack_src}.map", map.to-string!
       ]
+    .catch (e) ->
+      if e.id => console.error e.id
+      console.error e.to-string!
+      # console.error e.message
+      # if e.loc
+      #   console.error e.loc
+      #   if e.loc.line
+      #     console.error 'line:', e.loc.line, 'column:', e.loc.column
+      # if e.frame => console.error e.frame
+      # if e.snippet => console.error e.snippet
+      # console.error e, (Object.keys e)
     .then !->
       opts = {} <<< webpack_opts <<< {
         # entry: src
@@ -316,8 +326,9 @@ process_poem = (path) !->
         #   console.log "wrote:", stats
     .catch (e) ->
       # console.log \catch, e.message.substr 0, 1000
-      console.log 'error compiling', poem.dest
-      console.log if e.to-string => e.to-string! else e.stack
+      console.error 'error compiling', poem.dest
+      console.error if e.to-string => e.to-string! else e #.stack or e
+      if e.details => console.error e.details
       poem.processing = false
     .then ->
       if path = poem.css
