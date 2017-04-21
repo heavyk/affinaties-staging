@@ -1,4 +1,3 @@
-// import StateMachine from '../poem-state-machine'
 import PoemBase from '../poem-base'
 
 import { touch, hover, mousedown } from '../../lib/dom/observable'
@@ -10,7 +9,7 @@ const CARDS = require('../assets/playing-cards')
 // TODO: remove all non-observable params before passing it to the super
 const options = ['touchflip']
 
-class Card extends PoemBase {
+export default class Card extends PoemBase {
   constructor (id, opts = {}) {
     var touchflip
     if (touchflip = opts.touchflip) delete opts.touchflip
@@ -52,8 +51,5 @@ class Card extends PoemBase {
 }
 
 import { special_elements } from '../../lib/dom/hyper-hermes'
-
 special_elements['poke-her-card'] = 2 // id, opts
 window.customElements.define('poke-her-card', Card)
-
-export default Card

@@ -12,14 +12,15 @@ const _observables = new WeakMap
 
 export default class PoemStateMachine extends PathEmitter(HTMLElement) {
   disconnectedCallback () {
+    var self = this
     var done = () => {
-      if (this._els) this._els.empty(), this._els = null
-      if (this._h) this._h = this._h.cleanup()
-      if (this._s) this._s = this._s.cleanup()
+      if (self._els) self._els.empty(), self._els = null
+      if (self._h) self._h = self._h.cleanup()
+      if (self._s) self._s = self._s.cleanup()
     }
     // TODO: save the state
     // TODO: maybe don't change the state, actually
-    if (this.states.disconnected) this.now('disconnected').then(done, done)
+    if (self.states.disconnected) self.now('disconnected').then(done, done)
     else done()
   }
 
@@ -27,8 +28,8 @@ export default class PoemStateMachine extends PathEmitter(HTMLElement) {
     var self = this, fn = self.body
     if (typeof fn === 'function') {
       let p, pv, v, vars = [],
-        map = this.map = [],
-        regExp = this.regExp = [],
+        map = self.map = [],
+        regExp = self.regExp = [],
         states = self.states = fn.call(self, self.context())
 
       for (p in states) {

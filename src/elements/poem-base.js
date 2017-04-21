@@ -14,15 +14,16 @@ const _observables = new WeakMap
 
 export default class PoemBase extends MixinEmitter(HTMLElement) {
   disconnectedCallback () {
-    if (this._els) this._els.empty(), this._els = null
-    // TODO: this should be just this._ctx.cleanup()
-    if (this._h) this._h = this._h.cleanup()
-    if (this._s) this._s = this._s.cleanup()
+    var self = this
+    if (self._els) self._els.empty(), self._els = null
+    // TODO: self should be just self._ctx.cleanup()
+    if (self._h) self._h = self._h.cleanup()
+    if (self._s) self._s = self._s.cleanup()
   }
 
   connectedCallback () {
-    var self = this, fn = self.body, els
-    if (typeof fn === 'function') this.els = fn.call(self, self.context())
+    var self = this, fn = self.body
+    if (typeof fn === 'function') self.els(fn.call(self, self.context()))
   }
 
   reset () {
@@ -53,54 +54,53 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
     })(keys[i])
   }
 
-  set els (els) {
-    var i, j, k, e, shadow = this.shadow
+  els (els) {
+    var i, j, k, e, self = this, shadow = self.shadow
 
-    var empty_shadow = () => { while (e = shadow.lastChild) shadow.removeChild(e) }
+    var empty_shadow = () => { if (e = shadow.lastChild) do { if (!e.é) shadow.removeChild(e) } while (e = e.previousSibling) }
 
     if (els == null) return shadow ? empty_shadow() : null
-    if (!shadow) shadow = this.shadow = this.attachShadow({mode: 'open'})
+    if (!shadow) shadow = self.shadow = self.attachShadow({mode: 'open'})
 
     var put_els = (els) => {
-      if (!this._els) {
-        shadow.aC((this._els = new ObservableArray(...els)), this._ctx.h.cleanupFuncs)
+      if (!self._els) {
+        shadow.aC((self._els = new ObservableArray(...els)), self._ctx.h.cleanupFuncs)
       } else {
         // DESIRE: do some sort of intelligent dom diffing instead of this hack
-        if (this._els.length !== els.length) for (j = 0; j < this._els.length; j++) {
-          if (!~els.indexOf(this._els[j])) {
-            this._els.remove(j)
+        if (self._els.length !== els.length) for (j = 0; j < self._els.length; j++) {
+          if (!~els.indexOf(self._els[j])) {
+            self._els.remove(j)
           }
         }
         // TESTME - this should be tested throughly
         for (i = 0; i < els.length; i++) {
           var exists = false
           e = els[i]
-          for (var j = 0; j < this._els.length; j++) {
-            if (e === this._els[j]) {
+          for (var j = 0; j < self._els.length; j++) {
+            if (e === self._els[j]) {
               exists = true
               if (i !== j) {
-                if (~(k = this._els.indexOf(e)))
-                  this._els.move(k, i)
-                else this._els.replace(j, e)
+                if (~(k = self._els.indexOf(e)))
+                  self._els.move(k, i)
+                else self._els.replace(j, e)
                 break
               } // else do nothing
             } else if (i === j) {
               exists = true
-              if (~(k = this._els.indexOf(e)))
-                this._els.move(k, i)
-              else this._els.replace(j, e)
+              if (~(k = self._els.indexOf(e)))
+                self._els.move(k, i)
+              else self._els.replace(j, e)
             }
           }
 
           if (exists === false) {
-            this._els.insert(i, e)
+            self._els.insert(i, e)
           }
         }
       }
     }
 
-    // put_els(Array.isArray(els) ? els : [ isNode(els) ? els : txt(els) ])
-    if (this._els || (k = Array.isArray(els))) put_els(k ? els : [ isNode(els) ? els : txt(els) ])
+    if (self._els || (k = Array.isArray(els))) put_els(k ? els : [ isNode(els) ? els : txt(els) ])
     else empty_shadow(), shadow.aC(els)
   }
 
@@ -131,12 +131,12 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
   // }
 
   style (txt) {
-    var shadow = this.shadow
-    var ctx = this.context()
-    if (!shadow) {
-      shadow = this.shadow = this.attachShadow({mode: 'open'})
-    }
-    shadow.appendChild(ctx.h('style', txt + ''))
+    var self = this
+    var shadow = self.shadow
+    var e = ~txt.indexOf('://') ? h('link', {href: txt}) : h('style', txt)
+    if (!shadow) shadow = self.shadow = self.attachShadow({mode: 'open'})
+    e.é = 1 // set this, so the node won't be removed when the shadow is emptied (stupid hack... obviously)
+    shadow.appendChild(e)
   }
 
   context () {
