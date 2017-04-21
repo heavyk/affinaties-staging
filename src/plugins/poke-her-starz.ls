@@ -10,6 +10,7 @@
 # ``import { rand, rand2, randomId, randomEl, randomIds, randomPos, randomDate, randomCharactor, between, lipsum, word, obj } from '../lib/random'``
 
 ``import '../elements/poem-state-machine'``
+``import '../elements/prompter-panel'``
 ``import '../elements/svg/poke-her-card'``
 # ``import '../elements/svg/poke-her-playa'``
 
@@ -42,7 +43,7 @@ foto = ({h}, opts = {}) ->
 # pertenecia --> palanca
 
 # TODO: otro plugin: playaz-club
-poke-her-starz = ({config, G, set_config, set_data}) ->
+poke-her-starz = ({config, G, set_config, set_data}) !->
   {s, h} = G
   G.width (v, old_width) !-> console.log \width, old_width, '->', v
   # G.orientation (v) !-> console.log 'orientation', v
@@ -66,6 +67,8 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   const TABLE_STROKE2 = TABLE_STROKE * 2
   const SPACE_MARGIN = 2
   const SPACE_MARGIN2 = SPACE_MARGIN * 2
+  const PLAYA_WIDTH = 30
+  const PLAYA_HEIGHT = 30
 
   # table attributes
   playa-cards-width = value 30
@@ -244,6 +247,25 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
   playaz.push.apply playaz, pp
   more_playaz = ['jack', 'jill', 'billy', 'jane', 'bonnie', 'clyde']
 
+  # window.prompter-panel =\
+  # prompter-panel =
+  #   style:
+  #     overflow: \hidden
+  #     background: 'rgba(0,10,200,.5)'
+  #     width: value '100%'
+  #     display: value \none
+  #     height: transform G.height, (v) -> Math.max v / 6, 100
+  #     left: value 0
+  #     # right: value 0
+  #     # top: transform G.height, (v) -> v -
+  #     bottom: value 0
+  #   visible: value false
+  #   msg: value ''
+  #   raise-amnt: value 0
+  #   call-btn: value false
+  #   raise-btn: value false
+  #   all-in-btn: value false
+
   ii = set-interval !->
     if p = more_playaz.shift!
       pp = table.add-player p, 1000 #(700 + (Math.round Math.random! * 300))
@@ -255,15 +277,27 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
         more_playaz.unshift p
     else
       clear-interval ii
+      # temporary: set prompts for each playa (so I can play them all)
+      # for p, i in playaz
+      for let i til playaz.length
+        p = playaz.d[i]
+        p.prompt.set_responder (msg, options, answer) !->
+          options.i = i
+          ptip.prompt msg, options, answer
+
+      # TODO: add prompt interface
+      # my.prompt.set_responder (msg, options, answer) ->
+      #   # alert msg
+      #   # console.log 'prompt:', msg, options
+      #   set-timeout ->
+      #     answer 'call'
+      #   , 2000ms
+
       game := window.game = table.start-game!
       cards.data game.board
       hand.data my.cards
       betz.data game.bets
       prev-betz.data game.prev-bets
-
-      # TODO: add prompt interface
-      # my.prompt.set_responder (msg, options, answer) ->
-      #   alert msg
 
       # TODO: when game is over unbind the listeners
       # bind to game values
@@ -291,7 +325,7 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
         s \use 'xlink:href': '#chip', width: 42, height: 42, x: -21, y: -21, overflow: 'visible'
         s \use 'xlink:href': '#chip', width: 42, height: 42, x: -21, y: -21, overflow: 'visible', transform: 'translate(9 5)'
 
-      s \g.d-btn transform: d-btn-transform, style: {display: transform _game.d_idx, ((v) -> (console.log v); if v ~= null => 'none' else '')},
+      s \g.d-btn transform: d-btn-transform, style: {display: transform _game.d_idx, ((v) -> if v ~= null => 'none' else '')},
         s \circle cx: 0, cy: 0, r: 20.5, s: {fill: '#fff', stroke: '#231F20', stroke-miterlimit: 10}
         s \text x: 0, y: 0, s: {font-family: 'DejaVu Sans, sans-serif', font-weight: 'bold', font-size: 8}, 'DEALER'
 
@@ -310,19 +344,52 @@ poke-her-starz = ({config, G, set_config, set_data}) ->
     h \.betz betz
     h \.prev-betz prev-betz
 
-    # tip =\
-    # h \.tooltip-outer, s: { position: \absolute, left: '200px', top: '200px' },
-    #   h \.tooltip-arrow
-    #   h \.tooltip-inner,
-    #     h \.prompt-text, "a prompt??"
-    #     h \.prompt-button, h \button, "a button"
+    window.ptip = h \prompter-panel, ({h}, msg, options, answer) ->
+      i = options.i
+      console.log \tip, options
+      tip-w = value 0
+      tip-h = value 0
+      pos = table-pos i, playa-cx, playa-cy
+      left = compute [pos, playa-cx, tip-w], (pos, cx, tw) -> "#{pos.x - tw}px"
+      top = compute [pos, playa-cy, tip-h], (pos, cy, th) -> "#{pos.y + 80 - th}px"
 
-    prompter-panel =\
-    h \.prompter s: {position: \absolute, left: 0, top: '800px' height: '150px', width: '100%', overflow: \hidden, background: 'rgba(0,10,200,.5)' },
-      h \span.bet, "bet:"
-      h \span.call, h \button "call"
-      h \span.raise, h \button "raise"
-      h \span.all-in, h \button "all-in"
+      tip =\
+      h \.tooltip-inner,
+        # h \div, "a prompt??"
+        h \div.qbet,
+          h \button, {onclick: -> answer 'fold'}, "fold"
+          h \button, {onclick: -> answer 'call'}, "call"
+          h \button, {onclick: -> answer 'all-in'}, "all-in"
+        h \div.bet,
+          input =\
+          h \input, {type: \text, value: options.min, observe: keyup: (v) -> answer v}
+
+      set-timeout !->
+        tip-w w2 = tip.client-width / 2
+        tip-h h2 = tip.client-height / 2
+        tip.style.visibility = 'visible'
+        input.focus!
+      , 0
+
+      h \.tooltip-outer, s: { left, top },
+        h \.tooltip-arrow
+        tip
+
+    window.ppanel = h \prompter-panel, ({h}, msg, options, answer) ->
+      style =
+        overflow: \hidden
+        background: 'rgba(0,10,200,.5)'
+        width: value '100%'
+        height: transform G.height, (v) -> (Math.max v / 6, 100) + 'px'
+        left: value 0
+        bottom: value 0
+      h \.prompter s: style,
+        h \span.bet, "bet:"
+        h \span.call, h \button {onclick: -> answer 'call'}, "call"
+        h \span.raise, h \button {onclick: -> answer 'raise'}, "raise"
+        h \span.all-in, h \button {onclick: -> answer 'all-in'}, "all-in"
+
+
 
     window.machina =\
     h \poem-state-machine, {width: 40, active: false}, (G) ->
