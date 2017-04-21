@@ -27,6 +27,9 @@ poems =
   # 'plugins/mop-great-again.js':
   #   dest: 'plugins/mop-great-again.js'
   #   css: 'plugins/mop-great-again.css'
+  'plugins/spotify.js':
+    dest: 'plugins/spotify.js'
+    # css: 'plugins/spotify.css'
   'plugins/metatrons-compass.js':
     dest: 'plugins/metatrons-compass.js'
     css: 'plugins/metatrons-compass.css'
@@ -123,6 +126,11 @@ webpack_opts =
     max-entrypoint-size: 500_000
     # asset-filter: (file) !->
     #   console.log "asset:", file
+  plugins:
+    new webpack.DefinePlugin {
+      DEBUG: true
+    }
+    ...
   module:
     rules:
       * test: /.js$/

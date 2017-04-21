@@ -68,23 +68,10 @@ class Client {
     return this._token;
   }
 
-  /**
-   * This method fires a new window that allow login
-   *
-   * @param  {Function} callback
-   * @return {Function|Promise}
-   */
-  login(callback) {
-    let url_login = 'https://accounts.spotify.com/en/authorize?response_type=token&client_id=' +
+  login_url (type = 'token') {
+    return 'https://accounts.spotify.com/en/authorize?response_type=' + type + '&client_id=' +
       this._clientId + '&redirect_uri=' + encodeURIComponent(this._redirect_uri) +
-      ( this._scopes ? '&scope=' + encodeURIComponent(this._scopes) : '');
-    if (callback) {
-      return callback(url_login);
-    } else {
-      return new Promise((resolve) => {
-        resolve(url_login);
-      });
-    }
+      ( this._scopes ? '&scope=' + encodeURIComponent(this._scopes) : '')
   }
 
   /**

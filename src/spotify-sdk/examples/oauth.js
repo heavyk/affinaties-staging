@@ -17,7 +17,7 @@ client.settings = {
     clientId: '6543157091a64e91ad449ca55b98a9c0',
     secretId: 'd4644085638d4eaaaa2cdea1ca65734e',
     scopes: ['user-follow-modify user-follow-read user-library-read user-top-read'],
-    redirect_uri: 'http://localhost:3000/examples/oauth.html'
+    redirect_uri: 'http://localhost:8080/oauth.html'
 };
 
 /*
@@ -34,7 +34,9 @@ function session() {
 }
 session();
 function login() {
+  console.log('logging in..')
     client.login().then((url) => {
+      console.log('logged in..', url)
         window.location.href = url;
 	});
 }
@@ -42,54 +44,43 @@ document.querySelector('#login').onclick = login;
 
 
 /*
- * TrackHandlers Examples
- *
- */
+// * TrackHandlers Examples
 let track = new TrackHandler();
 
 track.audioFeatures(['2UzMpPKPhbcC8RbsmuURAZ']).then(response => {
   console.log(response);
 });
 
-/*
- * UserHandler Examples
- *
- */
+// * UserHandler Examples
 var user = new UserHandler();
 
-/*
- * #1 example
- * Get the current user.
- */
+ // * #1 example
+ // * Get the current user.
  user.me().then((userEntity) => {
      console.log(userEntity);
  });
 
-/*
- * #2 example
- * Get the user by id, should return a User entity.
- */
+
+ // * #2 example
+ // * Get the user by id, should return a User entity.
  user.get('1258448899').then((userEntity) => {
      console.log(userEntity);
  });
 
-/*
- * #3 example
- * Get the playlists by user id, should return a Playlist collection.
- */
+
+ // * #3 example
+ // * Get the playlists by user id, should return a Playlist collection.
  user.playlists('1258448899').then((playlistCollection) => {
      console.log(playlistCollection);
  });
 
-/*
- * Awesome Exmaple
- *
- * me()
- * playlists = me.playlists()
- * tracks = playlists[0].tracks();
- * artists = tracks[0].artists();
- * albums = artists[0].albums();
- */
+ // * Awesome Exmaple
+ // *
+ // * me()
+ // * playlists = me.playlists()
+ // * tracks = playlists[0].tracks();
+ // * artists = tracks[0].artists();
+ // * albums = artists[0].albums();
 
 user.me().then((user) => {
     user.contains('user', ['11144364386']).then(res => {
@@ -116,15 +107,13 @@ user.me().then((user) => {
     });
 });
 
-/*
- * Add track to playlist
- *
- * me()
- * playlist = me.playlists()
- * track = tracks.search();
- * add = playlist.addTrack(track);
- * remove = playlist.removeTrack(track);
- */
+ // * Add track to playlist
+ // *
+ // * me()
+ // * playlist = me.playlists()
+ // * track = tracks.search();
+ // * add = playlist.addTrack(track);
+ // * remove = playlist.removeTrack(track);
 let myTrack;
 
 new TrackHandler().search('Ginza').then(trackCollection => {
@@ -139,17 +128,14 @@ new TrackHandler().search('Ginza').then(trackCollection => {
      });
  });
 
-/*
- * Follow a artist
- */
+ // * Follow a artist
  var artist = new ArtistHandler();
 
-/*
- * #4 example
- * Get artit with the name 'Muse', follow and unfollow.
- */
+ // * #4 example
+ // * Get artit with the name 'Muse', follow and unfollow.
  artist.search('Muse').then((artistCollection) => {
      var muse = artistCollection.first();
      muse.follow();
      muse.unfollow();
  });
+*/
