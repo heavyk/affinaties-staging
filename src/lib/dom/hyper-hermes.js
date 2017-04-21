@@ -337,6 +337,8 @@ export var special_elements = {}
 
 export var h = dom_context(1)
 export function dom_context (no_cleanup) {
+  // TODO: turn this into ctx = new Context ((el, args) => { ... })
+  //  -- and, turn the context fn into a class
   var ctx = context((el, args) => {
     var i
 
@@ -365,17 +367,18 @@ export const makeNode = (e, v, cleanupFuncs) => isNode(v) ? v
   : txt(v)
 
 export const obvNode = (e, v, cleanupFuncs = []) => {
-  var r
+  var r, o, i
   if (typeof v === 'function') {
-    var i = v.observable && v.observable === 'value' ? 1 : 0
-    var o = i ? v.call(e) : v.call(e, e) // call the observable / scope function
+    i = v.observable === 'value' ? 1 : 0
+    // var o = i ? v.call(e) : v.call(e, e) // call the observable / scope function
+    // o = i ? undefined : v.call(e, e) // call the observable / scope function
     // if it returns anything, we'll append the value (node, array, observable, or some text)
-    if (o !== undefined) {
+    if (!i && (o = v.call(e, e)) && o !== undefined) {
       r = e.aC(o, cleanupFuncs)
     }
     if (i) { // it's an observable!
-      // if the observable does not yet have a value, create a comment to be replaced by the value as soon as it comes
-      if (!r) r = e.aC(comment('obv'), cleanupFuncs)
+      // create a comment to be replaced by the value as soon as it comes
+      r = e.aC(comment('obv'), cleanupFuncs)
 
       // TODO: allow for an observable-array implementation
       cleanupFuncs.push(v((val) => {
@@ -399,11 +402,8 @@ export const obvNode = (e, v, cleanupFuncs = []) => {
 }
 
 // shortcut to append multiple children (w/ cleanupFuncs)
-// HTMLElement.prototype.aC =
-// SVGElement.prototype.aC =
-Node.prototype.aC =
-function (v, cleanupFuncs) {
-  return this.appendChild(obvNode(this, v, cleanupFuncs))
-}
+Node.prototype.aC = function (v, cleanupFuncs) { return this.appendChild(obvNode(this, v, cleanupFuncs)) }
+// shortcut to remove myself from the dom
+Node.prototype.rm = function () { return this.parentNode.removeChild(this) }
 
 export default h

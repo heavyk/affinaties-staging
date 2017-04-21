@@ -163,7 +163,7 @@ export function transform (obv, down, up) {
     return (
       val === undefined ? down(obv())
     : typeof val !== 'function' ? obv((up || down)(val))
-    : obv((_val) => { val(down(_val)) })
+    : obv((_val, old) => { val(down(_val, old)) })
     )
   }
 }
