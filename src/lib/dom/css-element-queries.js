@@ -15,6 +15,7 @@ import ResizeSensor from './resize-sensor'
 var ElementQueries = function () {
   var trackingActive = false
   var elements = []
+  var doc_el = document.documentElement
 
   /**
    *
@@ -23,7 +24,7 @@ var ElementQueries = function () {
    */
   function getEmSize (element) {
     if (!element) {
-      element = document.documentElement
+      element = doc_el
     }
     var fontSize = window.getComputedStyle(element, null).fontSize
     return parseFloat(fontSize) || 16
@@ -52,13 +53,13 @@ var ElementQueries = function () {
       // According to http://quirksmode.org/mobile/tableViewport.html
       // documentElement.clientWidth/Height gets us the most reliable info
       case 'vw':
-        return value * document.documentElement.clientWidth / 100
+        return value * doc_el.clientWidth / 100
       case 'vh':
-        return value * document.documentElement.clientHeight / 100
+        return value * doc_el.clientHeight / 100
       case 'vmin':
       case 'vmax':
-        var vw = document.documentElement.clientWidth / 100
-        var vh = document.documentElement.clientHeight / 100
+        var vw = doc_el.clientWidth / 100
+        var vh = doc_el.clientHeight / 100
         var chooser = Math[units === 'vmin' ? 'min' : 'max']
         return value * chooser(vw, vh)
       default:

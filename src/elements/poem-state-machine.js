@@ -80,11 +80,11 @@ export default class PoemStateMachine extends PathEmitter(HTMLElement) {
 
   now (nextState) {
     if (nextState[0] !== '/') nextState = camelize(nextState)
-    if (this.state) console.log(this.localName, this.state, '->', nextState)
+    if (DEBUG && this.state) console.log(this.localName, this.state, '->', nextState)
     return new Promise((resolve, reject) => {
       var fn, data = {}, els, loading_els, state
       if (typeof this.state === 'string' && typeof (fn = this.states[this.state + '#exit']) === 'function') {
-        console.log('exit state', this.state + '#exit')
+        if (DEBUG) console.log('exit state', this.state + '#exit')
         fn.call(this)
       }
 
@@ -230,6 +230,5 @@ export default class PoemStateMachine extends PathEmitter(HTMLElement) {
 }
 
 import { special_elements } from '../lib/dom/hyper-hermes'
-
 special_elements['poem-state-machine'] = 2 // id, opts
 window.customElements.define('poem-state-machine', PoemStateMachine)

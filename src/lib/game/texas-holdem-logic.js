@@ -343,13 +343,15 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
 
       if (typeof bet !== 'boolean') {
         p.state('waiting')
-        // TODO: add timeout & fold if timed out (I think this is the cerrect punishment, anyway)
+        // TODO: add timeout & fold if timed out (I think this is the correct punishment, anyway)
         p.prompt(bet >= min && bet > 0 ? 'raise' : 'bet', {min, cards: _game.board.slice(0), timeout: 60000}, () => { go_next(i, false) })
       } else {
         console.log ('active:', active_playaz(), 'all-in:', all_in_playaz())
         if (active_playaz() === all_in_playaz()) goto_next_round()
         else cur_playa((i+1) % playaz.length)
       }
+    // } else if (i === false) {
+    //   // game done
     }
   })
 
