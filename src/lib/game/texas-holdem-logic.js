@@ -288,10 +288,11 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
     var next, existing_bet = _game.bets[i] || 0
     if (typeof existing_bet !== 'number') debugger
     if (typeof bet === 'number') {
+      bet -= existing_bet
       _game.bets.set(i, (bet > 0 ? bet : -bet) + existing_bet)
     } else { // bet === false
       if (bet !== false) debugger
-      _game.prevBets.set(_game.prevBets[i] + existing_bet)
+      _game.prevBets.set(i, _game.prevBets[i] + existing_bet)
       _game.bets.set(i, bet)
     }
 

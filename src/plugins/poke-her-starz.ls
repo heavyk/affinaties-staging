@@ -381,6 +381,7 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
         bottom: value 0
       h \.prompter s: style,
         h \span.bet, "bet:"
+        h \span.fold, h \button {onclick: -> answer 'fold'}, "fold"
         h \span.call, h \button {onclick: -> answer 'call'}, "call"
         h \span.raise, h \button {onclick: -> answer 'raise'}, "raise"
         h \span.all-in, h \button {onclick: -> answer 'all-in'}, "all-in"
