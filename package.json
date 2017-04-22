@@ -67,6 +67,7 @@
     "basscss": "^8.0.3",
     "bin-pack": "^1.0.2",
     "crc": "^3.4.4",
+    "electro": "^2.0.3",
     "get-size": "^2.0.2",
     "gyronorm": "^2.0.6",
     "hjs-webpack": "^9.1.0",
@@ -77,6 +78,9 @@
     "outlayer": "^2.1.0",
     "phoenix": "^1.2.1",
     "phoenix_html": "file:deps/phoenix_html",
+    "pull-pause": "^0.0.1",
+    "pull-scroll": "^1.0.4",
+    "pull-stream": "^3.5.0",
     "rollup": "^0.41.6",
     "rollup-plugin-buble": "^0.15.0",
     "sander": "^0.6.0",
@@ -88,5 +92,6 @@
     "usb": "^1.2.0",
     "webpack": "^2.4.1",
     "webtorrent": "^0.98.18"
-  }
+  },
+  "flat": true
 }
