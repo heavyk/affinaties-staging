@@ -69,5 +69,4 @@ export default class PrompterTip extends PoemBase {
 }
 
 import { special_elements } from '../lib/dom/hyper-hermes'
-special_elements['prompter-tip'] = 1 // fn:(G, msg, options, answer)
-window.customElements.define('prompter-tip', PrompterTip)
+special_elements.define('prompter-tip', PrompterTip, 1) // fn:(G, msg, options, answer)

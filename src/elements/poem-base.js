@@ -3,12 +3,10 @@ import { value, transform, event, observable_property } from '../lib/dom/observa
 import { ObservableArray, context } from '../lib/dom/observable-array'
 import { MixinEmitter } from '../lib/drip/MixinEmitter'
 // TODO: remove h, s (should be retreived from the context)
-import { h, s, isNode, txt, arrayFragment } from '../lib/dom/hyper-hermes'
+import { h, s, isNode, txt } from '../lib/dom/hyper-hermes'
 
 import { parseUri, parseQS, parseHash, parseJSON, camelize, define_getter } from '../lib/utils'
 import { pathVars, pathToRegExp, pathToStrictRegExp } from '../lib/router-utils'
-
-// TODO: remove state-machine stuff (move the put_els fn into a class function)
 
 export const _observables = new WeakMap
 
@@ -101,7 +99,7 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
     }
 
     if (self._els || (k = Array.isArray(els))) put_els(k ? els : [ isNode(els) ? els : txt(els) ])
-    else empty_shadow(), shadow.aC(els)
+    else empty_shadow(), shadow.aC(els, self._ctx.h.cleanupFuncs)
   }
 
   attr (k, v, hidden = false) {

@@ -5,10 +5,12 @@
 
 import { attribute, hover, focus, select, event, on, off } from './observable'
 
-export const doc = window.document
 export const win = window
+export const doc = win.document
 export const body = doc.body
-export const IS_LOCAL = ~doc.location.host.indexOf('localhost')
+export const location = doc.location
+export const IS_LOCAL = ~location.host.indexOf('localhost')
+export const basePath = location.pathname
 
 /*
 TODO ITEMS:
@@ -71,7 +73,7 @@ function context (createElement) {
           e.appendChild(r = txt(l.toString()))
       } else if (Array.isArray(l)) {
         e.aC(l, cleanupFuncs)
-      } else if (isNode(l) || l instanceof window.Text) {
+      } else if (isNode(l) || l instanceof win.Text) {
         e.appendChild(r = l)
       } else if (typeof l === 'object') {
         for (k in l) ((attr_val, _key) => {
@@ -334,6 +336,11 @@ export function offsetOf (child) {
 }
 
 export var special_elements = {}
+Object.defineProperty(special_elements, 'define', {value: (name, fn, args) => {
+  console.log('defining', name, args)
+  win.customElements.define(name, fn)
+  special_elements[name] = typeof args === 'number' ? args : args.length || 0
+}})
 
 export var h = dom_context(1)
 export function dom_context (no_cleanup) {
