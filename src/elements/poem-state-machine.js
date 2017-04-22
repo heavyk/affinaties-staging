@@ -7,8 +7,8 @@ import { h, s, isNode, txt, arrayFragment } from '../lib/dom/hyper-hermes'
 import { parseUri, parseQS, parseHash, parseJSON, camelize, define_getter } from '../lib/utils'
 import { pathVars, pathToRegExp, pathToStrictRegExp } from '../lib/router-utils'
 
+import { _observables } from './poem-base'
 const basePath = window.location.pathname
-const _observables = new WeakMap
 
 export default class PoemStateMachine extends PathEmitter(HTMLElement) {
   disconnectedCallback () {

@@ -10,7 +10,7 @@ import { pathVars, pathToRegExp, pathToStrictRegExp } from '../lib/router-utils'
 
 // TODO: remove state-machine stuff (move the put_els fn into a class function)
 
-const _observables = new WeakMap
+export const _observables = new WeakMap
 
 export default class PoemBase extends MixinEmitter(HTMLElement) {
   disconnectedCallback () {
