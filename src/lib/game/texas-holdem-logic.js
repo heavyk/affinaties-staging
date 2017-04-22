@@ -1,4 +1,4 @@
-import { value, number, object, transform, compute } from '../dom/observable'
+import { value, number, object, transform, compute, observable_property } from '../dom/observable'
 import { prompter } from '../dom/observable-logic'
 import { ObservableArray } from '../dom/observable-array'
 import { rankHandInt } from './rank-hand'
@@ -70,16 +70,26 @@ export function holdem_table (config = {}) {
   const state = value('waiting')
 
   // config
+  let C = {}
   const smallBlind = number(config.smallBlind)
   const bigBlind = number(config.bigBlind)
   const minPlayaz = number(config.minPlayaz)
   const maxPlayaz = number(config.maxPlayaz)
   const minBuyIn = number(config.minBuyIn)
   const maxBuyIn = number(config.maxBuyIn)
-
+  const smallestChip = number(config.smallestChip)
   const timeout = number(config.timeout || 11111) // default 11s timeout
+  observable_property(C, 'smallBlind', smallBlind)
+  observable_property(C, 'bigBlind', bigBlind)
+  observable_property(C, 'minPlayaz', minPlayaz)
+  observable_property(C, 'maxPlayaz', maxPlayaz)
+  observable_property(C, 'minBuyIn', minBuyIn)
+  observable_property(C, 'maxBuyIn', maxBuyIn)
+  observable_property(C, 'smallestChip', smallestChip)
+  observable_property(C, 'timeout', timeout)
 
   // values
+  let V = {}
   const game = value(null)
   const playaz = new ObservableArray
   const observz = new ObservableArray
@@ -91,6 +101,18 @@ export function holdem_table (config = {}) {
   const min_bet = number()
   const active_playaz = number()
   const all_in_playaz = number()
+
+  observable_property(V, 'game', game)
+  observable_property(V, 'playaz', playaz)
+  observable_property(V, 'observz', observz)
+  observable_property(V, 'betz', betz)
+  observable_property(V, 'dealer_idx', dealer_idx)
+  observable_property(V, 'sb_idx', sb_idx)
+  observable_property(V, 'bb_idx', bb_idx)
+  observable_property(V, 'cur_playa', cur_playa)
+  observable_property(V, 'min_bet', min_bet)
+  observable_property(V, 'active_playaz', active_playaz)
+  observable_property(V, 'all_in_playaz', all_in_playaz)
 
   var _game
 
@@ -109,7 +131,7 @@ export function holdem_table (config = {}) {
         // TODO: capped bets
         let chips = p.chips()
         let min = min_bet()
-        let i = playaz.indexOf(p)
+        let i = options.i
 
         if (res === 'fold') {
           p.cards.empty()
@@ -347,7 +369,7 @@ export function holdem_table (config = {}) {
       if (typeof bet !== 'boolean') {
         p.state('waiting')
         // TODO: add timeout & fold if timed out (I think this is the correct punishment, anyway)
-        p.prompt(bet >= min && bet > 0 ? 'raise' : 'bet', {min, cards: _game.board.slice(0), timeout: timeout()}, () => { go_next(i, false) })
+        p.prompt(bet >= min && bet > 0 ? 'raise' : 'bet', {i, min, cards: _game.board.slice(0), timeout: timeout()}, () => { go_next(i, false) })
       } else {
         console.log ('active:', active_playaz(), 'all-in:', all_in_playaz())
         if (active_playaz() === all_in_playaz()) goto_next_round()
@@ -432,7 +454,7 @@ export function holdem_table (config = {}) {
     }
   })
 
-  return F
+  return {F,C,V}
 }
 
 // function holdem_game (playaz, smallBlind, bigBlind) {

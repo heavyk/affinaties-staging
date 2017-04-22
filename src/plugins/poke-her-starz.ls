@@ -52,19 +52,20 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
   table = holdem_table {
     small-blind: 50
     big-blind: 100
+    smallest-chip: 10
     min-playaz: 4
     max-playaz: 10
     min-buy-in: 100
     max-buy-in: 1000
   }
-  console.log 'table', table
+  console.log 'table', table.C
   var game
 
   pp = [
     my =\
-    table.add-playa 'k-prime', 1000
-    table.add-playa 'bob', 1000
-    table.add-playa 'dylan', 1000
+    table.F.add-playa 'k-prime', 1000
+    table.F.add-playa 'bob', 1000
+    table.F.add-playa 'dylan', 1000
   ]
 
   const S1 = 11
@@ -276,7 +277,7 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
 
   ii = set-interval !->
     if p = more_playaz.shift!
-      pp = table.add-playa p, 1000 #(700 + (Math.round Math.random! * 300))
+      pp = table.F.add-playa p, 1000 #(700 + (Math.round Math.random! * 300))
       if typeof pp is \object
         console.log 'adding', p, pp
         playaz.push pp
@@ -285,12 +286,10 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
         more_playaz.unshift p
     else
       clear-interval ii
-      # temporary: set prompts for each playa (so I can play them all)
       # TODO: this should prompt the "server" for the response instead
-      for let i til playaz.length
-        p = playaz.d[i]
+      # temporary: set prompts for each playa (so I can play them all)
+      for p in playaz.d
         p.prompt.set_responder (msg, options, answer) !->
-          options.i = i
           ii = set-timeout ->
             ptip.close!
             answer 'fold'
@@ -307,7 +306,7 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
         _answer = (v) -> clear-timeout ii ; answer v
         ppanel.prompt msg, options, _answer
 
-      game := window.game = table.start-game!
+      game := window.game = table.F.start-game!
       cards.data game.board
       hand.data my.cards
       betz.data game.bets
@@ -375,7 +374,7 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
           h \button, {onclick: -> answer 'all-in'}, "all-in"
         h \.bet,
           input =\
-          h \input, {type: \text, value: options.min, observe: keyup: (v) -> answer v}
+          h \input, {type: \number, step: table.C.smallest-chip, value: options.min, observe: keyup: (v) -> answer v}
       ]
 
     window.ppanel = h \prompter-panel, ({h}, msg, options, answer) ->
