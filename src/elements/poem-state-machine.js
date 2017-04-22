@@ -186,14 +186,14 @@ export default class PoemStateMachine extends PathEmitter(HTMLElement) {
     var observables = _observables.get(self)
     var kc = camelize(k)
     v = v !== undefined ? v : self._opts[kc]
+    var is_obv = typeof v === 'function' && v.observable
     var o = observables[kc]
-    if (o) return o
+    if (o && !is_obv) return o
 
-    if (v != null) self[k] = v
-    o = observables[k] = typeof v === 'function' && v.observable ? v : value(v)
+    if (v != null) self[k] = is_obv ? v() : v
+    o = observables[kc] = is_obv ? v : value(v)
     observable_property(self, kc, o)
     if (!hidden) o(function (v) {
-      // console.log('attr', k, v)
       if (v != null) self.setAttribute(k, v)
     })
     return o
