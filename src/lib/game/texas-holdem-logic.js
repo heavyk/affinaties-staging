@@ -5,7 +5,7 @@ import { rankHandInt } from './rank-hand'
 import { shuffled_deck } from './deck'
 import round from '../lodash/round'
 
-class Player {
+class Playa {
   constructor (name, chips) {
     this.name = value(name)
     this.chips = number(chips)
@@ -66,16 +66,18 @@ class Game {
   }
 }
 
-export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, _minBuyIn, _maxBuyIn) {
+export function holdem_table (config = {}) {
   const state = value('waiting')
 
   // config
-  const smallBlind = number(_smallBlind)
-  const bigBlind = number(_bigBlind)
-  const minPlayers = number(_minPlayers)
-  const maxPlayers = number(_maxPlayers)
-  const minBuyIn = number(_minBuyIn)
-  const maxBuyIn = number(_maxBuyIn)
+  const smallBlind = number(config.smallBlind)
+  const bigBlind = number(config.bigBlind)
+  const minPlayaz = number(config.minPlayaz)
+  const maxPlayaz = number(config.maxPlayaz)
+  const minBuyIn = number(config.minBuyIn)
+  const maxBuyIn = number(config.maxBuyIn)
+
+  const timeout = number(config.timeout || 11111) // default 11s timeout
 
   // values
   const game = value(null)
@@ -94,12 +96,12 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
 
   // functions
   var F = {
-    addPlayer: (name, chips) => {
-      if (playaz.length >= maxPlayers()) return 'max players reached'
+    addPlaya: (name, chips) => {
+      if (playaz.length >= maxPlayaz()) return 'max playaz reached'
       if (chips > maxBuyIn()) return 'too many chips to buy in'
       if (chips <= minBuyIn()) return 'not enough chips to buy in'
 
-      var p = new Player(name, chips)
+      var p = new Playa(name, chips)
       playaz.push(p)
       // p.show('join game?')
       // get prompt replies
@@ -144,7 +146,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
     },
     startGame: () => {
       var num = playaz.length
-      if (num > minPlayers()) {
+      if (num > minPlayaz()) {
         // TODO: send a starting game notification
         _game = new Game(smallBlind(), bigBlind())
         _game.d_idx = dealer_idx
@@ -162,18 +164,18 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
       return game()
     },
     add_playa: (p) => {
-      if (playaz.length < maxPlayers()) {
+      if (playaz.length < maxPlayaz()) {
         p.show('join game?')
       } else {
         // return false
       }
     },
     join_game: (p) => {
-      if (playaz.length < maxPlayers()) {
+      if (playaz.length < maxPlayaz()) {
         observz.remove(p)
         playaz.push(p)
         p.show('leave game?')
-        if (playaz.length >= minPlayers()) {
+        if (playaz.length >= minPlayaz()) {
           // this.emit
           // start game?
           // TODO: start game goes by consensus or it has a table leader (dealer?)
@@ -345,7 +347,7 @@ export function holdem_table (_smallBlind, _bigBlind, _minPlayers, _maxPlayers, 
       if (typeof bet !== 'boolean') {
         p.state('waiting')
         // TODO: add timeout & fold if timed out (I think this is the correct punishment, anyway)
-        p.prompt(bet >= min && bet > 0 ? 'raise' : 'bet', {min, cards: _game.board.slice(0), timeout: 60000}, () => { go_next(i, false) })
+        p.prompt(bet >= min && bet > 0 ? 'raise' : 'bet', {min, cards: _game.board.slice(0), timeout: timeout()}, () => { go_next(i, false) })
       } else {
         console.log ('active:', active_playaz(), 'all-in:', all_in_playaz())
         if (active_playaz() === all_in_playaz()) goto_next_round()

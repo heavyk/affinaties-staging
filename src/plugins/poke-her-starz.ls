@@ -49,15 +49,22 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
   G.width (v, old_width) !-> console.log \width, old_width, '->', v
   # G.orientation (v) !-> console.log 'orientation', v
 
-  table = holdem_table 50, 100, 4, 10, 100, 1000
+  table = holdem_table {
+    small-blind: 50
+    big-blind: 100
+    min-playaz: 4
+    max-playaz: 10
+    min-buy-in: 100
+    max-buy-in: 1000
+  }
   console.log 'table', table
   var game
 
   pp = [
     my =\
-    table.add-player 'k-prime', 1000
-    table.add-player 'bob', 1000
-    table.add-player 'dylan', 1000
+    table.add-playa 'k-prime', 1000
+    table.add-playa 'bob', 1000
+    table.add-playa 'dylan', 1000
   ]
 
   const S1 = 11
@@ -269,7 +276,7 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
 
   ii = set-interval !->
     if p = more_playaz.shift!
-      pp = table.add-player p, 1000 #(700 + (Math.round Math.random! * 300))
+      pp = table.add-playa p, 1000 #(700 + (Math.round Math.random! * 300))
       if typeof pp is \object
         console.log 'adding', p, pp
         playaz.push pp
