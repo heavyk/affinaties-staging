@@ -215,13 +215,18 @@ export function holdem_table (config = {}) {
   }
 
   let calc_winners = () => {
-    var r, p, i = 0, m = playaz.length
+    var r, p, b, i = 0, m = playaz.length
     var ranks = []
-    var pot = _game.pot()
-    console.info('pot', pot)
-    for (; i < m; i++)
+    var pot = 0
+    for (; i < m; i++) {
+      b = _game.bets[i]
+      pot += _game.prevBets[i] + (b > 0 ? b : 0)
       if ((p = playaz[i]).state() !== 'folded')
         ranks.push({i, v: rankHandInt(_game.board.concat(p.cards)) })
+    }
+
+    console.info('pot', pot, _game.pot())
+    _game.pot(pot)
 
     if (ranks.length > 1) {
       // the long way...
@@ -316,8 +321,15 @@ export function holdem_table (config = {}) {
       _game.bets.set(i, (bet > 0 ? bet : -bet) + existing_bet)
     } else { // bet === false
       if (bet !== false) debugger
-      _game.prevBets.set(i, _game.prevBets[i] + existing_bet)
+      existing_bet += _game.prevBets[i]
+      _game.prevBets.set(i, existing_bet)
       _game.bets.set(i, bet)
+
+      // increase the pot
+      if (existing_bet !== 0) {
+        console.info('addding', existing_bet, 'to the pot')
+        _game.pot.add(existing_bet)
+      }
     }
 
     _game.moves.push({i, v: bet, t: Date.now()})
@@ -371,7 +383,7 @@ export function holdem_table (config = {}) {
         // TODO: add timeout & fold if timed out (I think this is the correct punishment, anyway)
         p.prompt(bet >= min && bet > 0 ? 'raise' : 'bet', {i, min, cards: _game.board.slice(0), timeout: timeout()}, () => { go_next(i, false) })
       } else {
-        console.log ('active:', active_playaz(), 'all-in:', all_in_playaz())
+        // console.log ('active:', active_playaz(), 'all-in:', all_in_playaz())
         if (active_playaz() === all_in_playaz()) goto_next_round()
         else cur_playa((i+1) % playaz.length)
       }
