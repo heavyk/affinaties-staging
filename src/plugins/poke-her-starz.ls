@@ -298,13 +298,14 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
           ptip.prompt msg, options, _answer
 
       # set my prompter
-      my.prompt.set_responder (msg, options, answer) ->
-        ii = set-timeout ->
-          ppanel.close!
-          answer 'fold'
-        , options.timeout
-        _answer = (v) -> clear-timeout ii ; answer v
-        ppanel.prompt msg, options, _answer
+      # TODO: add quick keys
+      # my.prompt.set_responder (msg, options, answer) ->
+      #   ii = set-timeout ->
+      #     ppanel.close!
+      #     answer 'fold'
+      #   , options.timeout
+      #   _answer = (v) -> clear-timeout ii ; answer v
+      #   ppanel.prompt msg, options, _answer
 
       game := window.game = table.F.start-game!
       cards.data game.board
@@ -321,7 +322,7 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
   , 200
 
   G.E.frame.aC [
-
+    # TODO: move this into an interface section (to be imported into poke-her-table element)
     s \svg.table width: middle-area-width, height: middle-area-height, s: {position: \fixed, left: table-margin-sides, top: table-margin-top},
       s 'symbol#chip' viewBox: '0 0 42 42',
         s \circle cx: 21 cy: 21 r: 20.5 stroke: '#000' stroke-width: 1 fill: '#FFF'
@@ -340,10 +341,11 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
 
       s \g.d-btn transform: d-btn-transform, style: {display: transform _game.d_idx, ((v) -> if v ~= null => 'none' else '')},
         s \circle cx: 0, cy: 0, r: 20.5, s: {fill: '#fff', stroke: '#231F20', stroke-miterlimit: 10}
-        s \text x: 0, y: 0, s: {font-family: 'DejaVu Sans, sans-serif', font-weight: 'bold', font-size: 8}, 'DEALER'
+        s \text x: 0, y: 0, s: {font-family: 'DejaVu Sans,sans-serif', font-weight: 'bold', font-size: 8}, 'DEALER'
 
       # 5 card spaces in the middle
       # TODO: turn this into a RenderingArray
+      #  - and, make num-spaces a property of the table.
       for i til num-spaces!
         s \rect x: (space-pos-x i), y: (space-pos-y i), width: board-spaces-width, height: board-spaces-height, rx: 5, ry: 5, s: {stroke-width: 0.5, stroke: '#fff', fill: 'none'}
 
@@ -365,7 +367,10 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
       # console.log \i, i, pos!
       @attr \x, compute [pos, playa-cx, tip-w], (pos, cx, tw) -> "#{pos.x - tw}px"
       @attr \y, compute [pos, playa-cy, tip-h], (pos, cy, th) -> "#{pos.y + 80 - th}px"
-      options.onfocus = !-> input.focus!
+      options.onfocus = !->
+        set-timeout !->
+          input.focus!
+        , 20
       return [
         # h \.msg, null, msg
         h \.qbet,
@@ -374,7 +379,22 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
           h \button, {onclick: -> answer 'all-in'}, "all-in"
         h \.bet,
           input =\
-          h \input, {type: \number, step: table.C.smallest-chip, value: options.min, observe: keyup: (v) -> answer v}
+          h \input, {
+            type: \number
+            step: table.C.smallest-chip
+            value: options.min
+            observe:
+              keyup: (v) -> answer v
+              fold: !-> answer \fold
+              'fold.on': \keyup
+              'fold.event': (e) -> e.key is \f
+              call: !-> answer \call
+              'call.on': \keyup
+              'call.event': (e) -> e.key is \c
+              all-in: !-> answer \all-in
+              'allIn.on': \keyup
+              'allIn.event': (e) -> e.key is \a
+          }
       ]
 
     window.ppanel = h \prompter-panel, ({h}, msg, options, answer) ->
@@ -392,119 +412,77 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
         h \span.raise, h \button {onclick: -> answer 'raise'}, "raise"
         h \span.all-in, h \button {onclick: -> answer 'all-in'}, "all-in"
 
-
-
-    window.machina =\
-    h \poem-state-machine, {width: 40, active: false}, (G) ->
-      {h} = G
-      # o = @observables
-      # style
-      @style '''
-      :host {
-        color: #f00;
-        position: absolute;
-      }
-      '''
-
-      # attrs:
-      # width = @attr \width, 40
-      height = @attr \height, 40
-      img-height = @attr \img-height, 40#, true
-
-      # computed:
-      search-width = compute [G.width], (w) -> w / 3
-      search-left = compute [G.width], (w) -> w / 3
-
-      # components:
-      common-div = h \div.common, "common div"
-      search-box = h \input.search-box.a-05,
-        type: \text
-        placeholder: 'search...'
-        style:
-          opacity: 0.4
-          position: \fixed
-          width: px search-width
-          left: px search-left
-        observe:
-          input: (v) !->
-            console.log \observed.input, v
-          focus: (v) !->
-            search-box.style.top = "#{if v => 0 else -10}px"
-            search-box.style.opacity = if v => 1 else 0.4
-          keyup: (v) !->
-            console.log 'send it!!', v
-          # 'keyup.event': (ev) -> ev.which is 13 and not ev.shift-key
-
-      # h \img.avatar,
-      #   src: 'https://secure.gravatar.com/avatar/4e9e35e45c14daca038165a11cde7464'
-      #   style:
-      #     position: \absolute
-      #     width: img_width |> px
-      #     height: img_height |> px
-      #     top: img_padding |> px
-      #     left: top_right |> px
-      arr = []
-
-      # states:
-      '/': ->
-        # splash screen + menu
-        # logo + slogan
-        h \div "poke her starz"
-
-      '/table/:id/lala': ({id}) ->
-        h \div, "table: #{id}"
-
-      '/tables': ->
-        tables = new RenderingArray G, (id, idx, {h}) ->
-
-        h \div "tables:"
-
-      disconnected: !->
-        console.log \disconnected!
-
-
-    # h \div.top-bar.col-12, ->
-    #   img_width = value 40
-    #   img_height = value 40
-    #   img_padding = value 5
-    #   border_width = compute [img_width, img_padding], (w, ib) -> w + (ib)
-    #   top_right = compute [G.width, img_width, img_padding], (w, iw, ip) -> w - iw - ip
-    #   bar_height = compute [img_height, img_padding], (h, p) -> h + (2 * p)
-    #
-    #
-    #   return [
-    #     # search-box
-    #     h \img.avatar,
-    #       src: 'https://secure.gravatar.com/avatar/4e9e35e45c14daca038165a11cde7464'
-    #       style:
-    #         position: \fixed
-    #         width: img_width |> px
-    #         height: img_height |> px
-    #         top: img_padding |> px
-    #         left: top_right |> px
-    #   ]
-    #   # h \g.opus-list, ->
-    #   #   console.log \opus
-    #   #   window.rects = rects = new ObservArray
-    #   #   for v in abstract_art.value
-    #   #     width = v.thumbnail.width
-    #   #     height = v.thumbnail.height
-    #   #     # rect = new Rect
-    #   #     # console.log v.name
-    #   #     # console.log v.accent-color, width, height
-    #   #     r = new CustomRect {width, height}
-    #   #     # r = h \custom-rect {width, height}
-    #   #     rects.push r
-    #   #
-    #   #   # for r in rects
-    #   #   #   console.log \rect, r.x, r.y
-    #   #   pack rects, in-place: true
-    #   #   # for r in rects
-    #   #   #   console.log \rect, r.x, r.y, r.width, r.height
-    #   #   return rects
-    #   # h \div.some-list, ->
-
     ]
+
+
+  return window.machina =\
+  h \poem-state-machine, {width: 40, active: false}, (G) ->
+    {h} = G
+    # o = @observables
+    # style
+    @style '''
+    :host {
+      color: #f00;
+      position: absolute;
+    }
+    '''
+
+    # attrs:
+    # width = @attr \width, 40
+    height = @attr \height, 40
+    img-height = @attr \img-height, 40#, true
+
+    # computed:
+    search-width = compute [G.width], (w) -> w / 3
+    search-left = compute [G.width], (w) -> w / 3
+
+    # components:
+    common-div = h \div.common, "common div"
+    search-box = h \input.search-box.a-05,
+      type: \text
+      placeholder: 'search...'
+      style:
+        opacity: 0.4
+        position: \fixed
+        width: px search-width
+        left: px search-left
+      observe:
+        input: (v) !->
+          console.log \observed.input, v
+        focus: (v) !->
+          search-box.style.top = "#{if v => 0 else -10}px"
+          search-box.style.opacity = if v => 1 else 0.4
+        keyup: (v) !->
+          console.log 'send it!!', v
+        # 'keyup.event': (ev) -> ev.which is 13 and not ev.shift-key
+
+    # h \img.avatar,
+    #   src: 'https://secure.gravatar.com/avatar/4e9e35e45c14daca038165a11cde7464'
+    #   style:
+    #     position: \absolute
+    #     width: img_width |> px
+    #     height: img_height |> px
+    #     top: img_padding |> px
+    #     left: top_right |> px
+    arr = []
+
+    # states:
+    '/': ->
+      # splash screen + menu
+      # logo + slogan
+      h \div "poke her starz"
+
+    '/table/:id/lala': ({id}) ->
+      h \div, "table: #{id}"
+
+    '/tables': ->
+      tables = new RenderingArray G, (id, idx, {h}) ->
+
+      h \div "tables:"
+
+    disconnected: !->
+      console.log \disconnected!
+
     #</svg>
 
 plugin-boilerplate null, \testing, {}, {}, DEFAULT_CONFIG, poke-her-starz
