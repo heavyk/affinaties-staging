@@ -142,7 +142,10 @@ function context (createElement) {
                   // case 'keydown':
                   // case 'touchstart':
                   // case 'touchend':
-                    cleanupFuncs.push(event(e, attr_val[s+'.attr'], attr_val[s+'.on'] || s, attr_val[s+'.event'])(v))
+                    if (!~s.indexOf('.')) {
+                      if (typeof v !== 'function') debugger
+                      cleanupFuncs.push(event(e, attr_val[s+'.attr'], attr_val[s+'.on'] || s, attr_val[s+'.event'])(v))
+                    }
                 }
               })(s, attr_val[s])
             }).bind(e, attr_val, e), 0)
