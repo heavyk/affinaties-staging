@@ -6,9 +6,9 @@ defmodule Affinaty.PageController do
   end
 
   def plugin(conn, params) do
-    # render conn, "plugin.html"
-    path = Enum.join(params["path"], "/")
+    # path = Enum.join(params["path"], "/")
+    [ name | _ ] = params["path"]
     conn = put_layout conn, false
-    render conn, "plugin.html", path: path
+    render conn, "plugin.html", name: name
   end
 end
