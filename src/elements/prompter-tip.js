@@ -1,6 +1,6 @@
 import PoemBase from './poem-base'
 
-import { value } from '../lib/dom/observable'
+import { t_px } from '../lib/dom/observable'
 
 
 export default class PrompterTip extends PoemBase {
@@ -8,7 +8,10 @@ export default class PrompterTip extends PoemBase {
     super({}, (G) => {
       this.fn = fn
       this.style(`
-        .tooltip-arrow {
+        :host {
+          all: initial;
+        }
+        #tooltip-arrow {
           position: absolute;
           top: -5px;
           left: 50%;
@@ -19,7 +22,7 @@ export default class PrompterTip extends PoemBase {
           border-width: 0 5px 5px;
           border-bottom-color: #000;
         }
-        .tooltip-inner {
+        #tooltip-inner {
           max-width: 200px;
           padding: 3px 8px;
           color: #fff;
@@ -30,7 +33,11 @@ export default class PrompterTip extends PoemBase {
           display: block;
           visibility: hidden;
         }
-        .tooltip-outer {
+        /* #tooltip-inner > * {
+          all: initial;
+          background-color: #f00;
+        } */
+        #tooltip-outer {
           z-index: 100;
           position: fixed;
         }
@@ -48,9 +55,9 @@ export default class PrompterTip extends PoemBase {
       if (!_answer(a)) self.close() // remove all elements if answer did not return truthy
     }
     var innerTip = self.fn(ctx, msg, options, answer)
-    var inner, outer = h('.tooltip-outer', {s: {left: self.attr('x'), top: self.attr('y')}},
-      h('.tooltip-arrow'),
-      inner = h('.tooltip-inner', innerTip)
+    var inner, outer = h('#tooltip-outer', {s: {left: self.attr_transform('x', t_px), top: self.attr_transform('y', t_px)}},
+      h('#tooltip-arrow'),
+      inner = h('#tooltip-inner', innerTip)
     )
     self.els(outer)
     setTimeout(() => {

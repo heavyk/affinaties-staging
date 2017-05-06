@@ -14,9 +14,7 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
   disconnectedCallback () {
     var self = this
     if (self._els) self._els.empty(), self._els = null
-    // TODO: self should be just self._ctx.cleanup()
-    if (self._h) self._h = self._h.cleanup()
-    if (self._s) self._s = self._s.cleanup()
+    if (self._ctx) self._ctx = self._ctx.cleanup()
   }
 
   connectedCallback () {
@@ -137,15 +135,16 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
     shadow.appendChild(e)
   }
 
-  context () {
-    return this._ctx || (this._ctx = context({h, s}))
+  context (ns = '_ctx') {
+    var ctx
+    return this[ns] || (this[ns] = ctx = context({h, s}), h.cleanupFuncs.push(() => { ctx.cleanup() }), ctx)
   }
 
   get observables () {
     return _observables.get(this)
   }
 
-  set observables (v) {
-    _observables.set(this, v)
-  }
+  // set observables (v) {
+  //   _observables.set(this, v)
+  // }
 }

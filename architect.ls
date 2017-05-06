@@ -12,6 +12,7 @@ poems =
       stuff: true
   # 'plugins/zibble-zabble.js':
   #   dest: 'plugins/zibble-zabble.js'
+  #   css: 'plugins/zibble-zabble.css'
   # 'plugins/mastering-the-zodiac.js':
   #   dest: 'plugins/mastering-the-zodiac.js'
   # 'plugins/juego-x.js':
@@ -27,9 +28,9 @@ poems =
   # 'plugins/mop-great-again.js':
   #   dest: 'plugins/mop-great-again.js'
   #   css: 'plugins/mop-great-again.css'
-  'plugins/spotify.js':
-    dest: 'plugins/spotify.js'
-    # css: 'plugins/spotify.css'
+  # 'plugins/spotify.js':
+  #   dest: 'plugins/spotify.js'
+  #   # css: 'plugins/spotify.css'
   'plugins/metatrons-compass.js':
     dest: 'plugins/metatrons-compass.js'
     css: 'plugins/metatrons-compass.css'

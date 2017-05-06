@@ -314,7 +314,8 @@ export function holdem_table (config = {}) {
   }
 
   let go_next = (i, bet) => {
-    var next, existing_bet = _game.bets[i] || 0
+    var next, min = min_bet()
+    var existing_bet = _game.bets[i] || 0
     if (typeof existing_bet !== 'number') debugger
     if (typeof bet === 'number') {
       bet -= existing_bet
@@ -333,12 +334,11 @@ export function holdem_table (config = {}) {
     }
 
     _game.moves.push({i, v: bet, t: Date.now()})
-    console.info(i, playaz[i].name(), bet === false ? 'folded' : bet < 0 ? `went all-in (${-bet})` : `bet (${bet})`)
+    console.info(i, playaz[i].name(), bet === false ? 'folded' : bet < 0 ? `went all-in (${-bet})` : (bet + existing_bet) === min ? `call (${bet})` : `raise (${bet})`)
 
     if (bet === false) active_playaz.add(-1)
     else if (bet < 0) all_in_playaz.add(1)
 
-    var min = min_bet()
     if (bet > min) min_bet(bet)
     else if (-bet > min) min_bet(-bet)
 

@@ -10,6 +10,7 @@
 # ``import { rand, rand2, randomId, randomEl, randomIds, randomPos, randomDate, randomCharactor, between, lipsum, word, obj } from '../lib/random'``
 
 ``import '../elements/poem-state-machine'``
+``import '../elements/poem-frame'``
 ``import '../elements/prompter-panel'``
 ``import '../elements/prompter-tip'``
 ``import '../elements/svg/poke-her-card'``
@@ -291,8 +292,8 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
       for p in playaz.d
         p.prompt.set_responder (msg, options, answer) !->
           ii = set-timeout ->
-            ptip.close!
-            answer 'fold'
+            # ptip.close!
+            # answer 'fold'
           , options.timeout
           _answer = (v) -> clear-timeout ii ; answer v
           ptip.prompt msg, options, _answer
@@ -341,7 +342,7 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
 
       s \g.d-btn transform: d-btn-transform, style: {display: transform _game.d_idx, ((v) -> if v ~= null => 'none' else '')},
         s \circle cx: 0, cy: 0, r: 20.5, s: {fill: '#fff', stroke: '#231F20', stroke-miterlimit: 10}
-        s \text x: 0, y: 0, s: {font-family: 'DejaVu Sans,sans-serif', font-weight: 'bold', font-size: 8}, 'DEALER'
+        s \text x: 0, y: 2, s: {font-family: 'DejaVu Sans,sans-serif', font-weight: 'bold', font-size: 9}, 'DEALER'
 
       # 5 card spaces in the middle
       # TODO: turn this into a RenderingArray
@@ -364,9 +365,8 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
       tip-w = @attr \tip-w
       tip-h = @attr \tip-h
       pos = table-pos i, playa-cx, playa-cy
-      # console.log \i, i, pos!
-      @attr \x, compute [pos, playa-cx, tip-w], (pos, cx, tw) -> "#{pos.x - tw}px"
-      @attr \y, compute [pos, playa-cy, tip-h], (pos, cy, th) -> "#{pos.y + 80 - th}px"
+      @attr \x, compute [pos, tip-w], (pos, tw) -> pos.x - tw
+      @attr \y, compute [pos, tip-h], (pos, th) -> pos.y + 80 - th
       options.onfocus = !->
         set-timeout !->
           input.focus!
@@ -414,7 +414,59 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
 
     ]
 
+  return window.frame =\
+  h \poem-frame, {base: '/plugin/poke-her-starz'}, (G) ->
+    {h} = G
 
+    # ...
+    # TODO: instead of returning the elements each router, set the els right here
+    @els [
+      h \.top,
+        h \.logo,
+          h \a href: '/', "poke her starz"
+        # h \.search-bar, '...'
+      h \.middle,
+        @section \content
+      h \.side-bar,
+        @section \side
+    ]
+
+    # router
+    '/':
+      enter: (route, prev) ->
+        # TODO: add section transitions (slide-left, etc.)
+        @section \content, ({h}) ->
+          h \div,
+            h \a, href: '/table/11', "go here!"
+            h \div, "welcome!!! - TODO: table listing"
+
+      update: (route) !->
+        console.log "TODO: update table list"
+
+      leave: (route, next) ->
+        console.log "going to", next.pathname
+
+    '/table/:id':
+      enter: (route) ->
+        next_id = +route.params.id + 1
+        console.log "table enter...", next_id
+        @section \content, ({h}) ->
+          h \div,
+            h \a href: "/table/#{next_id}", "table: #{next_id}"
+
+      # update: (route) ->
+
+    '/tables':
+      beforeenter: (route) ->
+        # TODO: get the stream
+        route.data = get-tables-stream route.query
+
+      enter: (route) ->
+        # TODO: instead of RenderingArray, use something similar to pull-scroll
+        tables = new RenderingArray G, (id, idx, {h}) ->
+        h \div "tables:"
+
+  /*
   return window.machina =\
   h \poem-state-machine, {width: 40, active: false}, (G) ->
     {h} = G
@@ -477,12 +529,9 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
 
     '/tables': ->
       tables = new RenderingArray G, (id, idx, {h}) ->
-
       h \div "tables:"
 
-    disconnected: !->
-      console.log \disconnected!
-
     #</svg>
+  */
 
 plugin-boilerplate null, \testing, {}, {}, DEFAULT_CONFIG, poke-her-starz

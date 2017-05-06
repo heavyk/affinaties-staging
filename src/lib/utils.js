@@ -1,4 +1,6 @@
 
+export function noop () {}
+
 // micro-optimization: http://jsperf.com/for-vs-foreach/292
 export function forEach (arr, fn) {
   for (var i = 0; i < arr.length; ++i) fn(arr[i], i)
@@ -160,4 +162,11 @@ export function define_value (fn) {
     // configurable: true, writable: true,
     value: fn
   }
+}
+
+export function slasher (_path, leading) {
+  // strip trailing slash
+  var path = _path.replace(/\/$/, '')
+  // strip leading slash
+  return leading && path[0] === '/' ? path.slice(1) : path
 }

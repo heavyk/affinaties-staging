@@ -23,6 +23,11 @@ export default class Card extends PoemBase {
       }
 
       var svg = CARDS[this._id].call(this, G)
+      this.style(`
+      :host {
+        display: block;
+        contain: layout style size;
+      }`)
 
       // maintain aspect ratio
       const _w = this.attr('width')

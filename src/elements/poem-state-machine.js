@@ -9,13 +9,14 @@ import { pathVars, pathToRegExp, pathToStrictRegExp } from '../lib/router-utils'
 
 import { _observables } from './poem-base'
 
+// TODO: emit state changes
+
 export default class PoemStateMachine extends PathEmitter(HTMLElement) {
   disconnectedCallback () {
     var self = this
     var done = () => {
       if (self._els) self._els.empty(), self._els = null
-      if (self._h) self._h = self._h.cleanup()
-      if (self._s) self._s = self._s.cleanup()
+      if (self._ctx) self._ctx.cleanup()
     }
     // TODO: save the state
     // TODO: maybe don't change the state, actually
@@ -59,8 +60,7 @@ export default class PoemStateMachine extends PathEmitter(HTMLElement) {
     self.body = fn
     self._opts = opts || {}
 
-    for (i = 0; i < keys.length; i++) (function(k, v) {
-      // console.log('observ:', k, v)
+    for (i = 0; i < keys.length; i++) (function (k, v) {
       self[k] = v
       var o = observables[k] = v.observable ? v : value(v)
       observable_property(self, k, o)
@@ -68,7 +68,7 @@ export default class PoemStateMachine extends PathEmitter(HTMLElement) {
 
     _observables.set(self, observables)
 
-    for (i = 0; i < keys.length; i++) (function(k) {
+    for (i = 0; i < keys.length; i++) (function (k) {
       observables[camelize(k)](function (v) {
         // console.log('new value', k, v)
         // self[k] = v

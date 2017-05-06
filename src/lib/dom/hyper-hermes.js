@@ -11,6 +11,7 @@ export const body = doc.body
 export const location = doc.location
 export const IS_LOCAL = ~location.host.indexOf('localhost')
 export const basePath = location.pathname
+export const origin = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '')
 
 /*
 TODO ITEMS:
@@ -232,6 +233,11 @@ export function isText (el) {
 export function arrayFragment (e, arr, cleanupFuncs) {
   var v, frag = doc.createDocumentFragment()
   var activeElement = (o) => o === (e.activeElement || doc.activeElement)
+  // function deepActiveElement() {
+  //   let a = doc.activeElement
+  //   while (a && a.shadowRoot && a.shadowRoot.activeElement) a = a.shadowRoot.activeElement
+  //   return a
+  // }
 
   // append nodes to the fragment, with parent node as e
   for (v of arr) frag.appendChild(makeNode(e, v, cleanupFuncs))
@@ -340,7 +346,7 @@ export function offsetOf (child) {
 
 export var special_elements = {}
 Object.defineProperty(special_elements, 'define', {value: (name, fn, args) => {
-  console.log('defining', name, args)
+  // if (DEBUG) console.log('defining', name, args)
   win.customElements.define(name, fn)
   special_elements[name] = typeof args === 'number' ? args : args.length || 0
 }})

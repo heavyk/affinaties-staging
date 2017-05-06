@@ -168,8 +168,9 @@ export function transform (obv, down, up) {
   }
 }
 
+export var t_px = (v) => typeof v === 'string' && ~v.indexOf('px') ? v : v + 'px'
 export function px (observable) {
-  return transform(observable, (v) => v + 'px')
+  return transform(observable, t_px)
 }
 
 export function listen (element, event, attr, listener) {
