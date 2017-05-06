@@ -23,17 +23,17 @@ export default class Card extends PoemBase {
       }
 
       var svg = CARDS[this._id].call(this, G)
-      this.style(`
+      var style = this.style
+      this.style = `
       :host {
-        display: block;
         contain: layout style size;
-      }`)
+      }`
 
       // maintain aspect ratio
       const _w = this.attr('width')
       const _h = this.attr('height')
-      _w((v) => { _h(v * 1.45) })
-      _h((v) => { _w(v * 1 / 1.45) })
+      _w((v) => { style.width = v + 'px'; _h(v * 1.45) })
+      _h((v) => { style.height = v + 'px'; _w(v * 1 / 1.45) })
 
       // if the card is face down, then allow for mouse/touch to show the cards (eg. cards in your hand)
       if (touchflip) {

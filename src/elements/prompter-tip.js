@@ -7,7 +7,7 @@ export default class PrompterTip extends PoemBase {
   constructor (fn) {
     super({}, (G) => {
       this.fn = fn
-      this.style(`
+      this.style = `
         :host {
           all: initial;
         }
@@ -41,7 +41,7 @@ export default class PrompterTip extends PoemBase {
           z-index: 100;
           position: fixed;
         }
-      `)
+      `
     })
   }
 

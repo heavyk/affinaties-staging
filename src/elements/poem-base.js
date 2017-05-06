@@ -126,7 +126,11 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
   //   cleanupFuncs.push(event(this, attr, event)(fn))
   // }
 
-  style (txt) {
+  get style () {
+    return super.style
+  }
+
+  set style (txt) {
     var self = this
     var shadow = self.shadow
     var e = ~txt.indexOf('://') ? h('link', {href: txt}) : h('style', txt)
