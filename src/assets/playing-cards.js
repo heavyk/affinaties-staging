@@ -16,7 +16,7 @@ module.exports = {
       fx: -0.206,
       fy: -4.579,
       r: 8,
-      gradientTransform: 'matrix(-1 0 0 -1.72018 -.412 -13.027)',
+      gradientTransform: 'matrix(-1 0 0 -1.72 -.412 -13.027)',
       gradientUnits: 'userSpaceOnUse'
     }),
     s('linearGradient#a', 
@@ -36,7 +36,7 @@ module.exports = {
       fx: 171.487,
       cy: 511.223,
       cx: 171.487,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#b'
     }),
@@ -90,7 +90,7 @@ module.exports = {
       fx: 159.354,
       cy: 492.632,
       cx: 159.354,
-      gradientTransform: 'matrix(1.08948 -.71514 .44645 .65627 -244.933 290.918)',
+      gradientTransform: 'matrix(1.089 -.715 .446 .656 -244.933 290.918)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#c'
     })
@@ -117,16 +117,16 @@ module.exports = {
     s('path', {
       d: 'M3.676-9C.433-9 0-5.523 0-5.523S-.433-9-3.676-9C-5.946-9-8-7.441-8-4.5-8-.614-1.42 3.294 0 9 1.352 3.299 8-.614 8-4.5 8-7.441 5.946-9 3.676-9z',
       fill: 'url(#d)',
-      transform: 'matrix(6.8256 0 0 6.38811 83.142 122.273)'
+      transform: 'matrix(6.826 0 0 6.388 83.142 122.273)'
     }),
     s('path', {
-      transform: 'matrix(.2922 0 0 .3026 -4.335 -71.839)',
+      transform: 'matrix(.292 0 0 .303 -4.335 -71.839)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#e)',
       filter: 'url(#f)'
     }),
     s('path', {
-      transform: 'matrix(.22705 .0665 -.06483 .27594 94.814 -72.097)',
+      transform: 'matrix(.227 .067 -.065 .276 94.814 -72.097)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-63.093 37.07-91.552 60.805c-27.21 22.692-71.305 73.481-71.305 73.481z',
       fill: 'url(#g)',
       filter: 'url(#h)'
@@ -613,7 +613,7 @@ module.exports = {
       fx: -0.206,
       fy: -4.579,
       r: 8,
-      gradientTransform: 'matrix(-1 0 0 -1.72018 -.412 -13.027)',
+      gradientTransform: 'matrix(-1 0 0 -1.72 -.412 -13.027)',
       gradientUnits: 'userSpaceOnUse'
     }),
     s('linearGradient#a', 
@@ -633,7 +633,7 @@ module.exports = {
       fx: 171.487,
       cy: 511.223,
       cx: 171.487,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#b'
     }),
@@ -687,7 +687,7 @@ module.exports = {
       fx: 159.354,
       cy: 492.632,
       cx: 159.354,
-      gradientTransform: 'matrix(1.08948 -.71514 .44645 .65627 -244.933 290.918)',
+      gradientTransform: 'matrix(1.089 -.715 .446 .656 -244.933 290.918)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#c'
     })
@@ -714,16 +714,16 @@ module.exports = {
     s('path', {
       d: 'M3.676-9C.433-9 0-5.523 0-5.523S-.433-9-3.676-9C-5.946-9-8-7.441-8-4.5-8-.614-1.42 3.294 0 9 1.352 3.299 8-.614 8-4.5 8-7.441 5.946-9 3.676-9z',
       fill: 'url(#d)',
-      transform: 'matrix(6.8256 0 0 6.38811 83.142 122.273)'
+      transform: 'matrix(6.826 0 0 6.388 83.142 122.273)'
     }),
     s('path', {
-      transform: 'matrix(.2922 0 0 .3026 -4.335 -71.839)',
+      transform: 'matrix(.292 0 0 .303 -4.335 -71.839)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#e)',
       filter: 'url(#f)'
     }),
     s('path', {
-      transform: 'matrix(.22705 .0665 -.06483 .27594 94.814 -72.097)',
+      transform: 'matrix(.227 .067 -.065 .276 94.814 -72.097)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-63.093 37.07-91.552 60.805c-27.21 22.692-71.305 73.481-71.305 73.481z',
       fill: 'url(#g)',
       filter: 'url(#h)'
@@ -765,7 +765,7 @@ module.exports = {
       fx: -0.206,
       fy: -4.579,
       r: 8,
-      gradientTransform: 'matrix(-1 0 0 -1.72018 -.412 -13.027)',
+      gradientTransform: 'matrix(-1 0 0 -1.72 -.412 -13.027)',
       gradientUnits: 'userSpaceOnUse'
     }),
     s('linearGradient#a', 
@@ -785,7 +785,7 @@ module.exports = {
       fx: 171.487,
       cy: 511.223,
       cx: 171.487,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#b'
     }),
@@ -839,7 +839,7 @@ module.exports = {
       fx: 159.354,
       cy: 492.632,
       cx: 159.354,
-      gradientTransform: 'matrix(1.08948 -.71514 .44645 .65627 -244.933 290.918)',
+      gradientTransform: 'matrix(1.089 -.715 .446 .656 -244.933 290.918)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#c'
     })
@@ -866,16 +866,16 @@ module.exports = {
     s('path', {
       d: 'M3.676-9C.433-9 0-5.523 0-5.523S-.433-9-3.676-9C-5.946-9-8-7.441-8-4.5-8-.614-1.42 3.294 0 9 1.352 3.299 8-.614 8-4.5 8-7.441 5.946-9 3.676-9z',
       fill: 'url(#d)',
-      transform: 'matrix(6.8256 0 0 6.38811 83.142 122.273)'
+      transform: 'matrix(6.826 0 0 6.388 83.142 122.273)'
     }),
     s('path', {
-      transform: 'matrix(.2922 0 0 .3026 -4.335 -71.839)',
+      transform: 'matrix(.292 0 0 .303 -4.335 -71.839)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#e)',
       filter: 'url(#f)'
     }),
     s('path', {
-      transform: 'matrix(.22705 .0665 -.06483 .27594 94.814 -72.097)',
+      transform: 'matrix(.227 .067 -.065 .276 94.814 -72.097)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-63.093 37.07-91.552 60.805c-27.21 22.692-71.305 73.481-71.305 73.481z',
       fill: 'url(#g)',
       filter: 'url(#h)'
@@ -917,7 +917,7 @@ module.exports = {
       fx: -0.206,
       fy: -4.579,
       r: 8,
-      gradientTransform: 'matrix(-1 0 0 -1.72018 -.412 -13.027)',
+      gradientTransform: 'matrix(-1 0 0 -1.72 -.412 -13.027)',
       gradientUnits: 'userSpaceOnUse'
     }),
     s('linearGradient#a', 
@@ -937,7 +937,7 @@ module.exports = {
       fx: 171.487,
       cy: 511.223,
       cx: 171.487,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#b'
     }),
@@ -991,7 +991,7 @@ module.exports = {
       fx: 159.354,
       cy: 492.632,
       cx: 159.354,
-      gradientTransform: 'matrix(1.08948 -.71514 .44645 .65627 -244.933 290.918)',
+      gradientTransform: 'matrix(1.089 -.715 .446 .656 -244.933 290.918)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#c'
     })
@@ -1018,16 +1018,16 @@ module.exports = {
     s('path', {
       d: 'M3.676-9C.433-9 0-5.523 0-5.523S-.433-9-3.676-9C-5.946-9-8-7.441-8-4.5-8-.614-1.42 3.294 0 9 1.352 3.299 8-.614 8-4.5 8-7.441 5.946-9 3.676-9z',
       fill: 'url(#d)',
-      transform: 'matrix(6.8256 0 0 6.38811 83.142 122.273)'
+      transform: 'matrix(6.826 0 0 6.388 83.142 122.273)'
     }),
     s('path', {
-      transform: 'matrix(.2922 0 0 .3026 -4.335 -71.839)',
+      transform: 'matrix(.292 0 0 .303 -4.335 -71.839)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#e)',
       filter: 'url(#f)'
     }),
     s('path', {
-      transform: 'matrix(.22705 .0665 -.06483 .27594 94.814 -72.097)',
+      transform: 'matrix(.227 .067 -.065 .276 94.814 -72.097)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-63.093 37.07-91.552 60.805c-27.21 22.692-71.305 73.481-71.305 73.481z',
       fill: 'url(#g)',
       filter: 'url(#h)'
@@ -1070,7 +1070,7 @@ module.exports = {
       fy: 18.138,
       r: 9.5,
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(-1.56053 .01828 -.02684 -2.29095 123.984 58.81)'
+      gradientTransform: 'matrix(-1.561 .018 -.027 -2.291 123.984 58.81)'
     }),
     s('linearGradient#a', 
       s('stop', {
@@ -1088,7 +1088,7 @@ module.exports = {
       fx: 171.487,
       fy: 511.223,
       r: 81.903,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse'
     }),
     s('linearGradient#b', 
@@ -1119,7 +1119,7 @@ module.exports = {
       fx: 171.487,
       cy: 511.223,
       cx: 171.487,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#c'
     }),
@@ -1151,7 +1151,7 @@ module.exports = {
       fx: 181.694,
       cy: 461.841,
       cx: 181.694,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#d'
     }),
@@ -1202,19 +1202,19 @@ module.exports = {
       transform: 'translate(-203.777 -22.114) scale(5.97203)'
     }),
     s('path', {
-      transform: 'matrix(.22864 0 0 .24885 1.171 -6.44)',
+      transform: 'matrix(.229 0 0 .249 1.171 -6.44)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#f)',
       filter: 'url(#g)'
     }),
     s('path', {
-      transform: 'matrix(.22864 0 0 .24885 33.042 -51.982)',
+      transform: 'matrix(.229 0 0 .249 33.042 -51.982)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#h)',
       filter: 'url(#i)'
     }),
     s('path', {
-      transform: 'matrix(.23543 .1449 -.17355 .28197 159.228 -46.377)',
+      transform: 'matrix(.235 .145 -.174 .282 159.228 -46.377)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#j)',
       filter: 'url(#k)'
@@ -1685,7 +1685,7 @@ module.exports = {
       fy: 18.138,
       r: 9.5,
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(-1.56053 .01828 -.02684 -2.29095 123.984 58.81)'
+      gradientTransform: 'matrix(-1.561 .018 -.027 -2.291 123.984 58.81)'
     }),
     s('linearGradient#a', 
       s('stop', {
@@ -1703,7 +1703,7 @@ module.exports = {
       fx: 171.487,
       fy: 511.223,
       r: 81.903,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse'
     }),
     s('linearGradient#b', 
@@ -1734,7 +1734,7 @@ module.exports = {
       fx: 171.487,
       cy: 511.223,
       cx: 171.487,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#c'
     }),
@@ -1766,7 +1766,7 @@ module.exports = {
       fx: 181.694,
       cy: 461.841,
       cx: 181.694,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#d'
     }),
@@ -1817,19 +1817,19 @@ module.exports = {
       transform: 'translate(-203.777 -22.114) scale(5.97203)'
     }),
     s('path', {
-      transform: 'matrix(.22864 0 0 .24885 1.171 -6.44)',
+      transform: 'matrix(.229 0 0 .249 1.171 -6.44)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#f)',
       filter: 'url(#g)'
     }),
     s('path', {
-      transform: 'matrix(.22864 0 0 .24885 33.042 -51.982)',
+      transform: 'matrix(.229 0 0 .249 33.042 -51.982)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#h)',
       filter: 'url(#i)'
     }),
     s('path', {
-      transform: 'matrix(.23543 .1449 -.17355 .28197 159.228 -46.377)',
+      transform: 'matrix(.235 .145 -.174 .282 159.228 -46.377)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#j)',
       filter: 'url(#k)'
@@ -1873,7 +1873,7 @@ module.exports = {
       fy: 18.138,
       r: 9.5,
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(-1.56053 .01828 -.02684 -2.29095 123.984 58.81)'
+      gradientTransform: 'matrix(-1.561 .018 -.027 -2.291 123.984 58.81)'
     }),
     s('linearGradient#a', 
       s('stop', {
@@ -1891,7 +1891,7 @@ module.exports = {
       fx: 171.487,
       fy: 511.223,
       r: 81.903,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse'
     }),
     s('linearGradient#b', 
@@ -1922,7 +1922,7 @@ module.exports = {
       fx: 171.487,
       cy: 511.223,
       cx: 171.487,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#c'
     }),
@@ -1954,7 +1954,7 @@ module.exports = {
       fx: 181.694,
       cy: 461.841,
       cx: 181.694,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#d'
     }),
@@ -2005,19 +2005,19 @@ module.exports = {
       transform: 'translate(-203.777 -22.114) scale(5.97203)'
     }),
     s('path', {
-      transform: 'matrix(.22864 0 0 .24885 1.171 -6.44)',
+      transform: 'matrix(.229 0 0 .249 1.171 -6.44)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#f)',
       filter: 'url(#g)'
     }),
     s('path', {
-      transform: 'matrix(.22864 0 0 .24885 33.042 -51.982)',
+      transform: 'matrix(.229 0 0 .249 33.042 -51.982)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#h)',
       filter: 'url(#i)'
     }),
     s('path', {
-      transform: 'matrix(.23543 .1449 -.17355 .28197 159.228 -46.377)',
+      transform: 'matrix(.235 .145 -.174 .282 159.228 -46.377)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#j)',
       filter: 'url(#k)'
@@ -2061,7 +2061,7 @@ module.exports = {
       fy: 18.138,
       r: 9.5,
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(-1.56053 .01828 -.02684 -2.29095 123.984 58.81)'
+      gradientTransform: 'matrix(-1.561 .018 -.027 -2.291 123.984 58.81)'
     }),
     s('linearGradient#a', 
       s('stop', {
@@ -2079,7 +2079,7 @@ module.exports = {
       fx: 171.487,
       fy: 511.223,
       r: 81.903,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse'
     }),
     s('linearGradient#b', 
@@ -2110,7 +2110,7 @@ module.exports = {
       fx: 171.487,
       cy: 511.223,
       cx: 171.487,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#c'
     }),
@@ -2142,7 +2142,7 @@ module.exports = {
       fx: 181.694,
       cy: 461.841,
       cx: 181.694,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#d'
     }),
@@ -2193,19 +2193,19 @@ module.exports = {
       transform: 'translate(-203.777 -22.114) scale(5.97203)'
     }),
     s('path', {
-      transform: 'matrix(.22864 0 0 .24885 1.171 -6.44)',
+      transform: 'matrix(.229 0 0 .249 1.171 -6.44)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#f)',
       filter: 'url(#g)'
     }),
     s('path', {
-      transform: 'matrix(.22864 0 0 .24885 33.042 -51.982)',
+      transform: 'matrix(.229 0 0 .249 33.042 -51.982)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#h)',
       filter: 'url(#i)'
     }),
     s('path', {
-      transform: 'matrix(.23543 .1449 -.17355 .28197 159.228 -46.377)',
+      transform: 'matrix(.235 .145 -.174 .282 159.228 -46.377)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#j)',
       filter: 'url(#k)'
@@ -2790,14 +2790,14 @@ module.exports = {
       fx: -0.158,
       cy: -8.835,
       cx: -0.158,
-      gradientTransform: 'matrix(-1.58427 -.0235 .03072 -2.47757 -.249 -26.714)',
+      gradientTransform: 'matrix(-1.584 -.024 .031 -2.478 -.249 -26.714)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#a'
     }),
     s('radialGradient#f', {
       'xlink:href': '#b',
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(1.25656 -.7774 .33664 .53613 -221.202 359.243)',
+      gradientTransform: 'matrix(1.257 -.777 .337 .536 -221.202 359.243)',
       cx: 168.025,
       cy: 509.476,
       fx: 168.025,
@@ -2807,7 +2807,7 @@ module.exports = {
     s('radialGradient#h', {
       'xlink:href': '#c',
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(1.25656 -.7774 .33664 .53613 -221.202 359.243)',
+      gradientTransform: 'matrix(1.257 -.777 .337 .536 -221.202 359.243)',
       cx: 168.025,
       cy: 509.476,
       fx: 168.025,
@@ -2817,7 +2817,7 @@ module.exports = {
     s('radialGradient#j', {
       'xlink:href': '#d',
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(1.25656 -.7774 .33664 .53613 -221.202 359.243)',
+      gradientTransform: 'matrix(1.257 -.777 .337 .536 -221.202 359.243)',
       cx: 168.025,
       cy: 509.476,
       fx: 168.025,
@@ -2837,22 +2837,22 @@ module.exports = {
     s('path', {
       d: 'M7.989 3.103C7.747-.954.242-8.59 0-10.5-.242-8.591-7.747-.955-7.989 3.103c-.169 2.868 1.695 4.057 3.39 4.057 1.835-.022 3.35-2.8 3.873-3.341.242.716-1.603 6.682-2.179 6.682h5.811c-.576 0-2.421-5.966-2.179-6.682.457.496 1.797 3.258 3.874 3.341 1.694-.001 3.557-1.189 3.388-4.057z',
       fill: 'url(#e)',
-      transform: 'matrix(6.30671 0 0 5.7663 83.915 120.04)'
+      transform: 'matrix(6.307 0 0 5.766 83.915 120.04)'
     }),
     s('path', {
-      transform: 'matrix(.32621 -.21497 .26709 .31372 -145.53 12.499)',
+      transform: 'matrix(.326 -.215 .267 .314 -145.53 12.499)',
       d: 'M122.357 574.383s-13.123-65.067 17.801-92.974c34.761-31.369 150.112-71.195 150.112-71.195s-81.652 84.604-110.112 108.338c-27.21 22.692-57.801 55.83-57.801 55.83z',
       fill: 'url(#f)',
       filter: 'url(#g)'
     }),
     s('path', {
-      transform: 'matrix(.49445 -.02458 .22412 .57443 -137.309 -172.304)',
+      transform: 'matrix(.494 -.025 .224 .574 -137.309 -172.304)',
       d: 'M122.357 574.383s-13.123-65.067 17.801-92.974c34.761-31.369 150.112-71.195 150.112-71.195s-81.652 84.604-110.112 108.338c-27.21 22.692-57.801 55.83-57.801 55.83z',
       fill: 'url(#h)',
       filter: 'url(#i)'
     }),
     s('path', {
-      transform: 'matrix(.38584 -.06125 .11388 .39596 -47.589 -97.45)',
+      transform: 'matrix(.386 -.061 .114 .396 -47.589 -97.45)',
       d: 'M122.357 574.383s-13.123-65.067 17.801-92.974c34.761-31.369 150.112-71.195 150.112-71.195s-81.652 84.604-110.112 108.338c-27.21 22.692-57.801 55.83-57.801 55.83z',
       fill: 'url(#j)',
       filter: 'url(#k)'
@@ -2978,14 +2978,14 @@ module.exports = {
       fx: -0.158,
       cy: -8.835,
       cx: -0.158,
-      gradientTransform: 'matrix(-1.58427 -.0235 .03072 -2.47757 -.249 -26.714)',
+      gradientTransform: 'matrix(-1.584 -.024 .031 -2.478 -.249 -26.714)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#a'
     }),
     s('radialGradient#f', {
       'xlink:href': '#b',
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(1.25656 -.7774 .33664 .53613 -221.202 359.243)',
+      gradientTransform: 'matrix(1.257 -.777 .337 .536 -221.202 359.243)',
       cx: 168.025,
       cy: 509.476,
       fx: 168.025,
@@ -2995,7 +2995,7 @@ module.exports = {
     s('radialGradient#h', {
       'xlink:href': '#c',
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(1.25656 -.7774 .33664 .53613 -221.202 359.243)',
+      gradientTransform: 'matrix(1.257 -.777 .337 .536 -221.202 359.243)',
       cx: 168.025,
       cy: 509.476,
       fx: 168.025,
@@ -3005,7 +3005,7 @@ module.exports = {
     s('radialGradient#j', {
       'xlink:href': '#d',
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(1.25656 -.7774 .33664 .53613 -221.202 359.243)',
+      gradientTransform: 'matrix(1.257 -.777 .337 .536 -221.202 359.243)',
       cx: 168.025,
       cy: 509.476,
       fx: 168.025,
@@ -3025,22 +3025,22 @@ module.exports = {
     s('path', {
       d: 'M7.989 3.103C7.747-.954.242-8.59 0-10.5-.242-8.591-7.747-.955-7.989 3.103c-.169 2.868 1.695 4.057 3.39 4.057 1.835-.022 3.35-2.8 3.873-3.341.242.716-1.603 6.682-2.179 6.682h5.811c-.576 0-2.421-5.966-2.179-6.682.457.496 1.797 3.258 3.874 3.341 1.694-.001 3.557-1.189 3.388-4.057z',
       fill: 'url(#e)',
-      transform: 'matrix(6.30671 0 0 5.7663 83.915 120.04)'
+      transform: 'matrix(6.307 0 0 5.766 83.915 120.04)'
     }),
     s('path', {
-      transform: 'matrix(.32621 -.21497 .26709 .31372 -145.53 12.499)',
+      transform: 'matrix(.326 -.215 .267 .314 -145.53 12.499)',
       d: 'M122.357 574.383s-13.123-65.067 17.801-92.974c34.761-31.369 150.112-71.195 150.112-71.195s-81.652 84.604-110.112 108.338c-27.21 22.692-57.801 55.83-57.801 55.83z',
       fill: 'url(#f)',
       filter: 'url(#g)'
     }),
     s('path', {
-      transform: 'matrix(.49445 -.02458 .22412 .57443 -137.309 -172.304)',
+      transform: 'matrix(.494 -.025 .224 .574 -137.309 -172.304)',
       d: 'M122.357 574.383s-13.123-65.067 17.801-92.974c34.761-31.369 150.112-71.195 150.112-71.195s-81.652 84.604-110.112 108.338c-27.21 22.692-57.801 55.83-57.801 55.83z',
       fill: 'url(#h)',
       filter: 'url(#i)'
     }),
     s('path', {
-      transform: 'matrix(.38584 -.06125 .11388 .39596 -47.589 -97.45)',
+      transform: 'matrix(.386 -.061 .114 .396 -47.589 -97.45)',
       d: 'M122.357 574.383s-13.123-65.067 17.801-92.974c34.761-31.369 150.112-71.195 150.112-71.195s-81.652 84.604-110.112 108.338c-27.21 22.692-57.801 55.83-57.801 55.83z',
       fill: 'url(#j)',
       filter: 'url(#k)'
@@ -3166,14 +3166,14 @@ module.exports = {
       fx: -0.158,
       cy: -8.835,
       cx: -0.158,
-      gradientTransform: 'matrix(-1.58427 -.0235 .03072 -2.47757 -.249 -26.714)',
+      gradientTransform: 'matrix(-1.584 -.024 .031 -2.478 -.249 -26.714)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#a'
     }),
     s('radialGradient#f', {
       'xlink:href': '#b',
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(1.25656 -.7774 .33664 .53613 -221.202 359.243)',
+      gradientTransform: 'matrix(1.257 -.777 .337 .536 -221.202 359.243)',
       cx: 168.025,
       cy: 509.476,
       fx: 168.025,
@@ -3183,7 +3183,7 @@ module.exports = {
     s('radialGradient#h', {
       'xlink:href': '#c',
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(1.25656 -.7774 .33664 .53613 -221.202 359.243)',
+      gradientTransform: 'matrix(1.257 -.777 .337 .536 -221.202 359.243)',
       cx: 168.025,
       cy: 509.476,
       fx: 168.025,
@@ -3193,7 +3193,7 @@ module.exports = {
     s('radialGradient#j', {
       'xlink:href': '#d',
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(1.25656 -.7774 .33664 .53613 -221.202 359.243)',
+      gradientTransform: 'matrix(1.257 -.777 .337 .536 -221.202 359.243)',
       cx: 168.025,
       cy: 509.476,
       fx: 168.025,
@@ -3213,22 +3213,22 @@ module.exports = {
     s('path', {
       d: 'M7.989 3.103C7.747-.954.242-8.59 0-10.5-.242-8.591-7.747-.955-7.989 3.103c-.169 2.868 1.695 4.057 3.39 4.057 1.835-.022 3.35-2.8 3.873-3.341.242.716-1.603 6.682-2.179 6.682h5.811c-.576 0-2.421-5.966-2.179-6.682.457.496 1.797 3.258 3.874 3.341 1.694-.001 3.557-1.189 3.388-4.057z',
       fill: 'url(#e)',
-      transform: 'matrix(6.30671 0 0 5.7663 83.915 120.04)'
+      transform: 'matrix(6.307 0 0 5.766 83.915 120.04)'
     }),
     s('path', {
-      transform: 'matrix(.32621 -.21497 .26709 .31372 -145.53 12.499)',
+      transform: 'matrix(.326 -.215 .267 .314 -145.53 12.499)',
       d: 'M122.357 574.383s-13.123-65.067 17.801-92.974c34.761-31.369 150.112-71.195 150.112-71.195s-81.652 84.604-110.112 108.338c-27.21 22.692-57.801 55.83-57.801 55.83z',
       fill: 'url(#f)',
       filter: 'url(#g)'
     }),
     s('path', {
-      transform: 'matrix(.49445 -.02458 .22412 .57443 -137.309 -172.304)',
+      transform: 'matrix(.494 -.025 .224 .574 -137.309 -172.304)',
       d: 'M122.357 574.383s-13.123-65.067 17.801-92.974c34.761-31.369 150.112-71.195 150.112-71.195s-81.652 84.604-110.112 108.338c-27.21 22.692-57.801 55.83-57.801 55.83z',
       fill: 'url(#h)',
       filter: 'url(#i)'
     }),
     s('path', {
-      transform: 'matrix(.38584 -.06125 .11388 .39596 -47.589 -97.45)',
+      transform: 'matrix(.386 -.061 .114 .396 -47.589 -97.45)',
       d: 'M122.357 574.383s-13.123-65.067 17.801-92.974c34.761-31.369 150.112-71.195 150.112-71.195s-81.652 84.604-110.112 108.338c-27.21 22.692-57.801 55.83-57.801 55.83z',
       fill: 'url(#j)',
       filter: 'url(#k)'
@@ -3312,14 +3312,14 @@ module.exports = {
       fx: 171.487,
       cy: 511.223,
       cx: 171.487,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#a'
     }),
     s('radialGradient#c', {
       'xlink:href': '#b',
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(-1.12242 .00551 -.00909 -1.85031 -.03 -10.228)',
+      gradientTransform: 'matrix(-1.122 .006 -.009 -1.85 -.03 -10.228)',
       cx: 0,
       cy: -3.234,
       fx: 0,
@@ -3363,7 +3363,7 @@ module.exports = {
       transform: 'translate(82.284 116.888) scale(5.95137)'
     }),
     s('path', {
-      transform: 'matrix(-.2491 .04028 -.04172 -.25798 131.779 225.09)',
+      transform: 'matrix(-.249 .04 -.042 -.258 131.779 225.09)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#d)',
       filter: 'url(#e)'
@@ -3839,14 +3839,14 @@ module.exports = {
       fx: 171.487,
       cy: 511.223,
       cx: 171.487,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#a'
     }),
     s('radialGradient#c', {
       'xlink:href': '#b',
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(-1.12242 .00551 -.00909 -1.85031 -.03 -10.228)',
+      gradientTransform: 'matrix(-1.122 .006 -.009 -1.85 -.03 -10.228)',
       cx: 0,
       cy: -3.234,
       fx: 0,
@@ -3890,7 +3890,7 @@ module.exports = {
       transform: 'translate(82.284 116.888) scale(5.95137)'
     }),
     s('path', {
-      transform: 'matrix(-.2491 .04028 -.04172 -.25798 131.779 225.09)',
+      transform: 'matrix(-.249 .04 -.042 -.258 131.779 225.09)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#d)',
       filter: 'url(#e)'
@@ -3949,14 +3949,14 @@ module.exports = {
       fx: 171.487,
       cy: 511.223,
       cx: 171.487,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#a'
     }),
     s('radialGradient#c', {
       'xlink:href': '#b',
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(-1.12242 .00551 -.00909 -1.85031 -.03 -10.228)',
+      gradientTransform: 'matrix(-1.122 .006 -.009 -1.85 -.03 -10.228)',
       cx: 0,
       cy: -3.234,
       fx: 0,
@@ -4000,7 +4000,7 @@ module.exports = {
       transform: 'translate(82.284 116.888) scale(5.95137)'
     }),
     s('path', {
-      transform: 'matrix(-.2491 .04028 -.04172 -.25798 131.779 225.09)',
+      transform: 'matrix(-.249 .04 -.042 -.258 131.779 225.09)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#d)',
       filter: 'url(#e)'
@@ -4059,14 +4059,14 @@ module.exports = {
       fx: 171.487,
       cy: 511.223,
       cx: 171.487,
-      gradientTransform: 'matrix(1.15299 -.67392 .39482 .67549 -233.633 270.4)',
+      gradientTransform: 'matrix(1.153 -.674 .395 .675 -233.633 270.4)',
       gradientUnits: 'userSpaceOnUse',
       'xlink:href': '#a'
     }),
     s('radialGradient#c', {
       'xlink:href': '#b',
       gradientUnits: 'userSpaceOnUse',
-      gradientTransform: 'matrix(-1.12242 .00551 -.00909 -1.85031 -.03 -10.228)',
+      gradientTransform: 'matrix(-1.122 .006 -.009 -1.85 -.03 -10.228)',
       cx: 0,
       cy: -3.234,
       fx: 0,
@@ -4110,7 +4110,7 @@ module.exports = {
       transform: 'translate(82.284 116.888) scale(5.95137)'
     }),
     s('path', {
-      transform: 'matrix(-.2491 .04028 -.04172 -.25798 131.779 225.09)',
+      transform: 'matrix(-.249 .04 -.042 -.258 131.779 225.09)',
       d: 'M117.301 604.266s-8.067-94.95 22.857-122.857c34.761-31.369 140-11.429 140-11.429s-71.54 24.838-100 48.572c-27.21 22.692-62.857 85.714-62.857 85.714z',
       fill: 'url(#d)',
       filter: 'url(#e)'
