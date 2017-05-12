@@ -2,6 +2,7 @@ import PoemBase from '../poem-base'
 
 import { touch, hover, mousedown } from '../../lib/dom/observable'
 import { _not } from '../../lib/dom/observable-logic'
+import { extract_opts_val } from '../../lib/utils'
 
 // use `require` instead of import, to allow for bundle partitioning
 const CARDS = require('../assets/playing-cards')
@@ -11,8 +12,7 @@ const options = ['touchflip']
 
 export default class Card extends PoemBase {
   constructor (id, opts = {}) {
-    var touchflip
-    if (touchflip = opts.touchflip) delete opts.touchflip
+    var touchflip = extract_opts_val(opts, 'touchflip')
     super(opts, (G) => {
       if (typeof id === 'function') {
         // `id` is an observable

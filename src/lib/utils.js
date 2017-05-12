@@ -170,3 +170,19 @@ export function slasher (_path, leading) {
   // strip leading slash
   return leading && path[0] === '/' ? path.slice(1) : path
 }
+
+// get a value from options then return the value (or the default passed)
+// puts object into "slow mode" though
+export function extract_opts_val (opts, key, _default) {
+  var val
+  if (val = opts[key]) delete opts[key]
+  return val === void 9 ? _default : val
+}
+
+// knicked from: https://github.com/elidoran/node-optimal-object/blob/master/lib/index.coffee
+export function optimal_obj (obj) {
+  Object.create(obj)
+  var enforcer = () => obj.blah
+  enforcer()
+  enforcer()
+}
