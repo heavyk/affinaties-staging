@@ -1,0 +1,17 @@
+poem-frame {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "sidebar content"
+    "footer footer"
+  ;
+  grid-template-rows: 80px 1fr 40px;
+  grid-template-columns: 200px 1fr;
+}
+
+poem-frame .side-bar {
+  grid-area: "sidebar";
+}
+poem-frame .top {
+  grid-area: "header";
+}
