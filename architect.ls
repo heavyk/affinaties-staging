@@ -31,6 +31,9 @@ poems =
   # 'plugins/spotify.js':
   #   dest: 'plugins/spotify.js'
   #   # css: 'plugins/spotify.css'
+  'plugins/meditator.js':
+    dest: 'plugins/meditator.js'
+    css: 'plugins/meditator.css'
   'plugins/metatrons-compass.js':
     dest: 'plugins/metatrons-compass.js'
     css: 'plugins/metatrons-compass.css'
@@ -349,6 +352,7 @@ process_poem = (path) !->
         ]
         src = Path.join tmp_dir, path
         postcss POSTCSS_PLUGINS .process (Fs.read-file-sync src)
+          .catch (e) !-> console.error e
           .then (res) ->
             dest = Path.join out_dir, path
             sander.write-file dest, res.css

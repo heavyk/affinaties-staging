@@ -346,7 +346,7 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
 
       # 5 card spaces in the middle
       # TODO: turn this into a RenderingArray
-      #  - and, make num-spaces a property of the table.
+      #  - and, make `num-spaces` a property of the table.
       for i til num-spaces!
         s \rect x: (space-pos-x i), y: (space-pos-y i), width: board-spaces-width, height: board-spaces-height, rx: 5, ry: 5, s: {stroke-width: 0.5, stroke: '#fff', fill: 'none'}
 
@@ -433,7 +433,7 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
 
     # router
     '/':
-      enter: (route, prev) ->
+      enter: (route, prev) !->
         # TODO: add section transitions (slide-left, etc.)
         @section \content, ({h}) ->
           h \div,
@@ -443,7 +443,7 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
       update: (route) !->
         console.log "TODO: update table list"
 
-      leave: (route, next) ->
+      leave: (route, next) !->
         console.log "going to", next.pathname
 
     '/table/:id':

@@ -14,15 +14,11 @@ export default class PoemFrame extends PoemBase {
   }
 
   connectedCallback () {
-    var self = this, fn = self.body
-    if (typeof fn === 'function') {
-      let s,
-        states = self.states = fn.call(self, self.context()),
-        roadtrip = self.roadtrip
-
-      for (s in states) {
-        roadtrip.add(s, states[s], self)
-      }
+    var states, s, self = this
+    var fn = self.body
+    var roadtrip = self.roadtrip
+    if (typeof fn === 'function' && typeof (states = fn.call(self, self.context())) === 'object') {
+      for (s in states) roadtrip.add(s, states[s], self)
 
       roadtrip.start().then((els) => {
         if (els && !self.shadow) self.els(els)
@@ -41,7 +37,7 @@ export default class PoemFrame extends PoemBase {
     this.roadtrip = new RoadTrip(opts.base || basePath)
   }
 
-  section (name, fn) { // TODO: add options
+  section (name, fn) { // TODO: add options (eg. for transitions, slide-left, slide-right)
     let _obv = '_section_obv_' + name
     let el = this[_obv] || (this[_obv] = value())
     if (typeof fn === 'function') {
