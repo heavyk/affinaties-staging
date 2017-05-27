@@ -1,7 +1,7 @@
 'use strict'
 
 import { define_value, forEach } from '../utils'
-// import isEqual from '../lodash/isEqual'
+// import eq from '../lodash/isEqual'
 
 // knicked from: https://github.com/dominictarr/observable/blob/master/index.js
 // mostly unmodified...
@@ -9,14 +9,11 @@ import { define_value, forEach } from '../utils'
 // * remove utility functions (micro-optimization, reduces readability)
 // * change from object traversal to arrays
 //  * change all() from `for (var k in ary) ary[k](val)` -> `for (var i = 0; i < ary.length; i++) ary[i](val)`
-//  * then, in remove() use `.splice` instead of `delete`. however, to avoid the case that a listener is removed inside of a listener, I instead splice inside of a setTimeout (crappy solution, I know...)
-//  °-> this can potentially be improved. I'll have to look into it a bit better. perhaps using a `Map` or a linked list?
+//  * then, in remove() use `.splice` instead of `delete`. however, to avoid the case that a listener is removed from inside of a listener, the value is set to null and only compacted after 10 listeners have been removed
 // * add .observable property to all returned functions (necessary for hyper-hermes to know that it's an observable instead of a context)
 // * changed `value` to only propagate when the value has actually changed. to force all liseners to receive the current value, `call observable.set()` or `observable.set(observable())`
-// (TODO) use isEqual function to compare values before setting the observable
+// (TODO) use isEqual function to compare values before setting the observable (this may not be necessary actually because objects should not really be going into observables)
 // (TODO) add better documentation for each function
-// (TODO) add a remove function to bind1, bind2
-// (TODO) add int_value (which has math functions add, mul, etc.)
 
 
 // bind a to b -- One Way Binding
@@ -34,13 +31,32 @@ export function bind2 (a, b) {
 
 //trigger all listeners
 function emit (ary, val2, val) {
-  for (var i = 0; i < ary.length; i++) ary[i](val, val2)
+  for (var fn, c = 0, i = 0; i < ary.length; i++)
+    if (fn = ary[i]) fn(val, val2)
+    else c++
+
+  if (c > 10) setTimeout(compactor, 1, ary)
+}
+
+function compactor (ary) {
+  var i = -1,
+      len = ary.length,
+      count = 0
+
+  while (++i < len) {
+    while (ary[i + count] === null) count++
+    if (count > 0) {
+      ary.splice(i, count)
+      count = 0
+    }
+  }
 }
 
 // remove a listener
 export function remove (ary, item) {
   var i = ary.indexOf(item)
-  if (~i) setTimeout(() => { ary.splice(i, 1) }, 1)
+  if (~i) ary[i] = null // in the compactor function, we explicitly check to see if it's null.
+  // if (~i) setTimeout(() => { ary.splice(i, 1) }, 1)
   // else debugger
 }
 
@@ -82,6 +98,7 @@ export function number (initialValue) {
   // if the value is already an observable, then just return it
   if (typeof initialValue === 'function' && initialValue.observable === 'value') return initialValue
   var _val = initialValue, listeners = []
+  // TODO: it would probably be better to figure out a way to make these a part of the prototype (or figure out some weird way where a function can be a class)
   observable.set = (val) => emit(listeners, _val, _val = val === undefined ? _val : val)
   observable.add = (val) => observable(_val + (typeof val === 'function' ? val() : val))
   observable.mul = (val) => observable(_val * (typeof val === 'function' ? val() : val))
