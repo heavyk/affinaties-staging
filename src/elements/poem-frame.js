@@ -34,6 +34,7 @@ export default class PoemFrame extends PoemBase {
 
   constructor (opts, fn) {
     super(opts, fn)
+    this.shadow = false
     this.roadtrip = new RoadTrip(opts.base || basePath)
   }
 

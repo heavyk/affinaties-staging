@@ -35,7 +35,7 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
     self.body = fn
     self._opts = opts || {}
 
-    for (i = 0; i < keys.length; i++) (function(k, v) {
+    for (i = 0; i < keys.length; i++) ((k, v) => {
       self[k] = v
       var o = observables[k] = v.observable ? v : value(v)
       observable_property(self, k, o)
@@ -43,7 +43,7 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
 
     _observables.set(self, observables)
 
-    for (i = 0; i < keys.length; i++) (function(k) {
+    for (i = 0; i < keys.length; i++) ((k) => {
       observables[camelize(k)](function (v) {
         if (v != null) self.setAttribute(k, v)
       })
@@ -56,7 +56,7 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
     var empty_shadow = () => { if (e = shadow.lastChild) do { if (!e.é) shadow.removeChild(e) } while (e = e.previousSibling) }
 
     if (els == null) return shadow ? empty_shadow() : null
-    if (!shadow) shadow = self.shadow = self.attachShadow({mode: 'open'})
+    if (!shadow) shadow = self.shadow = shadow === false ? self : self.attachShadow({mode: 'open'})
 
     var put_els = (els) => {
       if (!self._els) {
