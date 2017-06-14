@@ -85,7 +85,7 @@ export function value (initialValue) {
     return (
       val === undefined ? _val                                                               // getter
     // : typeof val !== 'function' ? emit(listeners, _val, _val = val)                       // this is the old way.. it'll always emit, even if the value is the same
-    : typeof val !== 'function' ? (!(_val === val) ? emit(listeners, _val, _val = val) : '') // setter (the new way - only sets if the value has changed)
+    : typeof val !== 'function' ? (_val === val ? void 0 : emit(listeners, _val, _val = val), val) // setter (the new way - only sets if the value has changed)
     : (listeners.push(val), (_val === undefined ? _val : val(_val)), () => {                 // listener
         remove(listeners, val)
       })
@@ -109,7 +109,7 @@ export function number (initialValue) {
     return (
       val === undefined ? _val                                                               // getter
     // : typeof val !== 'function' ? emit(listeners, _val, _val = val)                       // this is the old way.. it'll always emit, even if the value is the same
-    : typeof val !== 'function' ? (!(_val === val) ? emit(listeners, _val, _val = val) : '') // setter (the new way - only sets if the value has changed)
+    : typeof val !== 'function' ? (_val === val ? void 0 : emit(listeners, _val, _val = val), val) // setter (the new way - only sets if the value has changed)
     : (listeners.push(val), (_val === undefined ? _val : val(_val)), () => {                 // listener
         remove(listeners, val)
       })
@@ -294,7 +294,7 @@ export function compute (observables, compute) {
   function observable (val) {
     return (
       val === undefined ? _val                                                               // getter
-    : typeof val !== 'function' ? (!(_val === val) ? emit(listeners, _val, _val = val) : '') // setter (the new way - only sets if the value has changed)
+    : typeof val !== 'function' ? (_val === val ? void 0 : emit(listeners, _val, _val = val), val) // setter (the new way - only sets if the value has changed)
     : (listeners.push(val), (_val === undefined ? _val : val(_val)), () => {                 // listener
         remove(listeners, val)
       })
