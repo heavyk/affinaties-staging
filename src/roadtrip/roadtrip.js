@@ -237,6 +237,7 @@ export default class RoadTrip {
         scrollX: scroll.x,
         scrollY: scroll.y,
         popstate: true, // so we know not to manipulate the history
+        options: {},
         fulfil: noop,
         reject: noop
       }
