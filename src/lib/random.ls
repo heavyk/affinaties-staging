@@ -30,15 +30,25 @@ function random-pos
   while pos is 0
   pos
 
-function random-date (start = Date.now!, days = 0, hours = Math.random! * 24, mins = Math.random! * 60, secs = Math.random! * 60)
-  Math.round start                                      \
+function random-date (days = 0, hours = Math.random! * 24, mins = Math.random! * 60, secs = Math.random! * 60)
+  Math.round Date.now!,                                 \
     - (( Math.random! * 1000 * 60 * 60 * 24 ) * days  ) \
     - (( Math.random! * 1000 * 60 * 60      ) * hours ) \
     - (( Math.random! * 1000 * 60           ) * mins  ) \
     - (( Math.random! * 1000                ) * secs  )
 
+function in-time (days = 0, hours = 0, mins = 0, secs = 0)
+  ( 1000 * 60 * 60 * 24 * days  ) +
+  ( 1000 * 60 * 60      * hours ) +
+  ( 1000 * 60           * mins  ) +
+  ( 1000                * secs  )
+
 function random-charactor
   xx='' ; while (xx += Math.random!.to-string 32 .substr 2)length <= it => true
+  xx.substr 0, it
+
+function random-hex
+  xx='' ; while (xx += Math.random!.to-string 16 .substr 2)length <= it => true
   xx.substr 0, it
 
 
@@ -118,7 +128,7 @@ function obj (config, many, callback)
   | \function =>
     callback null, make-obj config.schema, config.entities
   | \number =>
-    for i til many => make-obj config.schema, config.entities
+    callback null, for i til many => make-obj config.schema, config.entities
   | otherwise =>
     throw new Error "you called me wrong... (config[, many], callback)"
 
@@ -130,4 +140,4 @@ function obj (config, many, callback)
 # exports.end = (interval_id) ->
 #   clearInterval interval_id
 
-``export { rand, rand2, randomId, randomEl, randomIds, randomPos, randomDate, randomCharactor, between, lipsum, word, obj }``
+``export { rand, rand2, randomId, randomEl, randomIds, randomPos, randomHex, randomCharactor, randomDate, inTime, between, lipsum, word, obj }``
