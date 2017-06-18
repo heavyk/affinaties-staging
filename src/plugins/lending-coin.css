@@ -1,0 +1,165 @@
+poem-frame {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "sidebar content"
+  ;
+  grid-template-rows: 80px 1fr;
+  grid-template-columns: 180px 1fr;
+}
+
+poem-frame .side-bar {
+  grid-area: sidebar;
+}
+poem-frame .top {
+  grid-area: header;
+}
+poem-frame .middle {
+  grid-area: content;
+}
+
+.loan-scroller {
+  position: fixed;
+  bottom: 0;
+  top: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: 600px;
+  /*overflow-y: scroll;
+  overflow: auto;
+  display: inline-block;*/
+}
+
+.scroll-header {
+  position: fixed;
+  background: #fff;
+  width: 100%;
+  border-bottom: solid 1px #000;
+}
+
+.loan {
+  display: grid;
+  grid-template-areas:
+    "ident title"
+    "ident content"
+    /*"info info"*/
+  ;
+  grid-template-rows: 28px 1fr;
+  grid-template-columns: 80px 1fr;
+  border-bottom: solid 1px #dedede;
+}
+
+.loan .foto {
+  grid-area: ident;
+}
+
+.loan .title {
+  grid-area: title;
+  font-size: 120%;
+  font-weight: 500;
+}
+
+.loan .status {
+  float: right;
+  position: relative;
+  font-size: 90%;
+  border: solid 1px #ccc;
+  padding: 0 4px;
+  border-radius: 8px;
+  width: 50%;
+  text-align: center;
+}
+
+.status .amount {
+  margin: 0 10px;
+  color: #A9FF27;
+}
+
+.status .begins {
+  color: #FF2788;
+  font-weight: 200;
+}
+.status .ends {
+  color: #276CFF;
+  font-weight: 200;
+}
+
+.status .offered {
+  text-align: center;
+  background: rgba(39, 221, 255, .31);
+  position: absolute;
+  left: 0;
+  height: 100%;
+  /*margin: -4px 0;*/
+  /* for some unknown reason, if the b-r is set to 6, then it overflows the border, but at 8 it doesn't quite fill it all up. (the parent element b-r is 8) */
+  border-radius: 7px;
+}
+
+.status .offered-num {
+  text-align: center;
+  position: absolute;
+  left: 0;
+  top: -83%;
+  width: 100%;
+  font-size: 69%;
+  color: #FF4827;
+}
+
+.loan .content {
+  grid-area: content;
+}
+
+.loan .foot {
+  grid-area: info;
+}
+
+.loan .interest {
+  color: #FF4827;
+}
+
+.loan .interest,
+.loan .rating {
+  border: solid 1px #dcdcdc;
+  background: #FFEC27;
+  margin: 0 4px;
+  border-radius: 4px;
+  padding: 4px;
+  display: inline-block;
+}
+
+.loan .analyst-rating {
+  /*border-color: #dcdcdc;*/
+}
+.loan .captador-rating {
+  /*border-color: #dd3;*/
+}
+
+.loan .desc {
+  color: #333;
+  height: 20px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.loan .read-more {
+  text-align: center;
+  margin: 0 0 4px 0;
+  text-decoration: underline;
+  display: block;
+  position: relative;
+  bottom: 0;
+}
+
+img.logo {
+  border-radius: 50%;
+}
+
+.logo a {
+  color: #FF4827;
+  font-size: 150%;
+}
+
+a {
+  color: #27DDFF;
+  text-decoration: none;
+}
