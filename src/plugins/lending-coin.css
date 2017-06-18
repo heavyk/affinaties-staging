@@ -59,52 +59,6 @@ poem-frame .middle {
   font-weight: 500;
 }
 
-.loan .status {
-  float: right;
-  position: relative;
-  font-size: 90%;
-  border: solid 1px #ccc;
-  padding: 0 4px;
-  border-radius: 8px;
-  width: 50%;
-  text-align: center;
-}
-
-.status .amount {
-  margin: 0 10px;
-  color: #A9FF27;
-}
-
-.status .begins {
-  color: #FF2788;
-  font-weight: 200;
-}
-.status .ends {
-  color: #276CFF;
-  font-weight: 200;
-}
-
-.status .offered {
-  text-align: center;
-  background: rgba(39, 221, 255, .31);
-  position: absolute;
-  left: 0;
-  height: 100%;
-  /*margin: -4px 0;*/
-  /* for some unknown reason, if the b-r is set to 6, then it overflows the border, but at 8 it doesn't quite fill it all up. (the parent element b-r is 8) */
-  border-radius: 7px;
-}
-
-.status .offered-num {
-  text-align: center;
-  position: absolute;
-  left: 0;
-  top: -83%;
-  width: 100%;
-  font-size: 69%;
-  color: #FF4827;
-}
-
 .loan .content {
   grid-area: content;
 }
@@ -135,10 +89,15 @@ poem-frame .middle {
 }
 
 .loan .desc {
-  color: #333;
   height: 20px;
   overflow: hidden;
   transition: all 0.2s ease;
+}
+
+.loan .desc-big,
+.loan .desc {
+  color: #333;
+  margin: 5px 5px 0;
 }
 
 .loan .read-more {
@@ -151,15 +110,65 @@ poem-frame .middle {
 }
 
 .loan .offer-scroller {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
 }
 
 .loan .offer {
-  /*display: flex;*/
-  /*position: absolute;*/
-  margin: 8px;
+  margin: 4px;
+  background: #fae7d6;
+  /* TODO: set saturation/luminosity in code based on amount / interest rate */
+  /*background: hsl(28, 78%, 91%); */
+  border-radius: 2px;
+  border: solid 1px #ffded1;
+  padding: 4px;
+}
+
+.loan .status {
+  float: right;
+  position: relative;
+  font-size: 90%;
+  border: solid 1px #ccc;
+  padding: 0 4px;
+  border-radius: 8px;
+  width: 50%;
+  text-align: center;
+  margin: 0 20px 0 0;
+}
+
+.status .amount {
+  margin: 0 10px;
+  color: #A9FF27;
+}
+
+.status .begins {
+  color: #FF2788;
+  font-weight: 400;
+}
+.status .ends {
+  color: #276CFF;
+  font-weight: 400;
+}
+
+.status .offered {
+  text-align: center;
+  background: rgba(39, 221, 255, .31);
+  position: absolute;
+  left: 0;
+  height: 100%;
+  /*margin: -4px 0;*/
+  /* for some unknown reason, if the b-r is set to 6, then it overflows the border, but at 8 it doesn't quite fill it all up. (the parent element b-r is 8) */
+  border-radius: 7px;
+}
+
+.status .offered-num {
+  text-align: center;
+  position: absolute;
+  left: 0;
+  top: -83%;
+  width: 100%;
+  font-size: 69%;
+  color: #FF4827;
 }
 
 img.logo {

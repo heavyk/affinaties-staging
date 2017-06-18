@@ -175,6 +175,7 @@ offer-sm = (h) -> (offer) ->
     h \div.offerer,
       h \a href: "/u/#{offerer.id}", offerer.name
     h \div.amount, offer.amount, ' @ ', offer.interest, '%'
+    h \div.when, day_month offer.created
     # h \pre, JSON.stringify offer, null 2
 
 offer-lg = (h) -> (offer) ->
@@ -197,6 +198,7 @@ lending-coin = ({config, G, set_config, set_data}) ->
     {h} = G
 
     # 'global' variables
+    window.roadtrip = @roadtrip
 
     # starting elements
     @els [
@@ -237,6 +239,7 @@ lending-coin = ({config, G, set_config, set_data}) ->
     # me
     '/me':
       enter: (route) ->
+        # if logged in, show profile, else show login
         @section \content, ({h}) ->
           h \h1, "I am beautiful. I am magical. I am me!"
 
@@ -244,8 +247,7 @@ lending-coin = ({config, G, set_config, set_data}) ->
     '/u/:id':
       enter: (route) ->
         id = route.params.id
-        @section \content, ({h}) ->
-          user = USERS[id]
+        if user = USERS[id] => @section \content, ({h}) ->
           loan-scroller = h \div.loan-scroller, s: {overflow-y: 'scroll'}
           pull-stream (pull-stream.values LOANS),
             pull-stream.filter (d) -> d.creator is id
@@ -261,16 +263,16 @@ lending-coin = ({config, G, set_config, set_data}) ->
             h \h3, user.name
             h \div, loan-scroller
             h \div, offer-scroller
+        else @roadtrip.goto '/'
 
 
     # loan profile
     '/p/:id':
       enter: (route) ->
         id = route.params.id
-        unless dd = LOANS[id]
-          @roadtrip.goto '/'
-        @section \content, ({h}) ->
+        if dd = LOANS[id] => @section \content, ({h}) ->
           (loan-lg h) dd
+        else @roadtrip.goto '/'
 
 
 
@@ -356,6 +358,8 @@ pull-stream (pull-stream.count (n = rand 1000, 100)),
     for user in arr
       # 10% chance the user will create a loan
       if Math.random! < 0.1 => create-test-loan user.id
+
+    # after building the test data, load the plugin
     plugin-boilerplate null, \testing, {}, {}, DEFAULT_CONFIG, lending-coin
 
 #
