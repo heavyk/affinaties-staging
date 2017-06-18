@@ -12,18 +12,18 @@ import { noop, slasher } from '../lib/utils'
 export default class RoadTrip {
   constructor (base = '') {
     this.routes = []
+    this.isTransitioning = false
+    this.scrollHistory = {}
     this.currentData = {}
     this.currentRoute = {
       enter: () => Promise.resolve(),
       leave: () => Promise.resolve()
     }
 
-    this.isTransitioning = false
-
-    this.scrollHistory = {}
     this.uniqueID =
     this.currentID = 1
 
+    if (base[0] !== '/') throw new Error("base must begin with a '/'")
     var bl = base.length - 1
     this.base = base[bl] === '/' ? base.substr(0, bl) : base
   }
@@ -57,6 +57,10 @@ export default class RoadTrip {
     this.scrollHistory[this.currentID] = {
       x: win.scrollX,
       y: win.scrollY
+    }
+
+    if (href[0] === '/' && this.base && href.indexOf(this.base) !== 0) {
+      href = this.base + href
     }
 
     let target
