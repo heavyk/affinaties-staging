@@ -150,6 +150,18 @@ poem-frame .middle {
   bottom: 0;
 }
 
+.loan .offer-scroller {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.loan .offer {
+  /*display: flex;*/
+  /*position: absolute;*/
+  margin: 8px;
+}
+
 img.logo {
   border-radius: 50%;
 }

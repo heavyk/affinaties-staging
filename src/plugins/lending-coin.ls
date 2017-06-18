@@ -41,7 +41,7 @@ Identicon = require \identicon.js
 #
 # Incrementer = truffle-contract require '../contracts/Incrementer'
 # lala = web3.eth.contract Incrementer.abi
-# lala.new {data: Incrementer.binary, gas: 1e4}, (err, c) !->
+# lala.new {data: Incrementer.binary, gas: 101000}, (err, c) !->
 #   console.log \contract, err, c
 # Incrementer.set-provider new web3.providers.HttpProvider 'http://localhost:8545'
 # Incrementer.new from: web3.eth.default-account .then (incr) !->
@@ -103,6 +103,7 @@ const DEFAULT_CONFIG =
 # rendering functions
 percent = (n) -> (Math.floor n * 100) + '%'
 rating = (p, n = 10) -> (Math.floor p * n) + ' / ' + n
+day_month = (d) -> (moment d .format 'Do MMM')
 user_link = (h, dd) ->
   h \a href: "/u/#{dd.id}", dd.name
 
@@ -129,9 +130,9 @@ loan-sm = (h) -> (dd) ->
       h \span.status,
         h \span.offered, s: {width: offered_percent}
         h \span.offered-num, dd.offers + ' offers / ' + offered_percent
-        h \span.begins, (moment dd.begins .format 'Do MMM')
+        h \span.begins, day_month dd.begins
         h \span.amount, currency-formatter.format dd.amount, locale: dd.locale
-        h \span.ends, (moment dd.ends .format 'Do MMM')
+        h \span.ends, day_month dd.ends
       desc =\
       h \div.desc, dd.desc
       transform read-more, (v) ->
@@ -140,6 +141,51 @@ loan-sm = (h) -> (dd) ->
           # desc.style.color = if v => '#333' else '#33f'
           h \div.read-more, {onclick: -> (read-more !read-more!)}, if v => "less" else "more"
 
+loan-lg = (h) -> (dd) ->
+  offer-scroller = h \div.offer-scroller, s: {overflow-y: 'scroll'}
+  pull-stream (pull-stream.values OFFERS),
+    pull-stream.filter (d) -> d.loan_id is dd.id
+    pull-scroll offer-scroller, offer-scroller, (offer-sm h), false, false, (err, val) !->
+      console.log 'the end!', err
+  offered_percent = percent (Math.min dd.offered / dd.amount, 1)
+  h \div.loan,
+    h \div.foto,
+      h \a href: "/u/#{dd.creator}",
+        h \img width: 80 height: 80, src: "data:image/svg+xml;base64,#{new Identicon dd.creator, margin: 0.05, size: 80 format: 'svg'}"
+        # h \div USERS[dd.creator].name
+    h \div.title,
+      h \a href: "/p/#{dd.id}", dd.title
+    h \div.content,
+      h \span.interest, dd.interest + '%'
+      h \span.rating.captador-rating, (rating dd.captador_rating, 100)
+      h \span.rating.analyst-rating, (rating dd.analyst_rating, 100)
+      h \span.status,
+        h \span.offered, s: {width: offered_percent}
+        h \span.offered-num, offered_percent
+        h \span.begins, day_month dd.begins
+        h \span.amount, currency-formatter.format dd.amount, locale: dd.locale
+        h \span.ends, day_month dd.ends
+      h \div.desc-big, dd.desc
+      h \div.offers, offer-scroller
+    # h \pre, JSON.stringify dd, null 2
+
+offer-sm = (h) -> (offer) ->
+  offerer = USERS[offer.creator]
+  h \div.offer,
+    h \div.offerer,
+      h \a href: "/u/#{offerer.id}", offerer.name
+    h \div.amount, offer.amount, ' @ ', offer.interest, '%'
+    # h \pre, JSON.stringify offer, null 2
+
+offer-lg = (h) -> (offer) ->
+  loan = LOANS[offer.loan_id]
+  h \div.offer,
+    h \div.loan-title,
+      h \a href: "/p/#{loan.id}", loan.title
+    h \div.amount, offer.amount, ' @ ', offer.interest, '%'
+    h \div.when, day_month offer.created
+    # h \pre, JSON.stringify offer, null 2
+    # h \pre, JSON.stringify loan, null 2
 
 lending-coin = ({config, G, set_config, set_data}) ->
   G.width (v, old_width) !-> console.log \width, old_width, '->', v
@@ -205,51 +251,27 @@ lending-coin = ({config, G, set_config, set_data}) ->
             pull-stream.filter (d) -> d.creator is id
             pull-scroll loan-scroller, loan-scroller, (loan-sm h), false, false, (err, val) !->
               console.log 'the end!', err
+
+          offer-scroller = h \div.offer-scroller, s: {overflow-y: 'scroll'}
+          pull-stream (pull-stream.values OFFERS),
+            pull-stream.filter (d) -> d.creator is id
+            pull-scroll offer-scroller, offer-scroller, (offer-lg h), false, false, (err, val) !->
+              console.log 'the end!', err
           h \div,
             h \h3, user.name
             h \div, loan-scroller
+            h \div, offer-scroller
 
 
     # loan profile
     '/p/:id':
       enter: (route) ->
         id = route.params.id
+        unless dd = LOANS[id]
+          @roadtrip.goto '/'
         @section \content, ({h}) ->
-          # unless dd = LOANS[id]
-          #   return @roadtrip.goto '/'
-          offer-scroller = h \div.offer-scroller, s: {overflow-y: 'scroll'}
-          pull-stream (pull-stream.values OFFERS),
-            pull-stream.filter (d) -> d.loan_id is id
-            pull-scroll offer-scroller, offer-scroller, (offer) ->
-              offerer = USERS[offer.creator]
-              h \div.offer,
-                h \div.offerer,
-                  h \a href: "/u/#{dd.id}", offerer.name
-                h \div.amount, offer.amount, ' @ ', offer.interest, '%'
-                # h \pre, JSON.stringify offer, null 2
-            , false, false, (err, val) !-> console.log 'the end!', err
+          (loan-lg h) dd
 
-          offered_percent = percent (Math.min dd.offered / dd.amount, 1)
-          h \div.loan,
-            h \div.foto,
-              h \a href: "/u/#{dd.creator}",
-                h \img width: 80 height: 80, src: "data:image/svg+xml;base64,#{new Identicon dd.creator, margin: 0.05, size: 80 format: 'svg'}"
-                # h \div USERS[dd.creator].name
-            h \div.title,
-              h \a href: "/p/#{dd.id}", dd.title
-            h \div.content,
-              h \span.interest, dd.interest + '%'
-              h \span.rating.captador-rating, (rating dd.captador_rating, 100)
-              h \span.rating.analyst-rating, (rating dd.analyst_rating, 100)
-              h \span.status,
-                h \span.offered, s: {width: offered_percent}
-                h \span.offered-num, offered_percent
-                h \span.begins, (moment dd.begins .format 'Do MMM')
-                h \span.amount, currency-formatter.format dd.amount, locale: dd.locale
-                h \span.ends, (moment dd.ends .format 'Do MMM')
-              h \div.desc-big, dd.desc
-              h \div.offers, offer-scroller
-            # h \pre, JSON.stringify dd, null 2
 
 
 # ------------------------------------------------------------------------------------------
@@ -261,9 +283,7 @@ create-test-user = ->
   USERS[id = random-hex 32] =
     id: id
     name: (random-el NAMES.female-names) + ' ' + (random-el NAMES.last-names .name)
-
-  # 10% chance the user will create a loan
-  if Math.random! < 0.1 => create-test-loan id
+    # ...
   user
 
 create-test-loan-offer = (loan_id) ->
@@ -275,8 +295,8 @@ create-test-loan-offer = (loan_id) ->
     loan_id: loan_id
     creator: random-id USERS
     created: random-date 10
-    amount: round rand2 loan.amount / 9
-    interest: round (rand loan.interest, loan.interest / 3)
+    amount: round (rand2 loan.amount / 9), -2
+    interest: round (rand2 loan.interest, loan.interest / 1.5)
     # ...
   offer
 
@@ -331,8 +351,11 @@ USERS[me.id] = me
 
 pull-stream (pull-stream.count (n = rand 1000, 100)),
   pull-stream.map -> create-test-user!
-  pull-stream.drain null, (err) ->
-    console.log "generated #{n} users"
+  pull-stream.collect (err, arr) ->
+    console.log "generated #{arr.length} users"
+    for user in arr
+      # 10% chance the user will create a loan
+      if Math.random! < 0.1 => create-test-loan user.id
     plugin-boilerplate null, \testing, {}, {}, DEFAULT_CONFIG, lending-coin
 
 #
