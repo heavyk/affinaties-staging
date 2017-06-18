@@ -12,7 +12,7 @@ import { noop, slasher } from '../lib/utils'
 export default class RoadTrip {
   constructor (base = '') {
     this.routes = []
-    this.isTransitioning = false
+    this.isTransitioning = null
     this.scrollHistory = {}
     this.currentData = {}
     this.currentRoute = {
@@ -77,11 +77,9 @@ export default class RoadTrip {
 
     target.promise = promise
 
-    if (this.isTransitioning) {
-      return promise
-    }
+    // only if we're not transitioning, will we goto the target
+    if (this.isTransitioning === null) this.goto_target(target)
 
-    this.goto_target(target)
     return promise
   }
 
@@ -100,6 +98,8 @@ export default class RoadTrip {
       }
     }
 
+    // if (newRoute === undefined) debugger
+
     if (!newRoute || isSameRoute(newRoute, currentRoute, newData, currentData)) {
       // return target.fulfil()
       target.options.replaceState = true
@@ -110,33 +110,23 @@ export default class RoadTrip {
       y: (currentData.scrollY = win.scrollY)
     }
 
-    this.isTransitioning = true
+    this.isTransitioning = target
 
-    // check to see if uglify turns the if-statements into ternary statements
-    // promise =
-    //   newRoute === currentRoute && typeof newRoute.update === 'function' ?
-    //   newRoute.update(newData) :
-    //   Promise.all([
-    //     currentRoute.leave(currentData, newData),
-    //     newRoute.beforeenter(newData, currentData)
-    //   ]).then(() => newRoute.enter(newData, currentData))
-
-    if (newRoute === currentRoute && typeof newRoute.update === 'function') {
-      promise = newRoute.update(newData)
-    } else {
-      promise = Promise.all([
+    promise =
+      newRoute === currentRoute && typeof newRoute.update === 'function' ?
+      newRoute.update(newData) :
+      Promise.all([
         currentRoute.leave(currentData, newData),
         newRoute.beforeenter(newData, currentData)
-      ]).then(() => newRoute.enter(newData, currentData))
-    }
+      ]).then(() => {
+        newRoute.enter(newData, currentData)
+      })
 
-    // this.emit('transition', newRoute, newData, currentRoute, currentData)
-    // perhaps I will want to emit changes so a listener can update the scroll?
     promise
       .then((val) => {
         this.currentRoute = newRoute
         this.currentData = newData
-        this.isTransitioning = false
+        this.isTransitioning = null
 
         // if the user navigated while the transition was taking
         // place, we need to do it all again
@@ -219,7 +209,7 @@ export default class RoadTrip {
       if (this.base && goto_path === path) {
         path = this.base + path
         if (this.routes.some(route => route.matches(path))) goto_path = path
-        else return
+        else return console.warn('potentially going to an undefined route. TODO: show 404')
       }
 
       // no match? allow navigation

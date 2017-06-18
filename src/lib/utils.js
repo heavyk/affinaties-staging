@@ -167,7 +167,7 @@ export function define_value (fn) {
 export function slasher (_path, leading) {
   // strip trailing slash
   var path = _path.replace(/\/$/, '')
-  // strip leading slash
+  // (optionally) strip leading slash
   return leading && path[0] === '/' ? path.slice(1) : path
 }
 
