@@ -1,8 +1,9 @@
 function rand (max, min = 0)
-  min + Math.floor Math.random! * max
+  min + Math.floor Math.random! * (max - min)
 
 function rand2 (max, min = 0)
-  min + Math.floor Math.sqrt Math.random! * max * max
+  diff = max - min
+  min + Math.round Math.sqrt (Math.random! * diff * diff)
 
 function random-id (dd)
   if len = dd.length
@@ -31,11 +32,11 @@ function random-pos
   pos
 
 function random-date (days = 0, hours = Math.random! * 24, mins = Math.random! * 60, secs = Math.random! * 60)
-  Math.round Date.now!,                                 \
-    - (( Math.random! * 1000 * 60 * 60 * 24 ) * days  ) \
-    - (( Math.random! * 1000 * 60 * 60      ) * hours ) \
-    - (( Math.random! * 1000 * 60           ) * mins  ) \
-    - (( Math.random! * 1000                ) * secs  )
+  Math.round Date.now!                                  \
+    - (( (0.5 + Math.random!) * 1000 * 60 * 60 * 24 ) * days  ) \
+    - (( (0.5 + Math.random!) * 1000 * 60 * 60      ) * hours ) \
+    - (( (0.5 + Math.random!) * 1000 * 60           ) * mins  ) \
+    - (( (0.5 + Math.random!) * 1000                ) * secs  )
 
 function in-time (days = 0, hours = 0, mins = 0, secs = 0)
   ( 1000 * 60 * 60 * 24 * days  ) +
@@ -61,7 +62,8 @@ function between (min, max)
     temp = min
     min = max
     max = temp
-  Math.random! * (max - min + 1) + min
+  # Math.random! * (max - min + 1) + min
+  min + (Math.random! * (max - min))
 
 make-obj = (schema, entity_list, entity_index) ->
   m = {}
