@@ -380,7 +380,7 @@ s.context = svg_context
 
 export const makeNode = (e, v, cleanupFuncs) => isNode(v) ? v
   : Array.isArray(v) ? arrayFragment(e, v, cleanupFuncs)
-  : txt(v)
+  : v == null ? comment('null') : txt(v)
 
 export const obvNode = (e, v, cleanupFuncs = []) => {
   var r, o, i
