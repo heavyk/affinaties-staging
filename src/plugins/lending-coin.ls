@@ -109,7 +109,7 @@ user_link = (h, dd) ->
 
 
 # LOAN
-loan-sm = (h) -> (dd) ->
+loan-sm = (h, no_foto) -> (dd) ->
   read-more = value!
   offered_percent = percent (Math.min dd.offered / dd.amount, 1)
   request-animation-frame !->
@@ -117,10 +117,11 @@ loan-sm = (h) -> (dd) ->
     # ideally, it should not modify the height of the .loan element
     if desc.scrollHeight - 10 > desc.clientHeight => read-more false
   h \div.loan,
-    h \div.foto,
-      h \a href: "/u/#{dd.creator}",
-        h \img width: 80 height: 80, src: "data:image/svg+xml;base64,#{new Identicon dd.creator, margin: 0.05, size: 80 format: 'svg'}"
-        # h \div USERS[dd.creator].name
+    unless no_foto
+      h \div.foto,
+        h \a href: "/u/#{dd.creator}",
+          h \img width: 80 height: 80, src: "data:image/svg+xml;base64,#{new Identicon dd.foto, margin: 0.05, size: 80 format: 'svg'}"
+          # h \div USERS[dd.creator].name
     h \div.title,
       h \a href: "/p/#{dd.id}", dd.title
     h \div.content,
@@ -142,16 +143,16 @@ loan-sm = (h) -> (dd) ->
           h \div.read-more, {onclick: -> (read-more !read-more!)}, if v => "less" else "more"
 
 loan-lg = (h) -> (dd) ->
-  offer-scroller = h \div.offer-scroller, s: {overflow-y: 'scroll'}
+  offer-scroller = h \div.offer-scroller, s: {overflow-y: 'auto'}
   pull-stream (pull-stream.values OFFERS),
     pull-stream.filter (d) -> d.loan_id is dd.id
-    pull-scroll offer-scroller, offer-scroller, (offer-sm h), false, false, (err, val) !->
+    pull-scroll offer-scroller, offer-scroller, (offer-sm h), false, false, (err) !->
       console.log 'the end!', err
   offered_percent = percent (Math.min dd.offered / dd.amount, 1)
   h \div.loan,
     h \div.foto,
       h \a href: "/u/#{dd.creator}",
-        h \img width: 80 height: 80, src: "data:image/svg+xml;base64,#{new Identicon dd.creator, margin: 0.05, size: 80 format: 'svg'}"
+        h \img width: 80 height: 80, src: "data:image/svg+xml;base64,#{new Identicon dd.foto, margin: 0.05, size: 80 format: 'svg'}"
         # h \div USERS[dd.creator].name
     h \div.title,
       h \a href: "/p/#{dd.id}", dd.title
@@ -170,8 +171,9 @@ loan-lg = (h) -> (dd) ->
     # h \pre, JSON.stringify dd, null 2
 
 offer-sm = (h) -> (offer) ->
+  # loan = LOANS[offer.loan_id]
   offerer = USERS[offer.creator]
-  h \div.offer,
+  h \div.offer,# {s: {background: "hsl(28, #{round (offer.interest / loan.interest) * 78}%, #{80 + round offer.amount / loan.amount * 30}%)"}}, # hsl(28, 78%, 91%) 70 - 91
     h \div.offerer,
       h \a href: "/u/#{offerer.id}", offerer.name
     h \div.amount, offer.amount, ' @ ', offer.interest, '%'
@@ -180,7 +182,7 @@ offer-sm = (h) -> (offer) ->
 
 offer-lg = (h) -> (offer) ->
   loan = LOANS[offer.loan_id]
-  h \div.offer,
+  h \div.offer,# s: {background: "hsl(28, #{(loan.interest - offer.interest / loan.interest) * 78}%, 91%)"}, # hsl(28, 78%, 91%)
     h \div.loan-title,
       h \a href: "/p/#{loan.id}", loan.title
     h \div.amount, offer.amount, ' @ ', offer.interest, '%'
@@ -225,13 +227,13 @@ lending-coin = ({config, G, set_config, set_data}) ->
     '/':
       enter: (route, prev) !->
         @section \content, ({h}) ->
-          loan-scroller = h \div.loan-scroller, s: {overflow-y: 'scroll'}
+          loan-scroller = h \div.loan-scroller, s: {overflow-y: 'auto'}
           pull-stream (pull-stream.values LOANS),
             # TODO: add filtering / ordering(?) to the main view
             # pull-stream.filter (d) -> d.creator is id
-            pull-scroll loan-scroller, loan-scroller, (loan-sm h), false, false, (err, val) !->
+            pull-scroll loan-scroller, loan-scroller, (loan-sm h), false, false, (err) !->
               console.log 'the end!', err
-          h \div, loan-scroller
+          h \div.main-page, loan-scroller
 
       # update: (route) !->
       # leave: (route, next) !->
@@ -248,21 +250,23 @@ lending-coin = ({config, G, set_config, set_data}) ->
       enter: (route) ->
         id = route.params.id
         if user = USERS[id] => @section \content, ({h}) ->
-          loan-scroller = h \div.loan-scroller, s: {overflow-y: 'scroll'}
+          loan-scroller = h \div.loan-scroller, s: {overflow-y: 'auto'}
           pull-stream (pull-stream.values LOANS),
             pull-stream.filter (d) -> d.creator is id
-            pull-scroll loan-scroller, loan-scroller, (loan-sm h), false, false, (err, val) !->
+            pull-scroll loan-scroller, loan-scroller, (loan-sm h, false), false, false, (err) !->
               console.log 'the end!', err
 
-          offer-scroller = h \div.offer-scroller, s: {overflow-y: 'scroll'}
+          offer-scroller = h \div.offer-scroller, s: {overflow-y: 'auto'}
           pull-stream (pull-stream.values OFFERS),
             pull-stream.filter (d) -> d.creator is id
-            pull-scroll offer-scroller, offer-scroller, (offer-lg h), false, false, (err, val) !->
+            pull-scroll offer-scroller, offer-scroller, (offer-lg h), false, false, (err) !->
               console.log 'the end!', err
-          h \div,
-            h \h3, user.name
-            h \div, loan-scroller
-            h \div, offer-scroller
+          h \div.profile,
+            h \div.ident,
+              h \img width: 140 height: 140, src: "data:image/svg+xml;base64,#{new Identicon id, margin: 0.05, size: 140 format: 'svg'}"
+              h \h3, user.name
+            h \div.loans, loan-scroller
+            h \div.offers, offer-scroller
         else @roadtrip.goto '/'
 
 
@@ -309,6 +313,7 @@ create-test-loan = (creator_id) ->
     creator: creator_id
     title: (lipsum 3, 5)
     desc: (lipsum 20, 100)
+    foto: random-hex 32
     created: random-date 20
     begins: random-date -20
     ends: random-date -60

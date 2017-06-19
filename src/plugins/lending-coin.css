@@ -1,7 +1,7 @@
 poem-frame {
   display: grid;
   grid-template-areas:
-    "header header"
+    "header content"
     "sidebar content"
   ;
   grid-template-rows: 80px 1fr;
@@ -18,16 +18,11 @@ poem-frame .middle {
   grid-area: content;
 }
 
+/*.main-page */
 .loan-scroller {
-  position: fixed;
+  position: absolute;
   bottom: 0;
   top: 0;
-  margin-left: auto;
-  margin-right: auto;
-  width: 600px;
-  /*overflow-y: scroll;
-  overflow: auto;
-  display: inline-block;*/
 }
 
 .scroll-header {
@@ -36,6 +31,30 @@ poem-frame .middle {
   width: 100%;
   border-bottom: solid 1px #000;
 }
+
+div.profile {
+  display: grid;
+  grid-template-areas:
+    "ident loans"
+    "actions offers"
+  ;
+  grid-template-rows: 180px 1fr;
+  grid-template-columns: 150px 1fr;
+}
+
+div.profile .ident {
+  grid-area: ident;
+}
+
+div.profile .loans {
+  grid-area: loans;
+  position: relative;
+}
+
+div.profile .offers {
+  grid-area: offers;
+}
+
 
 .loan {
   display: grid;
@@ -117,11 +136,13 @@ poem-frame .middle {
 .loan .offer {
   margin: 4px;
   background: #fae7d6;
-  /* TODO: set saturation/luminosity in code based on amount / interest rate */
-  /*background: hsl(28, 78%, 91%); */
-  border-radius: 2px;
+  border-radius: 4px;
   border: solid 1px #ffded1;
   padding: 4px;
+}
+
+.offer .when {
+  color: #868686;
 }
 
 .loan .status {
@@ -156,7 +177,6 @@ poem-frame .middle {
   position: absolute;
   left: 0;
   height: 100%;
-  /*margin: -4px 0;*/
   /* for some unknown reason, if the b-r is set to 6, then it overflows the border, but at 8 it doesn't quite fill it all up. (the parent element b-r is 8) */
   border-radius: 7px;
 }
