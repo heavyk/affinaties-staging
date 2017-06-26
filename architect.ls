@@ -1,3 +1,11 @@
+# ARCHITECT
+#
+# a thrown together builder with still many flaws
+#
+# TODO:
+#  - move the file watchers into elixir/phoenix as to get rid of the enormous cpu usage while idle
+
+
 require! path: \Path
 require! fs: \Fs
 
@@ -6,10 +14,10 @@ tmp_dir = Path.join __dirname, \priv \build
 out_dir = Path.join __dirname, \priv \static
 
 poems =
-  'plugins/booble-bobble.js':
-    dest: 'plugins/booble-bobble.js'
-    webpack:
-      stuff: true
+  # 'plugins/booble-bobble.js':
+  #   dest: 'plugins/booble-bobble.js'
+  #   webpack:
+  #     stuff: true
   # 'plugins/zibble-zabble.js':
   #   dest: 'plugins/zibble-zabble.js'
   #   css: 'plugins/zibble-zabble.css'
@@ -34,9 +42,12 @@ poems =
   'plugins/meditator.js':
     dest: 'plugins/meditator.js'
     css: 'plugins/meditator.css'
-  'plugins/metatrons-compass.js':
-    dest: 'plugins/metatrons-compass.js'
-    css: 'plugins/metatrons-compass.css'
+  # 'plugins/metatrons-compass.js':
+  #   dest: 'plugins/metatrons-compass.js'
+  #   css: 'plugins/metatrons-compass.css'
+  'plugins/lending-coin.js':
+    dest: 'plugins/lending-coin.js'
+    css: 'plugins/lending-coin.css'
   'plugins/poke-her-starz.js':
     dest: 'plugins/poke-her-starz.js'
     css: 'plugins/poke-her-starz.css'
@@ -49,7 +60,9 @@ poems =
 # ===========
 # ===========
 
-require! \sander
+require! \genny
+require! \rimraf
+require! \mkdirp
 require! \rollup
 require! \rollup-plugin-buble
 require! \chokidar
@@ -57,12 +70,32 @@ require! \webpack
 require! \postcss
 EE = require \events .EventEmitter
 
+genny.long-stack-support = true
+genny.ev = (gen) ->
+  fn = genny gen
+  return !->
+    args = [].slice.call &
+    args.push (err, res) !->
+      if err => throw err
+    fn.apply this, args
 
-sander.rimraf-sync tmp_dir
-sander.mkdir-sync tmp_dir
+process.on \uncaughtException, (err) !->
+  console.error 'uncaught err', err
 
-sander.rimraf-sync out_dir
-sander.mkdir-sync out_dir
+
+POSTCSS_PLUGINS = [
+  require 'postcss-import'
+  require 'precss'
+  require 'postcss-color-function'
+  # (require 'autoprefixer')(browsers: ['last 2 versions'])
+]
+
+# TODO: don't remove these dirs & only update files if they are different (eg. different hashes)
+rimraf.sync tmp_dir
+mkdirp.sync tmp_dir
+
+rimraf.sync out_dir
+mkdirp.sync out_dir
 
 emitter = new EE
 
@@ -152,6 +185,7 @@ get-opts = (opts) ->
   | \.coffee => \coffee-script
   | \.js \.jsx => \js
   | \.json => \json
+  | \.sol => \solidity
 
   unless opts.outfile
     if ~(idx_ext = file.lastIndexOf '.')
@@ -193,59 +227,68 @@ get-opts = (opts) ->
 
 path_lookup = {}
 
-process_src = (path) !->
-  origin = Path.join src_dir, path
+process_src = (path, resume) ->*
   file = Path.basename path
   if file is \.DS_Store
-    # console.log 'deleting', path
-    return sander.rimraf origin
+    return yield rimraf origin, resume!
+
   opts = get-opts {path}
-  # console.log \src.opts, opts
   path_lookup[path] = opts.outfile
+  origin = Path.join src_dir, path
   dest = Path.join tmp_dir, opts.outfile
-  txt = Fs.readFileSync origin, \utf-8
-  switch opts.lang
-  | \alive-script =>
-    try
-      LiveScript = require \livescript
-      res = LiveScript.compile txt, {
-        bare: true
-        header: false
-        filename: Path.basename path
-        outputFilename: Path.basename opts.outfile
-        map: if opts.json => \none else \linked-src # \embedded
-        json: opts.json
-      }
 
-      output = if opts.json => res else res.code
-    catch e
-      console.error "error compiling: #{origin} ::", e
+  txt = yield Fs.read-file origin, encoding: \utf-8, resume!
+  txt = yield new Promise (resolve, reject) !->
+    switch opts.lang
+    | \alive-script =>
+      try
+        LiveScript = require \livescript
+        res = LiveScript.compile txt, {
+          bare: true
+          header: false
+          filename: Path.basename path
+          outputFilename: Path.basename opts.outfile
+          map: if opts.json => \none else \linked-src # \embedded
+          json: opts.json
+        }
 
-  | \js =>
-    # for now, no transformations are done...
-    output = txt
+        resolve (if opts.json => res else res.code)
+      catch e
+        console.error "error compiling: #{origin} ::", e
+        reject e
 
-  | \coffee-script =>
-    throw new Error "coffee-script not yet implemented"
+    | \js =>
+      # for now, no transformations are done...
+      resolve txt
 
-  | otherwise =>
-    # console.log "#{opts.lang} not yet implemented"
-    # console.log opts
-    output = txt
+    | \coffee-script =>
+      throw new Error "coffee-script not yet implemented"
 
-  # if opts.result
-  #   opts.ast.makeReturn!
-  #
-  # opts.output = opts.ast.compileRoot options
-  # if opts.result
-  #   process.chdir Path.dirname opts.path
-  #   opts.output = LiveScript.run opts.output, options, true
-  #   process.chdir CWD
+    | \solidity =>
+      require \child_process .exec "solc -o #{tmp_dir}/#{Path.dirname path} --overwrite --bin --abi --optimize ./#{path}", {cwd: src_dir},
+      (err, stdout, stderr) !->
+        console.log \solidity, err, stdout, stderr
+        if stderr => reject stderr
+        else resolve false # no txt to output (directly writes to the tmp_dir)
 
-  if output
-    Fs.write-file-sync dest, output, \utf-8
+    | otherwise =>
+      # console.log "#{opts.lang} not yet implemented"
+      resolve txt
 
-process_css = (path) !->
+    # if opts.result
+    #   opts.ast.makeReturn!
+    #
+    # opts.output = opts.ast.compileRoot options
+    # if opts.result
+    #   process.chdir Path.dirname opts.path
+    #   opts.output = LiveScript.run opts.output, options, true
+    #   process.chdir CWD
+
+  # .then (txt) ->
+  if txt isnt false
+    yield Fs.write-file dest, txt, resume!
+
+process_css = (path, resume) ->*
   # NEEEDS IMPROVEMENT!!!
   switch ext = Path.extname path
   | \.css =>
@@ -253,14 +296,23 @@ process_css = (path) !->
     # prolly should do some postcss magic or something... I hate this build shit so much!
     src = Path.join tmp_dir, path
     dest = Path.join out_dir, path
-    sander.write-file dest, (Fs.read-file-sync src)
+    txt = Fs.read-file src, \utf-8, resume!
+    Fs.write-file dest, txt, resume!
 
-process_poem = (path) !->
-  if not (poem = poems[path]) or poem.processing
-    return # process_css path # console.log "could not process #{path}"
-  poem.processing = true
+reprocess_poem = (path, resume) ->*
+  if poem = poems[path]
+    if poem.processing > 1
+      yield from process_poem path, resume.gen!
+    else poem.processing = 0
+
+process_poem = (path, resume) ->*
+  if not (poem = poems[path]) or (poem.processing++) isnt 0
+    return
+
+  # regardless of the number of times we tried to process, set it to 1
+  poem.processing = 1
   console.log \process_poem, path
-  # src_dir = Path.dirname Path.join src_dir, path
+
   src = Path.join tmp_dir, path
   webpack_src = Path.join tmp_dir, '.' + path
   dest = Path.join out_dir, poem.dest
@@ -274,129 +326,133 @@ process_poem = (path) !->
     dest: webpack_src
   }
 
-  rollup.rollup opts
-    .then (bundle) ->
-      rollup_cache[path] = bundle
-      # console.log \poem, dest
-      console.log \mods, bundle.modules.length
-      # for m in bundle.modules
-      #   console.log m.id
+  try
+    [bundle] = yield [
+      rollup.rollup opts
+      (cb) !-> mkdirp (Path.dirname webpack_src), cb
+    ]
+    rollup_cache[path] = bundle
+    output = bundle.generate opts
+    map = output.map
+    code = output.code + "\n//# sourceMappingURL=#{Path.basename dest}.map\n"
+    # code = output.code + "\n//# sourceMappingURL=#{map.toUrl!}\n"
 
-      output = bundle.generate opts
-      map = output.map
-      code = output.code + "\n//# sourceMappingURL=#{Path.basename dest}.map\n"
-      # code = output.code + "\n//# sourceMappingURL=#{map.toUrl!}\n"
+    yield [
+      (cb) !-> Fs.write-file webpack_src, code, cb
+      (cb) !-> Fs.write-file "#{webpack_src}.map", map.to-string!, cb
+    ]
+  catch e
+    if e.id => console.error e.id
+    console.error e.to-string!
+    # console.error e.message
+    # if e.loc
+    #   console.error e.loc
+    #   if e.loc.line
+    #     console.error 'line:', e.loc.line, 'column:', e.loc.column
+    # if e.frame => console.error e.frame
+    # if e.snippet => console.error e.snippet
+    # console.error e, (Object.keys e)
+  try
+    opts = {} <<< webpack_opts <<< {
+      entry: webpack_src
+      output:
+        path: Path.dirname dest
+        filename: Path.basename dest
+    }
 
-      Promise.all [
-        sander.write-file webpack_src, code
-        sander.write-file "#{webpack_src}.map", map.to-string!
-      ]
-    .catch (e) ->
-      if e.id => console.error e.id
-      console.error e.to-string!
-      # console.error e.message
-      # if e.loc
-      #   console.error e.loc
-      #   if e.loc.line
-      #     console.error 'line:', e.loc.line, 'column:', e.loc.column
-      # if e.frame => console.error e.frame
-      # if e.snippet => console.error e.snippet
-      # console.error e, (Object.keys e)
-    .then !->
-      opts = {} <<< webpack_opts <<< {
-        # entry: src
-        # context: Path.dirname Path.join src_dir, path
-        entry: webpack_src
-        # resolve:
-        #   # extensions: <[.js .json]>
-        #   modules:
-        #     * \node_modules
-        #     * Path.dirname src
-        #     * Path.dirname Path.join src_dir, path
-        output:
-          path: Path.dirname dest
-          filename: Path.basename dest
-      }
-      # console.log "resolve:", opts.resolve
-      # console.log "context:", opts.context
+    compiler = webpack opts
+    stats = yield compiler.run resume!
+    # poem.processing = false
+    console.log \poem, dest
+    if bundle.imports.length => console.log 'static imports:', bundle.imports.join ','
+    if bundle.exports.length => console.log 'static exports:', bundle.exports.join ','
+    if bundle.modules.length => console.log 'static modules:', bundle.modules.length
+    # TODO: maybe find the biggest modules and print them?
+    # for m in bundle.modules
+    #   console.log m.id
+    console.log stats.to-string {
+      colors: true
+      version: false
+      chunks: false
+    }
+    # console.log stats#.compilation.modules
+    # if stats.has-errors!
+    #   console.error dest
+    #   console.error "compile error", err
+    # if stats.has-warnings!
+    #   console.warn ''
+    #   console.log "wrote:", stats
+  catch e
+    # console.log \catch, e.message.substr 0, 1000
+    console.error 'error compiling', poem.dest
+    console.error if e.to-string => e.to-string! else e.stack or e
+    if e.details => console.error e.details
+    yield from reprocess_poem path, resume.gen!
 
-      compiler = webpack opts
-      compiler.run (err, stats) !->
-        # poem.processing = false
-        if err => throw err
-        console.log stats.to-string {
-          colors: true
-          version: false
-          chunks: false
-        }
-        # console.log stats#.compilation.modules
-        # if stats.has-errors!
-        #   console.error dest
-        #   console.error "compile error", err
-        # if stats.has-warnings!
-        #   console.warn ''
-        #   console.log "wrote:", stats
-    .catch (e) ->
-      # console.log \catch, e.message.substr 0, 1000
-      console.error 'error compiling', poem.dest
-      console.error if e.to-string => e.to-string! else e #.stack or e
-      if e.details => console.error e.details
-      poem.processing = false
-    .then ->
-      if path = poem.css
-        POSTCSS_PLUGINS = [
-          require 'postcss-import'
-          require 'precss'
-          require 'postcss-color-function'
-          (require 'autoprefixer')(browsers: ['last 2 versions'])
-        ]
-        src = Path.join tmp_dir, path
-        postcss POSTCSS_PLUGINS .process (Fs.read-file-sync src)
-          .catch (e) !-> console.error e
-          .then (res) ->
-            dest = Path.join out_dir, path
-            sander.write-file dest, res.css
-    .then !->
-      console.log "poem written:", dest
-      poem.processing = false
+  if css_file = poem.css
+    css_src = Path.join tmp_dir, css_file
+    css_dest = Path.join out_dir, css_file
+    try
+      txt = yield Fs.read-file css_src, \utf-8, resume!
+      res = yield postcss POSTCSS_PLUGINS .process txt
+      yield Fs.write-file css_dest, res.css, resume!
+    catch e
+      # TODO: add to css error log
+      console.error 'css error:' e
+
+  console.log "poem written:", dest
+  yield from reprocess_poem path, resume.gen!
 
 
+# if has contracts in root dir, then
+  # require \child_process .exec <[truffle watch]>, {detached: true}
 
 src_watcher = chokidar.watch src_dir, {
   # ignore-initial: true
   # ignored: /[\/\\]\./
   cwd: src_dir
-  # always-stat: true
+  always-stat: true
 }
 
-src_watcher.on \change, (path) !->
+src_watcher.on \change, genny.ev (path, st, resume) ->*
+  if typeof resume isnt \function => throw new Error 'caca!'
   console.log \src.change, path
-  process_src path
+  # first, process the source file
+  yield from process_src path, resume.gen!
+
+  # then, check to see if that source file was a dependency of a poem
   tmp_dir_path = Path.join tmp_dir, path
+  to_process = {}
   for p, poem of poems
     if poem.css is path
-      process_poem p
+      to_process[p] = true
 
   for p, bundle of rollup_cache
-    for m in bundle.modules
-      if m.id is tmp_dir_path and poems[p]
-        process_poem p
-  # readFile
-  # if length or sha1 contents are different, process it
-  # sander.copyFile
 
-src_watcher.on \add, (path) !->
+    # using for-each because of the splice
+    bundle.modules.for-each (m, idx) !->
+      if m.id is tmp_dir_path
+        bundle.modules.splice idx, 1
+        to_process[p] = true
+
+  # lastly, recompile all poems that were affected
+  for p, v of to_process
+    yield from process_poem p, resume.gen!
+
+src_watcher.on \add, genny.ev (path, st, resume) ->*
   # console.log \src.add, path
-  process_src path
+  res = yield from process_src path, resume.gen!
 
-src_watcher.on \unlink, (path) !->
+src_watcher.on \unlink, genny.ev (path, resume) ->*
+  if typeof resume isnt \function => throw new Error "WHAT!"
   console.log \src.unlink, path
   if out_path = path_lookup[path]
     dest = Path.join tmp_dir, out_path
     console.log \src.unlinking, dest
     Fs.unlink dest, ->
 
-src_watcher.on \addDir, (path) !->
+src_watcher.on \addDir, genny.ev (path, st, resume) ->*
+  if typeof resume isnt \function => throw new Error "WHAT!"
   console.log \src.addDir, path
   # src_watcher.add path
   dest = Path.join tmp_dir, path
@@ -404,61 +460,64 @@ src_watcher.on \addDir, (path) !->
     if err and err.code isnt \EEXIST
       throw err
 
-src_watcher.on \unlinkDir, (path) !->
+src_watcher.on \unlinkDir, genny.ev (path, resume) ->*
   console.log \src.unlinkDir, path
   dest = Path.join tmp_dir, path
-  Fs.rmdir dest, ->
+  yield Fs.rmdir dest, resume!
 
-<-! src_watcher.on \ready
-console.log \src-ready
+src_watcher.on \ready !->
+  console.log \src-ready
+  # init poems
+  for p, poem of poems
+    poem.processing = 0
 
-# =======================
-# =======================
+  # =======================
+  # =======================
 
-out_watcher = chokidar.watch out_dir, {
-  ignore-initial: true
-  # ignored: /[\/\\]\./
-  cwd: out_dir
-  # always-stat: true
-}
+  out_watcher = chokidar.watch out_dir, {
+    ignore-initial: true
+    # ignored: /[\/\\]\./
+    cwd: out_dir
+    always-stat: true
+  }
 
-out_watcher.on \change, (path) !->
-  console.log \out.change, path
+  out_watcher.on \change, (path) !->
+    console.log \out.change, path
 
-out_watcher.on \add, (path) !->
-  console.log \out.add, path
+  out_watcher.on \add, (path) !->
+    console.log \out.add, path
 
-out_watcher.on \unlink, (path) !->
-  console.log \out.unlink, path
+  out_watcher.on \unlink, (path) !->
+    console.log \out.unlink, path
 
-out_watcher.on \addDir, (path) !->
-  console.log \out.addDir, path
+  out_watcher.on \addDir, (path) !->
+    console.log \out.addDir, path
 
-out_watcher.on \unlinkDir, (path) !->
-  console.log \out.unlinkDir, path
-
-
-tmp_watcher = chokidar.watch tmp_dir, {
-  # ignore-initial: true
-  # ignored: /[\/\\]\./
-  cwd: tmp_dir
-  # always-stat: true
-}
+  out_watcher.on \unlinkDir, (path) !->
+    console.log \out.unlinkDir, path
 
 
-tmp_watcher.on \change, (path) !->
-  # console.log \tmp.change, path
-  process_poem path
+  tmp_watcher = chokidar.watch tmp_dir, {
+    # ignore-initial: true
+    # ignored: /[\/\\]\./
+    cwd: tmp_dir
+    always-stat: true
+  }
 
-tmp_watcher.on \add, (path) !->
-  # console.log \tmp.add, path
-  process_poem path
 
-tmp_watcher.on \unlink, (path) !->
-  console.log \tmp.unlink, path
+  tmp_watcher.on \change, genny.ev (path, st, resume) ->*
+    # console.log \tmp.change, path
+    yield from process_poem path, resume.gen!
 
-tmp_watcher.on \addDir, (path) !->
-  console.log \tmp.addDir, path
+  tmp_watcher.on \add, genny.ev (path, st, resume) ->*
+    # console.log \tmp.add, path
+    yield from process_poem path, resume.gen!
 
-tmp_watcher.on \unlinkDir, (path) !->
-  console.log \tmp.unlinkDir, path
+  tmp_watcher.on \unlink, (path) !->
+    console.log \tmp.unlink, path
+
+  tmp_watcher.on \addDir, (path) !->
+    # console.log \tmp.addDir, path
+
+  tmp_watcher.on \unlinkDir, (path) !->
+    console.log \tmp.unlinkDir, path
