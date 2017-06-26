@@ -273,6 +273,7 @@ process_src = (path, resume) ->*
 
     | otherwise =>
       # console.log "#{opts.lang} not yet implemented"
+      # TODO: do a symlink like gobble does?
       resolve txt
 
     # if opts.result
@@ -289,15 +290,16 @@ process_src = (path, resume) ->*
     yield Fs.write-file dest, txt, resume!
 
 process_css = (path, resume) ->*
-  # NEEEDS IMPROVEMENT!!!
+  # not used. NEEEDS IMPROVEMENT!!!
   switch ext = Path.extname path
   | \.css =>
-    console.log \process_css, path
-    # prolly should do some postcss magic or something... I hate this build shit so much!
     src = Path.join tmp_dir, path
     dest = Path.join out_dir, path
-    txt = Fs.read-file src, \utf-8, resume!
-    Fs.write-file dest, txt, resume!
+    txt = yield Fs.read-file src, \utf-8, resume!
+    res = yield postcss POSTCSS_PLUGINS .process txt
+    yield Fs.write-file dest, res.css, resume!
+  | otherwise =>
+    console.error "unknown css extension: '#{ext}' for #{path}"
 
 reprocess_poem = (path, resume) ->*
   if poem = poems[path]
@@ -343,7 +345,9 @@ process_poem = (path, resume) ->*
     ]
   catch e
     if e.id => console.error e.id
-    console.error e.to-string!
+    console.error 'rollup error:' e.to-string!
+    # TODO: save the error (for the interface)
+    return
     # console.error e.message
     # if e.loc
     #   console.error e.loc
@@ -362,7 +366,7 @@ process_poem = (path, resume) ->*
 
     compiler = webpack opts
     stats = yield compiler.run resume!
-    # poem.processing = false
+
     console.log \poem, dest
     if bundle.imports.length => console.log 'static imports:', bundle.imports.join ','
     if bundle.exports.length => console.log 'static exports:', bundle.exports.join ','
@@ -389,16 +393,7 @@ process_poem = (path, resume) ->*
     if e.details => console.error e.details
     yield from reprocess_poem path, resume.gen!
 
-  if css_file = poem.css
-    css_src = Path.join tmp_dir, css_file
-    css_dest = Path.join out_dir, css_file
-    try
-      txt = yield Fs.read-file css_src, \utf-8, resume!
-      res = yield postcss POSTCSS_PLUGINS .process txt
-      yield Fs.write-file css_dest, res.css, resume!
-    catch e
-      # TODO: add to css error log
-      console.error 'css error:' e
+  if poem.css => yield from process_css poem.css, resume.gen!
 
   console.log "poem written:", dest
   yield from reprocess_poem path, resume.gen!
@@ -415,16 +410,17 @@ src_watcher = chokidar.watch src_dir, {
 }
 
 src_watcher.on \change, genny.ev (path, st, resume) ->*
-  if typeof resume isnt \function => throw new Error 'caca!'
   console.log \src.change, path
   # first, process the source file
   yield from process_src path, resume.gen!
 
   # then, check to see if that source file was a dependency of a poem
   tmp_dir_path = Path.join tmp_dir, path
+  ext = Path.extname path
+  epath = Path.basename path, ext
   to_process = {}
   for p, poem of poems
-    if poem.css is path
+    if poem.css is path or ~p.index-of epath
       to_process[p] = true
 
   for p, bundle of rollup_cache
@@ -444,7 +440,6 @@ src_watcher.on \add, genny.ev (path, st, resume) ->*
   res = yield from process_src path, resume.gen!
 
 src_watcher.on \unlink, genny.ev (path, resume) ->*
-  if typeof resume isnt \function => throw new Error "WHAT!"
   console.log \src.unlink, path
   if out_path = path_lookup[path]
     dest = Path.join tmp_dir, out_path
@@ -452,7 +447,6 @@ src_watcher.on \unlink, genny.ev (path, resume) ->*
     Fs.unlink dest, ->
 
 src_watcher.on \addDir, genny.ev (path, st, resume) ->*
-  if typeof resume isnt \function => throw new Error "WHAT!"
   console.log \src.addDir, path
   # src_watcher.add path
   dest = Path.join tmp_dir, path
