@@ -22,7 +22,7 @@ export default class PoemFrame extends PoemBase {
 
       roadtrip.start().then((els) => {
         if (els && !self.shadow) self.els(els)
-        roadtrip.unwatchLinks = roadtrip.watchLinks()
+        roadtrip.unwatchLinks = roadtrip.watchLinks(self)
       })
     }
   }

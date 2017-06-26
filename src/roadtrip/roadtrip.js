@@ -160,7 +160,7 @@ export default class RoadTrip {
   // further modification from https://github.com/Rich-Harris/roadtrip/blob/master/src/utils/watchLinks.js
   //  - added link detection in custom elements
   //  -
-  watchLinks () {
+  watchLinks (el) {
     var click_handler = (event) => {
       let w = which(event)
       if (w !== 1 && w !== 0) return
@@ -219,6 +219,7 @@ export default class RoadTrip {
       // (all document level event listeners are considered passive by default)
       // https://www.chromestatus.com/feature/5093566007214080
       event.preventDefault()
+      event.stopImmediatePropagation()
       this.goto(goto_path)
     }
 
@@ -241,15 +242,20 @@ export default class RoadTrip {
     }
 
     // watch history & clicks
-    win.addEventListener('click', click_handler, {passive: false})
-    win.addEventListener('touchstart', click_handler, {passive: false})
-    win.addEventListener('popstate', popstate_handler)
+    // if chrome complains about document level listeners now being passive,
+    // (and as a result, preventDefault no longer works so navigation takes place anyway...)
+    // to fix this, pass `watchLinks` an element which frames your content
+
+    if (!el) el = win
+    el.addEventListener('click', click_handler, true)
+    el.addEventListener('touchstart', click_handler, true)
+    el.addEventListener('popstate', popstate_handler, true)
 
     // return a remove function
     return () => {
-      win.removeEventListener('click', click_handler)
-      win.removeEventListener('touchstart', click_handler)
-      win.removeEventListener('popstate', popstate_handler)
+      el.removeEventListener('click', click_handler, true)
+      el.removeEventListener('touchstart', click_handler, true)
+      el.removeEventListener('popstate', popstate_handler, true)
     }
   }
 }
