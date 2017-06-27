@@ -322,13 +322,7 @@ async@^1.4.2, async@^1.5.2, async@~1.5.0:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
 
-async@^2.1.2:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/async/-/async-2.3.0.tgz#1013d1051047dd320fe24e494d5c66ecaf6147d9"
-  dependencies:
-    lodash "^4.14.0"
-
-async@^2.4.0:
+async@^2.0.0-rc.3, async@^2.1.2, async@^2.4.0:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/async/-/async-2.4.1.tgz#62a56b279c98a11d0987096a01cc3eeb8eb7bbd7"
   dependencies:
@@ -920,7 +914,6 @@ bignumber.js@^4.0.2:
 
 "bignumber.js@git+https://github.com/debris/bignumber.js#master":
   version "2.0.7"
-  uid "94d7146671b9719e00a09c29b01a691bc85048c2"
   resolved "git+https://github.com/debris/bignumber.js#94d7146671b9719e00a09c29b01a691bc85048c2"
 
 "bignumber.js@git+https://github.com/debris/bignumber.js.git#94d7146671b9719e00a09c29b01a691bc85048c2":
@@ -1971,6 +1964,10 @@ date-now@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/date-now/-/date-now-0.1.4.tgz#eaf439fd4d4848ad74e5cc7dbef200672b9e345b"
 
+dateformat@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/dateformat/-/dateformat-2.0.0.tgz#2743e3abb5c3fc2462e527dca445e04e9f4dee17"
+
 debug@0.7.4, debug@~0.7.4:
   version "0.7.4"
   resolved "https://registry.yarnpkg.com/debug/-/debug-0.7.4.tgz#06e1ea8082c2cb14e39806e22e2f6f757f92af39"
@@ -1987,7 +1984,7 @@ debug@2.6.3:
   dependencies:
     ms "0.7.2"
 
-debug@2.6.8, debug@^2.0.0, debug@^2.1.0, debug@^2.1.1, debug@^2.1.3, debug@^2.2.0, debug@^2.5.1, debug@^2.5.2, debug@^2.6.1, debug@^2.6.3, debug@^2.6.6, debug@^2.6.8, debug@~2.6.4:
+debug@^2.0.0, debug@^2.1.0, debug@^2.1.1, debug@^2.1.3, debug@^2.2.0, debug@^2.5.1, debug@^2.5.2, debug@^2.6.1, debug@^2.6.3, debug@^2.6.6, debug@^2.6.8, debug@~2.6.4:
   version "2.6.8"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.8.tgz#e731531ca2ede27d188222427da17821d68ff4fc"
   dependencies:
@@ -2173,22 +2170,22 @@ electro@^2.0.3:
   dependencies:
     minimist "~1.2.0"
 
-electron-builder-http@19.6.0, electron-builder-http@~19.6.0:
-  version "19.6.0"
-  resolved "https://registry.yarnpkg.com/electron-builder-http/-/electron-builder-http-19.6.0.tgz#7429a70d63f43f2d78b21613bd4ae5cded70562a"
+electron-builder-http@19.7.2, electron-builder-http@~19.7.2:
+  version "19.7.2"
+  resolved "https://registry.yarnpkg.com/electron-builder-http/-/electron-builder-http-19.7.2.tgz#5a63566e4a4685413861eaf087dcaa9a0e362a03"
   dependencies:
-    debug "2.6.8"
+    debug "^2.6.8"
     fs-extra-p "^4.3.0"
 
-electron-builder-util@19.6.0, electron-builder-util@~19.6.0:
-  version "19.6.0"
-  resolved "https://registry.yarnpkg.com/electron-builder-util/-/electron-builder-util-19.6.0.tgz#5901fa631ab7ecf16fb86c6905ef2785144bc205"
+electron-builder-util@19.8.0, electron-builder-util@~19.8.0:
+  version "19.8.0"
+  resolved "https://registry.yarnpkg.com/electron-builder-util/-/electron-builder-util-19.8.0.tgz#f6aa75c271cafcc335b965b50416d167e74ad6c5"
   dependencies:
     "7zip-bin" "^2.1.0"
     bluebird-lst "^1.0.2"
     chalk "^1.1.3"
-    debug "2.6.8"
-    electron-builder-http "~19.6.0"
+    debug "^2.6.8"
+    electron-builder-http "~19.7.2"
     fcopy-pre-bundled "0.3.4"
     fs-extra-p "^4.3.0"
     ini "^1.3.4"
@@ -2198,9 +2195,9 @@ electron-builder-util@19.6.0, electron-builder-util@~19.6.0:
     stat-mode "^0.2.2"
     tunnel-agent "^0.6.0"
 
-electron-builder@^19.6.3:
-  version "19.6.3"
-  resolved "https://registry.yarnpkg.com/electron-builder/-/electron-builder-19.6.3.tgz#cae6470af212d9ca3fe8484305906efde45e834a"
+electron-builder@^19.8.0:
+  version "19.8.0"
+  resolved "https://registry.yarnpkg.com/electron-builder/-/electron-builder-19.8.0.tgz#32f0a008be809e1df021ca13a8d9e92f6ee5c917"
   dependencies:
     "7zip-bin" "^2.1.0"
     ajv "^5.2.0"
@@ -2210,12 +2207,12 @@ electron-builder@^19.6.3:
     chalk "^1.1.3"
     chromium-pickle-js "^0.2.0"
     cuint "^0.2.2"
-    debug "2.6.8"
-    electron-builder-http "19.6.0"
-    electron-builder-util "19.6.0"
+    debug "^2.6.8"
+    electron-builder-http "19.7.2"
+    electron-builder-util "19.8.0"
     electron-download-tf "4.3.1"
     electron-osx-sign "0.4.6"
-    electron-publish "19.6.0"
+    electron-publish "19.8.0"
     fs-extra-p "^4.3.0"
     hosted-git-info "^2.4.2"
     is-ci "^1.0.10"
@@ -2223,7 +2220,6 @@ electron-builder@^19.6.3:
     js-yaml "^3.8.4"
     json5 "^0.5.1"
     minimatch "^3.0.4"
-    node-forge "^0.7.1"
     normalize-package-data "^2.3.8"
     parse-color "^1.0.0"
     plist "^2.1.0"
@@ -2272,9 +2268,9 @@ electron-osx-sign@0.4.6, electron-osx-sign@^0.4.1:
     plist "^2.0.1"
     tempfile "^1.1.1"
 
-electron-packager@^8.7.1:
-  version "8.7.1"
-  resolved "https://registry.yarnpkg.com/electron-packager/-/electron-packager-8.7.1.tgz#22607a44116cb4c1bce72246783990cae4fcf903"
+electron-packager@^8.7.2:
+  version "8.7.2"
+  resolved "https://registry.yarnpkg.com/electron-packager/-/electron-packager-8.7.2.tgz#457d3bf24bc9607c06ad4b1eb6daa4accadc2108"
   dependencies:
     asar "^0.13.0"
     debug "^2.2.0"
@@ -2291,14 +2287,14 @@ electron-packager@^8.7.1:
     sanitize-filename "^1.6.0"
     semver "^5.3.0"
 
-electron-publish@19.6.0:
-  version "19.6.0"
-  resolved "https://registry.yarnpkg.com/electron-publish/-/electron-publish-19.6.0.tgz#63ca75d2c6c54f56003b75b5313d6f4d96d85377"
+electron-publish@19.8.0:
+  version "19.8.0"
+  resolved "https://registry.yarnpkg.com/electron-publish/-/electron-publish-19.8.0.tgz#ff288f53f639553791a727dfcad1b9d15c999365"
   dependencies:
     bluebird-lst "^1.0.2"
     chalk "^1.1.3"
-    electron-builder-http "~19.6.0"
-    electron-builder-util "~19.6.0"
+    electron-builder-http "~19.7.2"
+    electron-builder-util "~19.8.0"
     fs-extra-p "^4.3.0"
     mime "^1.3.6"
 
@@ -3234,6 +3230,12 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.2, graceful-fs@^4.1.3, graceful-fs@^4.1.6,
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/graceful-readlink/-/graceful-readlink-1.0.1.tgz#4cafad76bc62f02fa039b2f94e9a3dd3a391a725"
 
+graphlib@^2.1.0:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/graphlib/-/graphlib-2.1.1.tgz#42352c52ba2f4d035cb566eb91f7395f76ebc951"
+  dependencies:
+    lodash "^4.11.1"
+
 gyronorm@^2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/gyronorm/-/gyronorm-2.0.6.tgz#c3dbcaa0109087fea75378f78538befdcd53cee2"
@@ -3268,6 +3270,10 @@ has-cors@1.1.0:
 has-flag@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/has-flag/-/has-flag-1.0.0.tgz#9d9e793165ce017a00f00418c43f942a7b1d11fa"
+
+has-flag@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/has-flag/-/has-flag-2.0.0.tgz#e8207af1cc7b30d446cc70b734b5e8be18f88d51"
 
 has-unicode@^2.0.0:
   version "2.0.1"
@@ -3418,9 +3424,9 @@ iconv-lite@~0.4.13:
   version "0.4.15"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.15.tgz#fe265a218ac6a57cfe854927e9d04c19825eddeb"
 
-identicon.js@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/identicon.js/-/identicon.js-2.2.1.tgz#e4f5c217a5b6c412fcaa2bf03a24142f128d5dfb"
+identicon.js@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/identicon.js/-/identicon.js-2.3.0.tgz#187f94290ac7d342fb67ff45c3ec490658c59f66"
 
 ieee754@^1.1.4:
   version "1.1.8"
@@ -4056,7 +4062,7 @@ loader-runner@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/loader-runner/-/loader-runner-2.3.0.tgz#f482aea82d543e07921700d5a46ef26fdac6b8a2"
 
-loader-utils@^0.2.16, loader-utils@~0.2.2:
+loader-utils@0.2.x, loader-utils@^0.2.16, loader-utils@~0.2.2:
   version "0.2.17"
   resolved "https://registry.yarnpkg.com/loader-utils/-/loader-utils-0.2.17.tgz#f86e6374d43205a6e6c60e9196f17c0299bfb348"
   dependencies:
@@ -4112,7 +4118,7 @@ lodash.uniq@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
 
-lodash@^4.14.0, lodash@^4.17.2, lodash@^4.2.0:
+lodash@^4.11.1, lodash@^4.14.0, lodash@^4.17.2, lodash@^4.2.0:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
@@ -4537,10 +4543,6 @@ node-fetch@^1.0.1, node-fetch@latest:
   dependencies:
     encoding "^0.1.11"
     is-stream "^1.0.1"
-
-node-forge@^0.7.1:
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/node-forge/-/node-forge-0.7.1.tgz#9da611ea08982f4b94206b3beb4cc9665f20c300"
 
 node-gyp@^3.6.0:
   version "3.6.2"
@@ -5432,13 +5434,21 @@ postcss@^5.0.0, postcss@^5.0.10, postcss@^5.0.11, postcss@^5.0.12, postcss@^5.0.
     source-map "^0.5.6"
     supports-color "^3.2.3"
 
-postcss@^6.0.1, postcss@^6.0.2:
+postcss@^6.0.1:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-6.0.2.tgz#5c4fea589f0ac3b00caa75b1cbc3a284195b7e5d"
   dependencies:
     chalk "^1.1.3"
     source-map "^0.5.6"
     supports-color "^3.2.3"
+
+postcss@^6.0.3:
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-6.0.3.tgz#b7f565b3d956fbb8565ca7c1e239d0506e427d8b"
+  dependencies:
+    chalk "^1.1.3"
+    source-map "^0.5.6"
+    supports-color "^4.0.0"
 
 prebuild-install@^2.0.0, prebuild-install@~2.1.0:
   version "2.1.2"
@@ -5589,12 +5599,13 @@ public-encrypt@^4.0.0:
     parse-asn1 "^5.0.0"
     randombytes "^2.0.1"
 
-pull-cursor@^2.1.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/pull-cursor/-/pull-cursor-2.1.2.tgz#c42e011b8320b0833e0cbb2500a703a437a27475"
+pull-cursor@^2.1.3:
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/pull-cursor/-/pull-cursor-2.1.3.tgz#021e97d7d23d78af66add6b8c1c17fd6fdb12b6c"
   dependencies:
     looper "^4.0.0"
     ltgt "^2.2.0"
+    pull-stream "^3.6.0"
 
 pull-pause@0.0.0:
   version "0.0.0"
@@ -5604,9 +5615,9 @@ pull-pause@^0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/pull-pause/-/pull-pause-0.0.1.tgz#c499b4161aaddbea84f52e898e570fa25d5fa22c"
 
-pull-scroll@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/pull-scroll/-/pull-scroll-1.0.6.tgz#2798dd5aa211c366d310b5d0d4ed205ecb96006e"
+pull-scroll@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/pull-scroll/-/pull-scroll-1.0.8.tgz#c71cf490dfc40e5885077148b4126be536fb027f"
   dependencies:
     obv "0.0.1"
     pull-pause "0.0.0"
@@ -6059,11 +6070,11 @@ rxjs@^5.1.1:
   dependencies:
     symbol-observable "^1.0.1"
 
-safe-buffer@^5.0.0, safe-buffer@^5.1.0:
+safe-buffer@^5.0.0, safe-buffer@^5.0.1, safe-buffer@^5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.0.tgz#fe4c8460397f9eaaaa58e73be46273408a45e223"
 
-safe-buffer@^5.0.1, safe-buffer@~5.0.1:
+safe-buffer@~5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.0.1.tgz#d263ca54696cd8a306b5ca6551e92de57918fbe7"
 
@@ -6338,7 +6349,14 @@ sockjs@^0.3.15:
     faye-websocket "^0.10.0"
     uuid "^2.0.2"
 
-solc@0.4.6, solc@^0.4.2:
+solc-loader@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/solc-loader/-/solc-loader-1.1.1.tgz#6aba83ccc6529a1d81d985638e76421a63d20f81"
+  dependencies:
+    loader-utils "0.2.x"
+    solc "*"
+
+solc@*, solc@0.4.6, solc@^0.4.2:
   version "0.4.6"
   resolved "https://registry.yarnpkg.com/solc/-/solc-0.4.6.tgz#afa929a1ceafc0252cfbb4217c8e2b1dab139db7"
   dependencies:
@@ -6659,6 +6677,12 @@ supports-color@^3.1.0, supports-color@^3.1.1, supports-color@^3.2.3:
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-3.2.3.tgz#65ac0504b3954171d8a64946b2ae3cbb8a5f54f6"
   dependencies:
     has-flag "^1.0.0"
+
+supports-color@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-4.0.0.tgz#33a7c680aa512c9d03ef929cacbb974d203d2790"
+  dependencies:
+    has-flag "^2.0.0"
 
 svgo@^0.7.0:
   version "0.7.2"
@@ -7003,9 +7027,9 @@ uglify-js@^2.8.29:
   optionalDependencies:
     uglify-to-browserify "~1.0.0"
 
-uglify-js@^3.0.17:
-  version "3.0.18"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.0.18.tgz#d67a3e5a0a08356b787fb1c9bddf3a807630902e"
+uglify-js@^3.0.20:
+  version "3.0.20"
+  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.0.20.tgz#cb35b2bcfe478051b6f3282be8db4e4add49a1e5"
   dependencies:
     commander "~2.9.0"
     source-map "~0.5.1"
@@ -7253,6 +7277,14 @@ watchpack@^1.3.1:
     chokidar "^1.4.3"
     graceful-fs "^4.1.2"
 
+web3-loader@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/web3-loader/-/web3-loader-1.1.2.tgz#d0fecfce692763deea6ed56f3e48995cc9271988"
+  dependencies:
+    async "^2.0.0-rc.3"
+    graphlib "^2.1.0"
+    loader-utils "0.2.x"
+
 web3-provider-engine@^8.4.0:
   version "8.6.1"
   resolved "https://registry.yarnpkg.com/web3-provider-engine/-/web3-provider-engine-8.6.1.tgz#4d86e19e30caaf97df351511ec0f60136e5b30eb"
@@ -7310,11 +7342,11 @@ web3@^0.18.0, web3@^0.18.2:
     xhr2 "*"
     xmlhttprequest "*"
 
-web3@^0.19.0:
-  version "0.19.0"
-  resolved "https://registry.yarnpkg.com/web3/-/web3-0.19.0.tgz#8b18fba24421a59d2884859bcb9b718c2665524e"
+web3@^0.19.1:
+  version "0.19.1"
+  resolved "https://registry.yarnpkg.com/web3/-/web3-0.19.1.tgz#e763d5b1107c4bc24abd4f8cbee1ba3659e6eb31"
   dependencies:
-    bignumber.js "git+https://github.com/debris/bignumber.js.git#94d7146671b9719e00a09c29b01a691bc85048c2"
+    bignumber.js "^4.0.2"
     crypto-js "^3.1.4"
     utf8 "^2.1.1"
     xhr2 "*"
@@ -7440,9 +7472,9 @@ websocket-extensions@>=0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/websocket-extensions/-/websocket-extensions-0.1.1.tgz#76899499c184b6ef754377c2dbb0cd6cb55d29e7"
 
-webtorrent@^0.98.18:
-  version "0.98.18"
-  resolved "https://registry.yarnpkg.com/webtorrent/-/webtorrent-0.98.18.tgz#d8e0e04a52af884e9cffa361cbe8c159a4cb6f98"
+webtorrent@^0.98.19:
+  version "0.98.19"
+  resolved "https://registry.yarnpkg.com/webtorrent/-/webtorrent-0.98.19.tgz#9ce15fe71ea12600aa85ee12a9793eac88087262"
   dependencies:
     addr-to-ip-port "^1.4.2"
     bitfield "^1.1.2"
