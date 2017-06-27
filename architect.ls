@@ -68,7 +68,6 @@ require! \rollup-plugin-buble
 require! \chokidar
 require! \webpack
 require! \postcss
-EE = require \events .EventEmitter
 
 genny.long-stack-support = true
 genny.ev = (gen) ->
@@ -89,15 +88,6 @@ POSTCSS_PLUGINS = [
   require 'postcss-color-function'
   # (require 'autoprefixer')(browsers: ['last 2 versions'])
 ]
-
-# TODO: don't remove these dirs & only update files if they are different (eg. different hashes)
-rimraf.sync tmp_dir
-mkdirp.sync tmp_dir
-
-rimraf.sync out_dir
-mkdirp.sync out_dir
-
-emitter = new EE
 
 # set-interval !->
 #   test-file = Path.join src_dir, \testing-file.js
@@ -229,16 +219,16 @@ path_lookup = {}
 
 process_src = (path, resume) ->*
   file = Path.basename path
+  src = Path.join src_dir, path
   if file is \.DS_Store
-    return yield rimraf origin, resume!
+    return yield rimraf src, resume!
 
   opts = get-opts {path}
   path_lookup[path] = opts.outfile
-  origin = Path.join src_dir, path
   dest = Path.join tmp_dir, opts.outfile
 
-  txt = yield Fs.read-file origin, encoding: \utf-8, resume!
-  txt = yield new Promise (resolve, reject) !->
+  txt = yield Fs.read-file src, \utf-8, resume!
+  new_txt = yield new Promise (resolve, reject) !->
     switch opts.lang
     | \alive-script =>
       try
@@ -254,7 +244,7 @@ process_src = (path, resume) ->*
 
         resolve (if opts.json => res else res.code)
       catch e
-        console.error "error compiling: #{origin} ::", e
+        console.error "error compiling: #{src} ::", e
         reject e
 
     | \js =>
@@ -273,7 +263,6 @@ process_src = (path, resume) ->*
 
     | otherwise =>
       # console.log "#{opts.lang} not yet implemented"
-      # TODO: do a symlink like gobble does?
       resolve txt
 
     # if opts.result
@@ -285,9 +274,13 @@ process_src = (path, resume) ->*
     #   opts.output = LiveScript.run opts.output, options, true
     #   process.chdir CWD
 
-  # .then (txt) ->
-  if txt isnt false
-    yield Fs.write-file dest, txt, resume!
+  # if txt is new_txt or new_txt is true
+  #   console.log 'symlink:', dest, '->', src
+  #   Fs.symlink dest, src, (err) -> if err and err.code isnt \EEXIST => throw err
+  # else
+  if new_txt isnt false
+    # console.log 'write:', dest
+    yield Fs.write-file dest, new_txt, resume!
 
 process_css = (path, resume) ->*
   # not used. NEEEDS IMPROVEMENT!!!
@@ -303,9 +296,12 @@ process_css = (path, resume) ->*
 
 reprocess_poem = (path, resume) ->*
   if poem = poems[path]
-    if poem.processing > 1
-      yield from process_poem path, resume.gen!
-    else poem.processing = 0
+    count = poem.processing
+    poem.processing = 0
+    # if the poem received a another request to reprocess while it was still processing,
+    # then, the count will be more than one. go ahead and process again.
+    if count > 1 => yield from process_poem path, resume.gen!
+
 
 process_poem = (path, resume) ->*
   if not (poem = poems[path]) or (poem.processing++) isnt 0
@@ -399,119 +395,136 @@ process_poem = (path, resume) ->*
   yield from reprocess_poem path, resume.gen!
 
 
-# if has contracts in root dir, then
-  # require \child_process .exec <[truffle watch]>, {detached: true}
+# =======================
+# =======================
 
-src_watcher = chokidar.watch src_dir, {
-  # ignore-initial: true
-  # ignored: /[\/\\]\./
-  cwd: src_dir
-  always-stat: true
-}
+genny.run (resume) ->*
+  # TODO: don't remove these dirs & only update files if they are different (eg. different hashes)
+  yield [
+    rimraf tmp_dir, resume!
+    rimraf out_dir, resume!
+    mkdirp tmp_dir, resume!
+    mkdirp out_dir, resume!
+  ]
 
-src_watcher.on \change, genny.ev (path, st, resume) ->*
-  console.log \src.change, path
-  # first, process the source file
-  yield from process_src path, resume.gen!
+  # if has contracts in root dir, then
+    # require \child_process .exec <[truffle watch]>, {detached: true}
 
-  # then, check to see if that source file was a dependency of a poem
-  tmp_dir_path = Path.join tmp_dir, path
-  ext = Path.extname path
-  epath = Path.basename path, ext
-  to_process = {}
-  for p, poem of poems
-    if poem.css is path or ~p.index-of epath
-      to_process[p] = true
-
-  for p, bundle of rollup_cache
-
-    # using for-each because of the splice
-    bundle.modules.for-each (m, idx) !->
-      if m.id is tmp_dir_path
-        bundle.modules.splice idx, 1
-        to_process[p] = true
-
-  # lastly, recompile all poems that were affected
-  for p, v of to_process
-    yield from process_poem p, resume.gen!
-
-src_watcher.on \add, genny.ev (path, st, resume) ->*
-  # console.log \src.add, path
-  res = yield from process_src path, resume.gen!
-
-src_watcher.on \unlink, genny.ev (path, resume) ->*
-  console.log \src.unlink, path
-  if out_path = path_lookup[path]
-    dest = Path.join tmp_dir, out_path
-    console.log \src.unlinking, dest
-    Fs.unlink dest, ->
-
-src_watcher.on \addDir, genny.ev (path, st, resume) ->*
-  console.log \src.addDir, path
-  # src_watcher.add path
-  dest = Path.join tmp_dir, path
-  Fs.mkdir dest, (err) !->
-    if err and err.code isnt \EEXIST
-      throw err
-
-src_watcher.on \unlinkDir, genny.ev (path, resume) ->*
-  console.log \src.unlinkDir, path
-  dest = Path.join tmp_dir, path
-  yield Fs.rmdir dest, resume!
-
-src_watcher.on \ready !->
-  console.log \src-ready
-  # init poems
-  for p, poem of poems
-    poem.processing = 0
-
-  # =======================
-  # =======================
-
-  out_watcher = chokidar.watch out_dir, {
-    ignore-initial: true
-    # ignored: /[\/\\]\./
-    cwd: out_dir
-    always-stat: true
-  }
-
-  out_watcher.on \change, (path) !->
-    console.log \out.change, path
-
-  out_watcher.on \add, (path) !->
-    console.log \out.add, path
-
-  out_watcher.on \unlink, (path) !->
-    console.log \out.unlink, path
-
-  out_watcher.on \addDir, (path) !->
-    console.log \out.addDir, path
-
-  out_watcher.on \unlinkDir, (path) !->
-    console.log \out.unlinkDir, path
-
-
-  tmp_watcher = chokidar.watch tmp_dir, {
+  src_watcher = chokidar.watch src_dir, {
     # ignore-initial: true
     # ignored: /[\/\\]\./
-    cwd: tmp_dir
+    cwd: src_dir
     always-stat: true
   }
 
+  src_watcher.on \change, genny.ev (path, st, resume) ->*
+    console.log \src.change, path
+    # first, process the source file
+    yield from process_src path, resume.gen!
 
-  tmp_watcher.on \change, genny.ev (path, st, resume) ->*
-    # console.log \tmp.change, path
-    yield from process_poem path, resume.gen!
+    # then, check to see if that source file was a dependency of a poem
+    tmp_dir_path = Path.join tmp_dir, path
+    ext = Path.extname path
+    epath = Path.basename path, ext
+    to_process = {}
+    for p, poem of poems
+      if path_lookup[path] is p
+        console.log 'found poem!', path, p
+        to_process[p] = true
 
-  tmp_watcher.on \add, genny.ev (path, st, resume) ->*
-    # console.log \tmp.add, path
-    yield from process_poem path, resume.gen!
+      if poem.css is path or ~p.index-of epath
+        to_process[p] = true
 
-  tmp_watcher.on \unlink, (path) !->
-    console.log \tmp.unlink, path
+    for p, bundle of rollup_cache
 
-  tmp_watcher.on \addDir, (path) !->
-    # console.log \tmp.addDir, path
+      # using for-each because of the splice
+      bundle.modules.for-each (m, idx) !->
+        if m.id is tmp_dir_path
+          bundle.modules.splice idx, 1
+          to_process[p] = true
 
-  tmp_watcher.on \unlinkDir, (path) !->
-    console.log \tmp.unlinkDir, path
+    # lastly, recompile all poems that were affected
+    for p, v of to_process
+      console.log 'process', p, poems[p].processing
+      yield from process_poem p, resume.gen!
+
+  src_watcher.on \add, genny.ev (path, st, resume) ->*
+    # console.log \src.add, path
+    yield from process_src path, resume.gen!
+
+  src_watcher.on \unlink, (path) !->
+    console.log \src.unlink, path
+    if out_path = path_lookup[path]
+      dest = Path.join tmp_dir, out_path
+      console.log \src.unlinking, dest
+      Fs.unlink dest, ->
+
+  src_watcher.on \addDir, (path) !->
+    console.log \src.addDir, path
+    dest = Path.join tmp_dir, path
+    Fs.mkdir dest, (err) !-> if err and err.code isnt \EEXIST => throw err
+
+  src_watcher.on \unlinkDir, genny.ev (path, resume) ->*
+    console.log \src.unlinkDir, path
+    dest = Path.join tmp_dir, path
+    yield rimraf dest, resume!
+
+  src_watcher.on \ready !->
+    console.log \src-ready
+
+    # init poems
+    for p, poem of poems
+      poem.processing = 0
+
+    # =======================
+    # =======================
+
+    out_watcher = chokidar.watch out_dir, {
+      ignore-initial: true
+      # ignored: /[\/\\]\./
+      cwd: out_dir
+      always-stat: true
+    }
+
+    out_watcher.on \change, (path) !->
+      console.log \out.change, path
+
+    out_watcher.on \add, (path) !->
+      console.log \out.add, path
+
+    out_watcher.on \unlink, (path) !->
+      console.log \out.unlink, path
+
+    out_watcher.on \addDir, (path) !->
+      console.log \out.addDir, path
+
+    out_watcher.on \unlinkDir, (path) !->
+      console.log \out.unlinkDir, path
+
+
+    tmp_watcher = chokidar.watch tmp_dir, {
+      # ignore-initial: true
+      # ignored: /[\/\\]\./
+      cwd: tmp_dir
+      always-stat: true
+    }
+
+
+    tmp_watcher.on \change, genny.ev (path, st, resume) ->*
+      # console.log \tmp.change, path
+      yield from process_poem path, resume.gen!
+
+    tmp_watcher.on \add, genny.ev (path, st, resume) ->*
+      # console.log \tmp.add, path
+      yield from process_poem path, resume.gen!
+
+    tmp_watcher.on \unlink, (path) !->
+      console.log \tmp.unlink, path
+
+    tmp_watcher.on \addDir, (path) !->
+      # console.log \tmp.addDir, path
+
+    tmp_watcher.on \unlinkDir, (path) !->
+      console.log \tmp.unlinkDir, path
+, (err) !->
+  console.error "main error:", err

@@ -9,6 +9,14 @@ import isEqual from '../lib/lodash/isEqual'
 import { win, location, origin, basePath } from '../lib/dom/hyper-hermes'
 import { noop, slasher } from '../lib/utils'
 
+const which = (event) => (event = event || win.event).which === null ? event.button : event.which
+const sameOrigin = (href) => typeof href === 'string' && href.indexOf(origin) === 0
+const isSameRoute = (routeA, routeB, dataA, dataB) => routeA === routeB && (
+    dataA.hash === dataB.hash &&
+    isEqual(dataA.params, dataB.params) &&
+    isEqual(dataA.query, dataB.query)
+  )
+
 export default class RoadTrip {
   constructor (base = '') {
     this.routes = []
@@ -160,7 +168,7 @@ export default class RoadTrip {
   // further modification from https://github.com/Rich-Harris/roadtrip/blob/master/src/utils/watchLinks.js
   //  - added link detection in custom elements
   //  -
-  watchLinks (el) {
+  watchLinks (container_el) {
     var click_handler = (event) => {
       let w = which(event)
       if (w !== 1 && w !== 0) return
@@ -246,33 +254,16 @@ export default class RoadTrip {
     // (and as a result, preventDefault no longer works so navigation takes place anyway...)
     // to fix this, pass `watchLinks` an element which frames your content
 
-    if (!el) el = win
-    el.addEventListener('click', click_handler, true)
-    el.addEventListener('touchstart', click_handler, true)
-    el.addEventListener('popstate', popstate_handler, true)
+    if (!container_el) container_el = win
+    container_el.addEventListener('click', click_handler, true)
+    container_el.addEventListener('touchstart', click_handler, true)
+    container_el.addEventListener('popstate', popstate_handler, true)
 
     // return a remove function
     return () => {
-      el.removeEventListener('click', click_handler, true)
-      el.removeEventListener('touchstart', click_handler, true)
-      el.removeEventListener('popstate', popstate_handler, true)
+      container_el.removeEventListener('click', click_handler, true)
+      container_el.removeEventListener('touchstart', click_handler, true)
+      container_el.removeEventListener('popstate', popstate_handler, true)
     }
   }
-}
-
-function which (event) {
-  event = event || win.event
-  return event.which === null ? event.button : event.which
-}
-
-function sameOrigin (href) {
-  return (href && (href.indexOf(origin) === 0))
-}
-
-function isSameRoute (routeA, routeB, dataA, dataB) {
-  return routeA === routeB && (
-    dataA.hash === dataB.hash &&
-    isEqual(dataA.params, dataB.params) &&
-    isEqual(dataA.query, dataB.query)
-  )
 }
