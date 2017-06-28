@@ -21,39 +21,109 @@ require! \pull-scroll
 require! \pull-stream
 
 require! \currency-formatter
-require! \moment
+require! \dateformat
+require! \genny
+genny.ev = (gen) ->
+  fn = genny gen
+  return !->
+    args = [].slice.call &
+    args.push (err, res) !->
+      if err => throw err
+    fn.apply this, args
 
 const NAMES = require '../../../data/names.json'
 
 Identicon = require \identicon.js
-# web3 = new (Web3 = require 'web3')
-# web3.set-provider new web3.providers.HttpProvider 'http://localhost:8545'
-# # web3.set-provider (require 'ethereumjs-testrpc' .provider!)
-# # web3.eth.default-account = web3.eth.coinbase
-# web3.eth.default-account = "0x3992df320f500a183e2855be3222f4ba7a5c218a"
-# web3.eth.priv-key = "9054f3a7c330fa53ad4c116511443f3ac62773cc110dd97fed01cadbc6be27f6"
-#
-#
 # require! \truffle-contract
 #
+# Incrementer = require '../contracts/Incrementer.sol'
+{ 'LoanList.sol:LoanList': LoanList, web3 } = require '../contracts/LoanList.sol'
+window <<< { LoanList }
+
+
+# web3 = new (Web3 = require 'web3')
+# web3.set-provider new web3.providers.HttpProvider
+accounts = web3.eth.accounts
+# web3.set-provider (require 'ethereumjs-testrpc' .provider!)
+# web3.eth.default-account = web3.eth.coinbase
+
+watcher = LoanList.allEvents {}, genny.fn (err, ev, resume) ->*
+# watcher = LoanList.allEvents!watch (err, ev) ->
+  # debugger
+  type = ev.event
+  args = ev.args
+  id = args.id.to-number!
+  console.log 'LoanList event', type, id
+  switch type
+  | \Created =>
+    console.log 'new loan created:', id, args.beneficiary, args.goal.to-number!
+  | \Contributed =>
+    # (loan) <- LoanList.loans id
+    loan = yield LoanList.loans id, resume!
+    if loan
+      if loan.goal is void => debugger
+      console.log 'a loan funder:', id, args.funder, args.amount.to-number!, '/', loan.goal.to-number!
+  | \Finalised =>
+    console.log 'loan finalised:', id, args.amount.to-number!
+
+timeout = 3000ms
+
+set-timeout !->
+  genny.run (resume) ->*
+    console.log \create, yield LoanList.create web3.eth.accounts[0], 20000, {from: accounts.0, gas: 100000}, resume!
+, timeout += 1000ms
+set-timeout !->
+  genny.run (resume) ->*
+    console.log \contribute, yield LoanList.contribute 0, {from: accounts.1, value: 10000, gas: 110000}, resume!
+, timeout += 1000ms
+set-timeout !->
+  genny.run (resume) ->*
+    console.log \contribute, yield LoanList.contribute 0, {from: accounts.2, value: 10000, gas: 110000}, resume!
+, timeout += 1000ms
+set-timeout !->
+  genny.run (resume) ->*
+    console.log \contribute, yield LoanList.contribute 0, {from: accounts.3, value: 5000, gas: 110000}, resume!
+, timeout += 1000ms
+set-timeout !->
+  genny.run (resume) ->*
+    console.log \finalise, yield LoanList.finalise 0, {from: accounts.3, gas: 110000}, resume!
+, timeout += 1000ms
+
+# var contract
+# web3.eth.compile.solidity src, (err, compiled) !->
+#   if err => return console.error err
+  # code = compiled.code
+  # abi = compiled.info.abiDefinition
+  # console.log 'compiled code!'
+  # Incrementer = truffle-contract {abi: compiled.info.abiDefinition, unlinked_binary: compiled.code}
+  # Incrementer.set-provider new web3.providers.HttpProvider
+  # Incrementer.new {from: web3.eth.default-account, gas: 0x100000} .then (incr) !->
+  #   window.incr = incr
+  #   incr.Incremented {filter: {odd: true}, from-block: 0}, (err, ev) !->
+  #     if err => console.error \event, err
+  #     else console.log \event, ev.args, ev.args.x.value-of!
+  #
 # web3.eth.get-balance web3.eth.default-account, (err, b) ->
 #   console.log err, b.to-string!
-#
+
 # Incrementer = truffle-contract require '../contracts/Incrementer'
-# lala = web3.eth.contract Incrementer.abi
-# lala.new {data: Incrementer.binary, gas: 101000}, (err, c) !->
-#   console.log \contract, err, c
-# Incrementer.set-provider new web3.providers.HttpProvider 'http://localhost:8545'
-# Incrementer.new from: web3.eth.default-account .then (incr) !->
-#   debugger
+# Incrementer.set-provider new web3.providers.HttpProvider
+# Incrementer.new {from: web3.eth.default-account, gas: 0x100000} .then (incr) !->
+#   # debugger
+#   # set-interval !->
+#   #   incr.inc!
+#   # , 1000
+#   window.incr = incr
+#   incr.Incremented {filter: {odd: true}, from-block: 0}, (err, x) !->
+#     console.info \event, err, x
 # Incrementer.deployed!.then (incrementer) !->
 #     incrementer.Incremented {odd: true}, (err, x) !->
 #       console.log "current count is:", x
 
 # for testing:
 window <<< { rand, rand2, randomId, randomEl, randomIds, randomPos, randomHex, randomCharactor, randomDate, inTime, between, lipsum, word, obj }
-window <<< { moment, currency-formatter }
-# window <<< { web3, Web3, Incrementer }
+window <<< { dateformat, currency-formatter }
+window <<< { web3, Web3 }
 
 const LOCALES = <[en-us en-gb es-es es-mx]>
 
@@ -103,9 +173,9 @@ const DEFAULT_CONFIG =
 # rendering functions
 percent = (n) -> (Math.floor n * 100) + '%'
 rating = (p, n = 10) -> (Math.floor p * n) + ' / ' + n
-day_month = (d) -> (moment d .format 'Do MMM')
-user_link = (h, dd) ->
-  h \a href: "/u/#{dd.id}", dd.name
+# day_month = (d) -> (moment d .format 'Do MMM')
+day_month = (d) -> (dateformat d, 'dS mmm')
+user_link = (h, dd) -> h \a href: "/u/#{dd.id}", dd.name
 
 
 # LOAN
