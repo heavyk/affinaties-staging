@@ -12,6 +12,7 @@ require! fs: \Fs
 src_dir = Path.join __dirname, \src
 tmp_dir = Path.join __dirname, \priv \build
 out_dir = Path.join __dirname, \priv \static
+contracts_dir = Path.join __dirname, \contracts
 
 poems =
   # 'plugins/booble-bobble.js':
@@ -162,6 +163,9 @@ webpack_opts =
     rules:
       * test: /.js$/
         loader: \source-map-loader
+      * test: /.sol$/
+        # loader: \solc-loader
+        loaders: <[web3-loader solc-loader]>
       ...
 
 # resolve stupid rollup wanring with lodash: invalid use of 'this' at the root level
@@ -343,7 +347,7 @@ process_poem = (path, resume) ->*
     if e.id => console.error e.id
     console.error 'rollup error:' e.to-string!
     # TODO: save the error (for the interface)
-    return
+    return yield from reprocess_poem path, resume.gen!
     # console.error e.message
     # if e.loc
     #   console.error e.loc
@@ -471,6 +475,9 @@ genny.run (resume) ->*
 
   src_watcher.on \ready !->
     console.log \src-ready
+    Fs.symlink contracts_dir, (Path.join tmp_dir, 'contracts'), (err) !->
+      if err and err.code isnt \EEXIST => throw err
+      else console.log 'contracts symlinked'
 
     # init poems
     for p, poem of poems
