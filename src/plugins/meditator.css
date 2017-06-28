@@ -10,8 +10,14 @@ poem-frame {
 }
 
 poem-frame .side-bar {
-  grid-area: "sidebar";
+  grid-area: sidebar;
+  color: red;
 }
 poem-frame .top {
-  grid-area: "header";
+  grid-area: header;
+  color: green;
+}
+poem-frame .middle {
+  grid-area: content;
+  color: pink;
 }
