@@ -7,9 +7,8 @@
 import Route from './Route.js'
 import isEqual from '../lib/lodash/isEqual'
 import { win, location, origin, basePath } from '../lib/dom/hyper-hermes'
-import { noop, slasher } from '../lib/utils'
+import { noop, slasher, which } from '../lib/utils'
 
-const which = (event) => (event = event || win.event).which === null ? event.button : event.which
 const sameOrigin = (href) => typeof href === 'string' && href.indexOf(origin) === 0
 const isSameRoute = (routeA, routeB, dataA, dataB) => routeA === routeB && (
     dataA.hash === dataB.hash &&

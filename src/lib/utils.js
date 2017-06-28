@@ -20,13 +20,7 @@ export function parents (el, name) {
     : null
 }
 
-export function isEmpty (value) {
-  if (!value || typeof value !== 'object') {
-    return !value
-  }
-
-  return !Object.keys(value).length
-}
+export const isEmpty = (value) => (!value || typeof value !== 'object') ? !value : !Object.keys(value).length
 
 export function joinPaths (...parts) {
   return parts.join('/').replace(/\/+/g, '/')
@@ -104,9 +98,9 @@ export function pick (object, keys) {
   return data
 }
 
-export function scrollTo (id) {
-  if (!id) return
-  var el = document.getElementById(id)
+export function scrollTo (id_or_el) {
+  if (!id_or_el) return
+  var el = typeof id_or_el === 'string' ? document.getElementById(id_or_el) : id_or_el
 
   if (el) {
     window.scrollBy(0, el.getBoundingClientRect().top)
@@ -115,13 +109,7 @@ export function scrollTo (id) {
   }
 }
 
-export function stringify (value) {
-  if (!value || typeof value !== 'object') {
-    return value
-  }
-
-  return JSON.stringify(value)
-}
+export const stringify = (value) => (!value || typeof value !== 'object') ? value : JSON.stringify(value)
 
 export function stringifyHash (data) {
   data = compact(data)
@@ -145,24 +133,11 @@ export function stringifyQS (data) {
     : ''
 }
 
-export function camelize (k) {
-  return ~k.indexOf('-') ? k.replace(/-+(.)?/g, (tmp, c) => (c || '').toUpperCase()) : k
-}
+export const camelize = (k) => ~k.indexOf('-') ? k.replace(/-+(.)?/g, (tmp, c) => (c || '').toUpperCase()) : k
 
 // I imagine that something better can be done than this...
-export function define_getter (fn) {
-  return {
-    configurable: true, //enumerable: true,
-    get: fn
-  }
-}
-
-export function define_value (fn) {
-  return {
-    // configurable: true, writable: true,
-    value: fn
-  }
-}
+export const define_getter = (fn) => ({ configurable: true, get: fn })
+export const define_value = (fn) => ({ value: fn })
 
 export function slasher (_path, leading) {
   // strip trailing slash
@@ -183,6 +158,14 @@ export function extract_opts_val (opts, key, _default) {
 export function optimal_obj (obj) {
   Object.create(obj)
   var enforcer = () => obj.blah
+  // call twice to ensure v8 optimises the object
   enforcer()
   enforcer()
 }
+
+export const which = (event) => (event = event || win.event).which === null ? event.button : event.which
+
+export const kindOf = (val) => val === null ? 'null'
+  : typeof val !== 'object' ? typeof val
+  : Array.isArray(val) ? 'array'
+  : {}.toString.call(val).slice(8, -1).toLowerCase()
