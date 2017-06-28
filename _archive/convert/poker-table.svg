@@ -1,0 +1,56 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="957.2px" height="545px" viewBox="1.4 8 957.2 545" enable-background="new 1.4 8 957.2 545" xml:space="preserve">
+<symbol id="Card" viewBox="0 0 45.56 63.07">
+	<defs>
+		<pattern id="square" width="5" height="5" patternUnits="userSpaceOnUse">
+			<rect x="0" y="0" width="5" height="5" fill="#FFF"/>
+			<rect x="0" y="0" width="2.5" height="2.5" fill="#F00"/>
+			<rect x="2.5" y="2.5" width="2.5" height="2.5" fill="#F00"/>
+		</pattern>
+	</defs>
+	<rect x="0.5" y="0.5" rx="2.5" ry="2.5" width="44.563" height="62.071" style="fill:#FFF;stroke-width:1;stroke:#000" />
+	<rect x="3" y="3" rx="2" ry="2" width="39.563" height="57.071" fill="url(#square)" />
+</symbol>
+<symbol id="Chip" viewBox="0 0 42 42">
+	<circle cx="21" cy="21" r="20.5" stroke="#000" stroke-width="1" fill="#FFF" />
+	<path fill="#FF0000" stroke="#231F20" stroke-miterlimit="10" d="M20.813,41.506c-3,0.004-6.767-0.883-10-2.75L31.188,3.25c-3.234-1.867-6.377-2.753-10.377-2.75L20.813,41.506L20.813,41.506z M38.851,10.915c1.503,2.597,2.618,6.302,2.618,10.035L0.532,21.057c0,3.735,0.804,6.899,2.807,10.362L38.851,10.915L38.851,10.915z M3.339,10.589c1.497-2.6,4.148-5.418,7.381-7.284l20.561,35.398c3.234-1.867,5.573-4.146,7.57-7.611L3.339,10.589L3.339,10.589z"/>
+	<circle cx="21" cy="21" r="15" stroke="#000" stroke-width="1" fill="#FFF" />
+</symbol>
+<g id="Table">
+	<path fill="#333333" stroke="#000000" stroke-miterlimit="10" d="M752.582,552.5c113.505,0,205.518-121.348,205.518-272.12C958.1,129.608,866.087,8.5,752.582,8.5H207.418C93.914,8.5,1.9,129.608,1.9,280.38c0,150.772,92.014,272.12,205.518,272.12H752.582z"/>
+	<path fill="#5DB779" stroke="#000000" stroke-miterlimit="10" d="M720.313,505.5C820.38,505.5,901.5,405.343,901.5,280.9c0-124.441-81.12-224.4-181.188-224.4H239.688C139.62,56.5,58.5,156.459,58.5,280.9s81.12,224.6,181.188,224.6H720.313z"/>
+</g>
+<g id="Cards">
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(0.9397 -0.342 -0.342 -0.9397 648.25 100.9028)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(1 0 0 -1 639.2549 97.1089)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(0.9397 -0.342 -0.342 -0.9397 471.1528 100.9028)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(1 0 0 -1 462.1577 97.1089)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(0.9397 -0.342 -0.342 -0.9397 287.2256 100.9028)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(1 0 0 -1 278.2305 97.1089)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(0.342 -0.9397 -0.9397 -0.342 156.2339 156.9268)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(0.6428 -0.766 -0.766 -0.6428 147.5444 161.3789)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(-0.342 0.9397 0.9397 0.342 810.2969 399.3008)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(-0.6428 0.766 0.766 0.6428 818.9863 394.8486)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(-0.9397 0.342 0.342 0.9397 286.5146 451.4072)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(-1 0 0 1 295.5098 455.2002)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(-0.866 -0.5 -0.5 0.866 151.7651 390.7607)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(-0.6428 -0.766 -0.766 0.6428 154.6411 400.0889)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(0.866 0.5 0.5 -0.866 811.46 165.4668)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(0.6428 0.766 0.766 -0.6428 808.584 156.1387)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(-0.9397 0.342 0.342 0.9397 470.4414 451.4072)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(-1 0 0 1 479.4365 455.2002)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(-0.9397 0.342 0.342 0.9397 647.5391 451.4072)" overflow="visible"/>
+	<use xlink:href="#Card" width="45.562" height="63.07" x="-22.781" y="-31.535" transform="matrix(-1 0 0 1 656.5342 455.2002)" overflow="visible"/>
+</g>
+<g id="Chips">
+	<use xlink:href="#Chip" width="42.001" height="42.006" x="-21.001" y="-21.003" transform="matrix(1 0 0 -1 466.001 374.999)" overflow="visible"/>
+	<use xlink:href="#Chip" width="42.001" height="42.006" x="-21.001" y="-21.003" transform="matrix(1 0 0 -1 283.688 367.999)" overflow="visible"/>
+	<use xlink:href="#Chip" width="42.001" height="42.006" x="-21.001" y="-21.003" transform="matrix(1 0 0 -1 302.1133 377.999)" overflow="visible"/>
+	<circle fill="#FFFFFF" stroke="#231F20" stroke-miterlimit="10" cx="649.855" cy="368" r="20.5"/>
+	<text x="632.3457" y="369.7979" font-family="DejaVu Sans, sans-serif" font-weight="bold" font-size="8">DEALER</text>
+</g>
+<g id="Text">
+	<text x="405" y="333.1836" font-family="DejaVu Serif, serif" font-weight="bold" font-size="21">Small Blind</text>
+	<text x="235.0854" y="333.1836" font-family="DejaVu Serif, serif" font-weight="bold" font-size="21">Big Blind</text>
+	<text x="598.6719" y="333.1846" font-family="DejaVu Serif, serif" font-weight="bold" font-size="21">The Button</text>
+</g>
+</svg>
