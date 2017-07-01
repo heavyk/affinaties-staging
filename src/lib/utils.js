@@ -163,9 +163,13 @@ export function optimal_obj (obj) {
   enforcer()
 }
 
+// left_pad((1234).toString(16), 20, '0')
+// > "000000000000000004d2"
+export const left_pad = (nr, n, str) => Array((n||2)-(nr+'').length+1).join(str||'0')+nr
+
 export const which = (event) => (event = event || win.event).which === null ? event.button : event.which
 
-export const kindOf = (val) => val === null ? 'null'
+export const kind_of = (val) => val === null ? 'null'
   : typeof val !== 'object' ? typeof val
   : Array.isArray(val) ? 'array'
   : {}.toString.call(val).slice(8, -1).toLowerCase()
