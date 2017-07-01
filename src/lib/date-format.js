@@ -21,7 +21,6 @@ const timezoneClip = /[^-+\dA-Z]/g
 export default function dateFormat (date, mask, utc, gmt) {
 
   // You can't provide utc if you skip other args (use the 'UTC:' mask prefix)
-  // if (arguments.length === 1 && kind_of(date) === 'string' && !/\d/.test(date)) {
   if (typeof(date) === 'string' && !mask) {
     mask = date
     date = new Date
@@ -29,66 +28,65 @@ export default function dateFormat (date, mask, utc, gmt) {
     date = new Date(date)
   }
 
-  // if (isNaN(date)) {
-  //   throw TypeError('Invalid date')
-  // }
+  if (isNaN(date)) {
+    return 'Invalid date'
+  }
 
   mask = (dateFormat.masks[mask] || mask || dateFormat.masks['default']) + ''
 
   // Allow setting the utc/gmt argument via the mask
-  var maskPrefix = mask.slice(0, 4)
-  if ((maskPrefix === 'UTC:' && (utc = true)) || (maskPrefix === 'GMT:' && (gmt = true))) mask = mask.slice(4)
+  var maskSlice = mask.slice(0, 4)
+  if ((maskSlice === 'UTC:' && (utc = true)) || (maskSlice === 'GMT:' && (gmt = true))) mask = mask.slice(4)
 
-  var _ = utc ? 'getUTC' : 'get',
-    o = utc ? 0 : date.getTimezoneOffset(),
-    d = date[_ + 'Date'](),
-    D = date[_ + 'Day'](),
-    m = date[_ + 'Month'](),
-    y = date[_ + 'FullYear'](),
-    H = date[_ + 'Hours'](),
-    M = date[_ + 'Minutes'](),
-    s = date[_ + 'Seconds'](),
-    L = date[_ + 'Milliseconds'](),
-    W = getWeek(date),
-    N = getDayOfWeek(date)
-
+  var _ = utc ? 'getUTC' : 'get'
+  var o = utc ? 0 : date.getTimezoneOffset()
+  var v = {
+    d: () => date[_ + 'Date'](),
+    D: () => date[_ + 'Day'](),
+    m: () => date[_ + 'Month'](),
+    y: () => date[_ + 'FullYear'](),
+    H: () => date[_ + 'Hours'](),
+    M: () => date[_ + 'Minutes'](),
+    s: () => date[_ + 'Seconds'](),
+    L: () => date[_ + 'Milliseconds'](),
+    W: () => getWeek(date),
+    N: () => getDayOfWeek(date),
+  }
   var flags = {
-    d: d,
-    dd: pad(d),
-    ddd: i18n.dayNames[D],
-    dddd: i18n.dayNames[D + 7],
-    m: m + 1,
-    mm: pad(m + 1),
-    mmm: i18n.monthNames[m],
-    mmmm: i18n.monthNames[m + 12],
-    yy: (y + '').slice(2),
-    yyyy: y,
-    h: H % 12 || 12,
-    hh: pad(H % 12 || 12),
-    H: H,
-    HH: pad(H),
-    M: M,
-    MM: pad(M),
-    s: s,
-    ss: pad(s),
-    l: pad(L, 3),
-    L: pad(Math.round(L / 10)),
-    t: H < 12 ? 'a' : 'p',
-    tt: H < 12 ? 'am' : 'pm',
-    T: H < 12 ? 'A' : 'P',
-    TT: H < 12 ? 'AM' : 'PM',
-    Z: gmt ? 'GMT' : utc ? 'UTC' : ((date+'').match(timezone) || ['']).pop().replace(timezoneClip, ''),
-    o: (o > 0 ? '-' : '+') + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
-    S: ['th', 'st', 'nd', 'rd'][d % 10 > 3 ? 0 : (d % 100 - d % 10 != 10) * d % 10],
-    W: W,
-    N: N,
+    d: () => v.d(),
+    dd: () => pad(v.d()),
+    ddd: () => i18n.dayNames[v.D()],
+    dddd: () => i18n.dayNames[v.D() + 7],
+    m: () => v.m() + 1,
+    mm: () => pad(v.m() + 1),
+    mmm: () => i18n.monthNames[v.m()],
+    mmmm: () => i18n.monthNames[v.m() + 12],
+    yy: () => (v.y() + '').slice(2),
+    yyyy: () => v.y(),
+    h: () => v.H() % 12 || 12,
+    hh: () => pad(v.H() % 12 || 12),
+    H: () => v.H(),
+    HH: () => pad(v.H()),
+    M: () => v.M(),
+    MM: () => pad(v.M()),
+    s: () => v.s(),
+    ss: () => pad(v.s()),
+    l: () => pad(v.L(), 3),
+    L: () => pad(Math.round(v.L() / 10)),
+    t: () => v.H() < 12 ? 'a' : 'p',
+    tt: () => v.H() < 12 ? 'am' : 'pm',
+    T: () => v.H() < 12 ? 'A' : 'P',
+    TT: () => v.H() < 12 ? 'AM' : 'PM',
+    Z: () => gmt ? 'GMT' : utc ? 'UTC' : ((date+'').match(timezone) || ['']).pop().replace(timezoneClip, ''),
+    o: () => (o > 0 ? '-' : '+') + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
+    S: () => ['th', 'st', 'nd', 'rd'][v.d() % 10 > 3 ? 0 : (v.d() % 100 - v.d() % 10 != 10) * v.d() % 10],
+    W: () => v.W(),
+    N: () => v.N(),
   }
 
-  return mask.replace(token, function (match) {
-    if (match in flags) {
-      return flags[match]
-    }
-    return match.slice(1, match.length - 1)
+  return mask.replace(token, (match) => {
+    var fn = flags[match]
+    return typeof fn === 'function' ? fn() : match.slice(1, match.length - 1)
   })
 }
 
