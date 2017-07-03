@@ -12,16 +12,111 @@
  * The mask defaults to dateFormat.masks.default.
  */
 
-import { kind_of, left_pad as pad } from './utils'
+// TODO: allow for moment locales to be used
+// TODO: allow for moment formatting to be used in the masks (and this will make the library momentito) so it can be used as a drop-in replacement.
+
+import { kind_of, compact, left_pad as pad } from './utils'
 
 const token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZWN]|'[^']*'|'[^']*'/g
 const timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g
 const timezoneClip = /[^-+\dA-Z]/g
 
+var mask_cache = {}
+
+var flags = {
+  // if only the value (d) is output, then the transformation function can be omitted
+  d_: 'd',
+  // d: (_) => _,
+
+  dd_: 'd',
+  dd: (_) => pad(_),
+
+  ddd_: 'D',
+  ddd: (_) => i18n.dayNames[_],
+
+  dddd_: 'D',
+  dddd: (_) => i18n.dayNames[_ + 7],
+
+  m_: 'm',
+  m: (_) => _ + 1,
+
+  mm_: 'm',
+  mm: (_) => pad(_ + 1),
+
+  mmm_: 'm',
+  mmm: (_) => i18n.monthNames[_],
+
+  mmmm_: 'm',
+  mmmm: (_) => i18n.monthNames[_ + 12],
+
+  yy_: 'y',
+  yy: (_) => (_+'').slice(2),
+
+  yyyy_: 'y',
+  // yyyy: (_) => _,
+
+  h_: 'H',
+  h: (_) => _ % 12 || 12,
+
+  hh_: 'H',
+  hh: (_) => pad(_ % 12 || 12),
+
+  H_: 'H',
+  // H: (_) => _,
+
+  HH_: 'H',
+  HH: (_) => pad(_),
+
+  M_: 'M',
+  // M: (_) => _,
+
+  MM_: 'M',
+  MM: (_) => pad(_),
+
+  s_: 's',
+  // s: (_) => _,
+
+  ss_: 's',
+  ss: (_) => pad(_),
+
+  l_: 'L',
+  l: (_) => pad(_, 3),
+
+  L_: 'L',
+  L: (_) => pad(Math.round(_ / 10)),
+
+  t_: 'H',
+  t: (_) => _ < 12 ? 'a' : 'p',
+
+  tt_: 'H',
+  tt: (_) => _ < 12 ? 'am' : 'pm',
+
+  T_: 'H',
+  T: (_) => _ < 12 ? 'A' : 'P',
+
+  TT_: 'H',
+  TT: (_) => _ < 12 ? 'AM' : 'PM',
+
+  o_: 'o',
+  o: (_) => (_ > 0 ? '-' : '+') + pad(Math.floor(Math.abs(_) / 60) * 100 + Math.abs(_) % 60, 4),
+
+  S_: 'd',
+  S: (_) => ['th', 'st', 'nd', 'rd'][_ % 10 > 3 ? 0 : (_ % 100 - _ % 10 != 10) * _ % 10],
+
+  Z_: '_',
+  Z: (date) => gmt ? 'GMT' : utc ? 'UTC' : ((date+'').match(timezone) || ['']).pop().replace(timezoneClip, ''),
+
+  W_: '_',
+  W: (date) => getWeek(date),
+
+  N_: '_',
+  N: (date) => getDayOfWeek(date),
+}
+
 export default function dateFormat (date, mask, utc, gmt) {
 
   // You can't provide utc if you skip other args (use the 'UTC:' mask prefix)
-  if (typeof(date) === 'string' && !mask) {
+  if (kind_of(date) === 'string' && !mask) {
     mask = date
     date = new Date
   } else if (!((date = date || new Date) instanceof Date)) {
@@ -34,13 +129,9 @@ export default function dateFormat (date, mask, utc, gmt) {
 
   mask = (dateFormat.masks[mask] || mask || dateFormat.masks['default']) + ''
 
-  // Allow setting the utc/gmt argument via the mask
-  var maskSlice = mask.slice(0, 4)
-  if ((maskSlice === 'UTC:' && (utc = true)) || (maskSlice === 'GMT:' && (gmt = true))) mask = mask.slice(4)
-
-  var _ = utc ? 'getUTC' : 'get'
-  var o = utc ? 0 : date.getTimezoneOffset()
-  var v = {
+  var ret, c, _, v = {
+    _:  () => date,
+    o: () => utc ? 0 : date.getTimezoneOffset(),
     d: () => date[_ + 'Date'](),
     D: () => date[_ + 'Day'](),
     m: () => date[_ + 'Month'](),
@@ -49,45 +140,34 @@ export default function dateFormat (date, mask, utc, gmt) {
     M: () => date[_ + 'Minutes'](),
     s: () => date[_ + 'Seconds'](),
     L: () => date[_ + 'Milliseconds'](),
-    W: () => getWeek(date),
-    N: () => getDayOfWeek(date),
-  }
-  var flags = {
-    d: () => v.d(),
-    dd: () => pad(v.d()),
-    ddd: () => i18n.dayNames[v.D()],
-    dddd: () => i18n.dayNames[v.D() + 7],
-    m: () => v.m() + 1,
-    mm: () => pad(v.m() + 1),
-    mmm: () => i18n.monthNames[v.m()],
-    mmmm: () => i18n.monthNames[v.m() + 12],
-    yy: () => (v.y() + '').slice(2),
-    yyyy: () => v.y(),
-    h: () => v.H() % 12 || 12,
-    hh: () => pad(v.H() % 12 || 12),
-    H: () => v.H(),
-    HH: () => pad(v.H()),
-    M: () => v.M(),
-    MM: () => pad(v.M()),
-    s: () => v.s(),
-    ss: () => pad(v.s()),
-    l: () => pad(v.L(), 3),
-    L: () => pad(Math.round(v.L() / 10)),
-    t: () => v.H() < 12 ? 'a' : 'p',
-    tt: () => v.H() < 12 ? 'am' : 'pm',
-    T: () => v.H() < 12 ? 'A' : 'P',
-    TT: () => v.H() < 12 ? 'AM' : 'PM',
-    Z: () => gmt ? 'GMT' : utc ? 'UTC' : ((date+'').match(timezone) || ['']).pop().replace(timezoneClip, ''),
-    o: () => (o > 0 ? '-' : '+') + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
-    S: () => ['th', 'st', 'nd', 'rd'][v.d() % 10 > 3 ? 0 : (v.d() % 100 - v.d() % 10 != 10) * v.d() % 10],
-    W: () => v.W(),
-    N: () => v.N(),
-  }
+  }, maskSlice = mask.slice(0, 4)
 
-  return mask.replace(token, (match) => {
-    var fn = flags[match]
-    return typeof fn === 'function' ? fn() : match.slice(1, match.length - 1)
-  })
+  // Allow setting the utc/gmt argument via the mask
+  if ((maskSlice === 'UTC:' && (utc = true)) || (maskSlice === 'GMT:' && (gmt = true))) mask = mask.slice(4)
+
+  _ = utc ? 'getUTC' : 'get'
+
+  if (c = mask_cache[mask]) {
+    ret = ''
+    for (var f, i = 0; i < c.length; i++) ret += typeof(f = c[i]) === 'function' ? typeof(f.v) === 'function' ? f(f.v()) : f() : f
+    return ret
+  }
+  else c = []
+
+  var tsi = -1, ts = mask.split(token)
+
+  // OPTIMISED!! (LOL)
+  return ret = mask.replace(token, (match, v1, v2, v3) => {
+    var fn_v, fn = flags[match], is_fn
+    is_fn = typeof fn === 'function'
+    if ((fn_v = flags[match+'_']) && typeof(fn_v = v[fn_v]) === 'function') {
+      if (is_fn) fn.v = fn_v
+      else fn = fn_v, is_fn = true
+    }
+
+    ts[tsi += 2] = is_fn ? fn : fn = match.slice(1, match.length - 1)
+    return is_fn ? fn(fn.v && fn.v()) : fn
+  }), mask_cache[mask] = compact(ts), ret
 }
 
 dateFormat.masks = {

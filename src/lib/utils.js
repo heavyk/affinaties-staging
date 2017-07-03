@@ -26,6 +26,22 @@ export function joinPaths (...parts) {
   return parts.join('/').replace(/\/+/g, '/')
 }
 
+// same as lodash.compact, but does the compaction inline on the same array by resizing it
+export function compact (array) {
+  var index = -1,
+      length = array == null ? 0 : array.length,
+      resIndex = -1
+
+  while (++index < length) {
+    var value = array[index]
+    if (value) {
+      if (index !== ++resIndex) array[resIndex] = value
+    }
+  }
+  array.length = resIndex+1
+  return array
+}
+
 export function parseHash (hash, keys) {
   try {
     var parsed = compact(JSON.parse(decodeURIComponent(hash.substr(2))))
