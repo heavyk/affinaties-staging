@@ -180,25 +180,25 @@ day_month = (d) -> (date-format d, 'dS mmm')
 user_link = (h, dd) -> h \a href: "/u/#{dd.id}", dd.name
 
 
-window.Benchmark = require \benchmark
-Benchmark.support.browser = false #stupid bullshit
-
-set-timeout !->
-  window.suite = new Benchmark.Suite
-  suite
-    .add \dateformat, !->
-      dateformat (randomDate!), 'dS mmm'
-    .add \date-format, !->
-      date-format (randomDate!), 'dS mmm'
-    .add \moment, !->
-      moment (randomDate!) .format 'Do MMM'
-    .on \cycle, (event) !->
-      console.log event.target+''
-    .on \complete !->
-      console.log "Fastest is: #{@filter 'fastest' .map 'name'}"
-    .run async: true
-  console.log 'running benchmark'
-, 500ms
+# # BENCHMARK
+# window.Benchmark = require \benchmark
+# Benchmark.support.browser = false # if it detects the browser, it tries to use amd.define instead of "new Function" - so it gets disabled
+# set-timeout !->
+#   window.suite = new Benchmark.Suite
+#   suite
+#     .add \dateformat, !->
+#       dateformat (randomDate!), 'dS mmm'
+#     .add \date-format, !->
+#       date-format (randomDate!), 'dS mmm'
+#     .add \moment, !->
+#       moment (randomDate!) .format 'Do MMM'
+#     .on \cycle, (event) !->
+#       console.log event.target+''
+#     .on \complete !->
+#       console.log "Fastest is: #{@filter 'fastest' .map 'name'}"
+#     .run async: true
+#   console.log 'running benchmark'
+# , 500ms
 
 # LOAN
 loan-sm = (h, no_foto) -> (dd) ->
