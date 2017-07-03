@@ -22,16 +22,9 @@ contract LoanList {
   event Contributed(uint indexed id, address indexed funder, uint amount);
   event Finalised(uint indexed id, uint amount);
 
-  // function my_loans () returns (uint[] loans) {
-  //   uint[] loans;
-  //   for (var i = 0; i < num_loans; i++) {
-  //
-  //   }
-  // }
-
   function create (address beneficiary, uint goal) returns (uint loan_id) {
     require(goal > 0);
-    loan_id = num_loans++; // loan_id is return variable
+    loan_id = ++num_loans; // loan_id is return variable
     // Creates new struct and saves in storage. We leave out the mapping type.
     loans[loan_id] = Loan(beneficiary, goal, 0, 0);
     Created(loan_id, beneficiary, goal);
@@ -51,11 +44,11 @@ contract LoanList {
       // msg.sender.send(refund);
       msg.sender.transfer(refund);
     }
-    var funder = Funder({addr: msg.sender, amount: msg.value});
+    var funder = Funder({addr: msg.sender, amount: amount});
     loan.funders[loan.num_funders++] = funder;
     loan.amount += amount;
 
-    Contributed(loan_id, funder.addr, funder.amount - refund);
+    Contributed(loan_id, funder.addr, amount);
   }
 
   function finalise (uint loan_id) returns (bool reached) {

@@ -158,8 +158,10 @@ export default function dateFormat (date, mask, utc, gmt) {
 
   // OPTIMISED!! (LOL)
   return ret = mask.replace(token, (match, v1, v2, v3) => {
-    var fn_v, fn = flags[match], is_fn
-    is_fn = typeof fn === 'function'
+    var fn_v,
+      fn = flags[match],
+      is_fn = typeof fn === 'function'
+
     if ((fn_v = flags[match+'_']) && typeof(fn_v = v[fn_v]) === 'function') {
       if (is_fn) fn.v = fn_v
       else fn = fn_v, is_fn = true

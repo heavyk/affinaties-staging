@@ -69,6 +69,12 @@ require! \rollup-plugin-buble
 require! \chokidar
 require! \webpack
 require! \postcss
+require! \glob
+
+glob './node_modules/*/node_modules/web3', (err, files) !->
+  console.log 'node_modules:', files
+
+# return
 
 genny.long-stack-support = true
 genny.ev = (gen) ->

@@ -49,7 +49,8 @@ accounts = web3.eth.accounts
 # web3.set-provider (require 'ethereumjs-testrpc' .provider!)
 # web3.eth.default-account = web3.eth.coinbase
 
-/*
+# /*
+
 watcher = LoanList.allEvents {}, genny.fn (err, ev, resume) ->*
 # watcher = LoanList.allEvents!watch (err, ev) ->
   # debugger
@@ -60,36 +61,42 @@ watcher = LoanList.allEvents {}, genny.fn (err, ev, resume) ->*
   switch type
   | \Created =>
     console.log 'new loan created:', id, args.beneficiary, args.goal.to-number!
+    timeout = 1000ms
+    set-timeout !->
+      genny.run (resume) ->*
+        console.log \contribute, yield LoanList.contribute id, {from: accounts.4, value: 9000, gas: 110000}, resume!
+    , timeout += 1000ms
+    set-timeout !->
+      genny.run (resume) ->*
+        console.log \contribute, yield LoanList.contribute id, {from: accounts.2, value: 9000, gas: 110000}, resume!
+    , timeout += 1000ms
+    set-timeout !->
+      genny.run (resume) ->*
+        console.log \contribute, yield LoanList.contribute id, {from: accounts.3, value: 5000, gas: 110000}, resume!
+    , timeout += 1000ms
   | \Contributed =>
-    # (err, loan) <- LoanList.loans id
     loan = yield LoanList.loans id, resume!
-    console.log "loan(#id) funder:", args.funder, "#{args.amount.to-number! + loan.amount.to-number!} / #{loan.goal.to-number!}"
+    contrib = args.amount.to-number!
+    amount = loan.amount.to-number!
+    goal = loan.goal.to-number!
+    console.log args.funder, "contributed #{contrib} to loan(#id)." #, "loan status: #{amount} / #{goal}"
+    if amount >= goal
+      set-timeout !->
+        genny.run (resume) ->*
+          console.log \finalise, yield LoanList.finalise 0, {from: accounts.3, gas: 110000}, resume!
+      , 1000ms
   | \Finalised =>
     console.log "loan(#id) finalised:", args.amount.to-number!
 
-timeout = 10_000ms
+timeout = 3_000ms
 
 set-timeout !->
   genny.run (resume) ->*
     console.log \create, yield LoanList.create accounts.0, 20000, {from: accounts.1, gas: 100000}, resume!
 , timeout += 1000ms
-set-timeout !->
-  genny.run (resume) ->*
-    console.log \contribute, yield LoanList.contribute 0, {from: accounts.1, value: 9000, gas: 110000}, resume!
-, timeout += 1000ms
-set-timeout !->
-  genny.run (resume) ->*
-    console.log \contribute, yield LoanList.contribute 0, {from: accounts.2, value: 9000, gas: 110000}, resume!
-, timeout += 1000ms
-set-timeout !->
-  genny.run (resume) ->*
-    console.log \contribute, yield LoanList.contribute 0, {from: accounts.3, value: 5000, gas: 110000}, resume!
-, timeout += 1000ms
-set-timeout !->
-  genny.run (resume) ->*
-    console.log \finalise, yield LoanList.finalise 0, {from: accounts.3, gas: 110000}, resume!
-, timeout += 1000ms
-*/
+
+
+# */
 
 # var contract
 # web3.eth.compile.solidity src, (err, compiled) !->
@@ -184,14 +191,23 @@ user_link = (h, dd) -> h \a href: "/u/#{dd.id}", dd.name
 # window.Benchmark = require \benchmark
 # Benchmark.support.browser = false # if it detects the browser, it tries to use amd.define instead of "new Function" - so it gets disabled
 # set-timeout !->
+#   # window.suite = new Benchmark.Suite
+#   # suite
+#   #   .add \dateformat, !->
+#   #     dateformat (randomDate!), 'dS mmm'
+#   #   .add \date-format, !->
+#   #     date-format (randomDate!), 'dS mmm'
+#   #   .add \moment, !->
+#   #     moment (randomDate!) .format 'Do MMM'
+#   #   .on \cycle, (event) !->
+#   #     console.log event.target+''
+#   #   .on \complete !->
+#   #     console.log "Fastest is: #{@filter 'fastest' .map 'name'}"
+#   #   .run async: true
 #   window.suite = new Benchmark.Suite
 #   suite
-#     .add \dateformat, !->
-#       dateformat (randomDate!), 'dS mmm'
-#     .add \date-format, !->
-#       date-format (randomDate!), 'dS mmm'
-#     .add \moment, !->
-#       moment (randomDate!) .format 'Do MMM'
+#     .add \ord1, !-> ord1 (rand 100)
+#     .add \ord2, !-> ord2 (rand 100)
 #     .on \cycle, (event) !->
 #       console.log event.target+''
 #     .on \complete !->

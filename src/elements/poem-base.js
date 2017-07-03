@@ -134,7 +134,7 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
     var self = this
     var shadow = self.shadow
     var e = ~txt.indexOf('://') ? h('link', {href: txt}) : h('style', txt)
-    if (!shadow) shadow = self.shadow = self.attachShadow({mode: 'open'})
+    if (!shadow) shadow = self.shadow = self //self.attachShadow({mode: 'open'})
     e.é = 1 // set this, so the node won't be removed when the shadow is emptied (stupid hack... obviously)
     shadow.appendChild(e)
   }
