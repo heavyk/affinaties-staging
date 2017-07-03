@@ -1,5 +1,6 @@
 ``import pluginBoilerplate from '../lib/plugins/plugin-boilerplate'``
 ``import { value, transform, compute } from '../lib/dom/observable'``
+``import dateFormat from '../lib/date-format'``
 ``import { rand, rand2, randomId, randomEl, randomIds, randomPos, randomHex, randomCharactor, randomDate, inTime, between, lipsum, word, obj } from '../lib/random'``
 ``import round from '../lib/lodash/round'``
 
@@ -22,6 +23,7 @@ require! \pull-stream
 
 require! \currency-formatter
 require! \dateformat
+require! \moment
 require! \genny
 genny.ev = (gen) ->
   fn = genny gen
@@ -47,6 +49,7 @@ accounts = web3.eth.accounts
 # web3.set-provider (require 'ethereumjs-testrpc' .provider!)
 # web3.eth.default-account = web3.eth.coinbase
 
+/*
 watcher = LoanList.allEvents {}, genny.fn (err, ev, resume) ->*
 # watcher = LoanList.allEvents!watch (err, ev) ->
   # debugger
@@ -58,27 +61,25 @@ watcher = LoanList.allEvents {}, genny.fn (err, ev, resume) ->*
   | \Created =>
     console.log 'new loan created:', id, args.beneficiary, args.goal.to-number!
   | \Contributed =>
-    # (loan) <- LoanList.loans id
+    # (err, loan) <- LoanList.loans id
     loan = yield LoanList.loans id, resume!
-    if loan
-      if loan.goal is void => debugger
-      console.log 'a loan funder:', id, args.funder, args.amount.to-number!, '/', loan.goal.to-number!
+    console.log "loan(#id) funder:", args.funder, "#{args.amount.to-number! + loan.amount.to-number!} / #{loan.goal.to-number!}"
   | \Finalised =>
-    console.log 'loan finalised:', id, args.amount.to-number!
+    console.log "loan(#id) finalised:", args.amount.to-number!
 
-timeout = 3000ms
+timeout = 10_000ms
 
 set-timeout !->
   genny.run (resume) ->*
-    console.log \create, yield LoanList.create web3.eth.accounts[0], 20000, {from: accounts.0, gas: 100000}, resume!
+    console.log \create, yield LoanList.create accounts.0, 20000, {from: accounts.1, gas: 100000}, resume!
 , timeout += 1000ms
 set-timeout !->
   genny.run (resume) ->*
-    console.log \contribute, yield LoanList.contribute 0, {from: accounts.1, value: 10000, gas: 110000}, resume!
+    console.log \contribute, yield LoanList.contribute 0, {from: accounts.1, value: 9000, gas: 110000}, resume!
 , timeout += 1000ms
 set-timeout !->
   genny.run (resume) ->*
-    console.log \contribute, yield LoanList.contribute 0, {from: accounts.2, value: 10000, gas: 110000}, resume!
+    console.log \contribute, yield LoanList.contribute 0, {from: accounts.2, value: 9000, gas: 110000}, resume!
 , timeout += 1000ms
 set-timeout !->
   genny.run (resume) ->*
@@ -88,6 +89,7 @@ set-timeout !->
   genny.run (resume) ->*
     console.log \finalise, yield LoanList.finalise 0, {from: accounts.3, gas: 110000}, resume!
 , timeout += 1000ms
+*/
 
 # var contract
 # web3.eth.compile.solidity src, (err, compiled) !->
@@ -122,7 +124,7 @@ set-timeout !->
 
 # for testing:
 window <<< { rand, rand2, randomId, randomEl, randomIds, randomPos, randomHex, randomCharactor, randomDate, inTime, between, lipsum, word, obj }
-window <<< { dateformat, currency-formatter }
+window <<< { date-format, currency-formatter }
 window <<< { web3, Web3 }
 
 const LOCALES = <[en-us en-gb es-es es-mx]>
@@ -174,9 +176,29 @@ const DEFAULT_CONFIG =
 percent = (n) -> (Math.floor n * 100) + '%'
 rating = (p, n = 10) -> (Math.floor p * n) + ' / ' + n
 # day_month = (d) -> (moment d .format 'Do MMM')
-day_month = (d) -> (dateformat d, 'dS mmm')
+day_month = (d) -> (date-format d, 'dS mmm')
 user_link = (h, dd) -> h \a href: "/u/#{dd.id}", dd.name
 
+
+window.Benchmark = require \benchmark
+Benchmark.support.browser = false #stupid bullshit
+
+set-timeout !->
+  window.suite = new Benchmark.Suite
+  suite
+    .add \dateformat, !->
+      dateformat (randomDate!), 'dS mmm'
+    .add \date-format, !->
+      date-format (randomDate!), 'dS mmm'
+    .add \moment, !->
+      moment (randomDate!) .format 'Do MMM'
+    .on \cycle, (event) !->
+      console.log event.target+''
+    .on \complete !->
+      console.log "Fastest is: #{@filter 'fastest' .map 'name'}"
+    .run async: true
+  console.log 'running benchmark'
+, 500ms
 
 # LOAN
 loan-sm = (h, no_foto) -> (dd) ->

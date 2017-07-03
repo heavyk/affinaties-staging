@@ -19,6 +19,7 @@
   "devDependencies": {
     "autoprefixer-core": "^6.0.1",
     "babelfish": "^1.1.2",
+    "benchmark": "^2.1.4",
     "browserify": "^14.4.0",
     "chai": "^4.0.2",
     "co-child-process": "^1.1.0",
