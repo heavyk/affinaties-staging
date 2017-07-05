@@ -29,20 +29,14 @@ window.addEventListener('contextmenu', function (e) {
 }, false)
 
 const fs = require('fs')
+const path = require('path')
 const sander = require('sander')
 const genny = require('genny')
 const hyper_svg_import = require('./hyper-svg-import')
 
-const suites = [ 'hearts', 'clubs', 'spades', 'diamonds' ]
-const cards = [ 'ace', 2,3,4,5,6,7,8,9,10, 'jack', 'queen', 'king' ]
-
-const dir = `${__dirname}/svg-cards`
-const deck_file_local = `${dir}/out/deck.js`
-const deck_file = `${__dirname}/../../phoenix/affinaties-staging/src/assets/playing-cards.js`
-
 const { DomUtils, DomHandler, parseDOM } = require('htmlparser2')
 
-const config = {
+const CONFIG = {
   export: 'cjs',
   indent: '  ',
   replacements: {
@@ -53,7 +47,7 @@ const config = {
       // maintain aspect ratio even when the w/h of the card changes
       'preserveAspectRatio': 'xMidYMid meet',
     },
-    'text[font-family] tspan[font-family]': function (el) {
+    'text[font-family] tspan[font-family]': function (el, config) {
       // TODO: actually, if it's a text with only one tspan, then just merge the tspan props into the text (but, for now this will work...)
       var p = el.parent
       var text = DomUtils.getText(el).trim()
@@ -71,7 +65,7 @@ const config = {
     // TODO: separate out the first path from the rest of the card (to allow for it to have a back-face)
     // perhaps what I want to do is delete it, make the 'svg' part common to the poke-her-card (allowing for styles to be shared) and simply put the rest inside of group elements
     // the downside is, that all defs will need to be merged (and ids remapped)
-    'svg path:first-of-type': function (el) {
+    'svg path:first-of-type': function (el, config) {
       var handler = new DomHandler
 
       // make a g element
@@ -93,8 +87,11 @@ const config = {
   }
 }
 
-// DO IT !!
-genny.run(function* (resume) {
+function* import_deck (config, resume) {
+  const dir = config.dir
+  const suites = [ 'hearts', 'clubs', 'spades', 'diamonds' ]
+  const cards = [ 'ace', 2,3,4,5,6,7,8,9,10, 'jack', 'queen', 'king' ]
+
   var deck = []
   for (let suite of suites) {
     for (let i = 0; i < cards.length; i++) {
@@ -115,12 +112,57 @@ genny.run(function* (resume) {
     }
   }
 
-  var out = config.export === 'cjs' ? `module.exports = {\n  ${ deck.join('').replace(/\n/g, '\n') }}\n`
-    : `export default var deck = {\n  ${ deck.join('').replace(/\n/g, '\n') }}\n`
+  return deck
+}
 
-  yield sander.writeFile(deck_file, out)
-  yield sander.writeFile(deck_file_local, out)
-  console.log('deck uncompressed:', out.length)
+function* import_flags (config, resume) {
+  const dir = config.dir
+  var flags = []
+  for (var file of yield fs.readdir(dir, resume())) {
+    try {
+      let ext = path.extname(file)
+      let id = path.basename(file, ext)
+      let data = yield fs.readFile(`${dir}/${id}.svg`, 'utf8', resume())
+      let res = yield hyper_svg_import(data, config, resume())
+      let export_id = `['${id}'] = `
+      let fn = `function (G) {\n  var s = G.s\n  return ${res}\n}`
+      flags.push(`'${id}': ${fn},\n`)
+      yield sander.writeFile(`${dir}/out/${id}.js`, `exports${export_id}${fn}\n`)
+      console.log(`file: ${id} :: ${data.length} -> ${res.length}`)
+    } catch (err) {
+      console.error(`file: ${file}`, err)
+    }
+  }
+
+  return flags
+}
+
+
+genny.run(function* (resume) {
+  const config = Object.assign({
+    dir: `${__dirname}/../../node_modules/lite-flag-icon/flags/4x3`,
+    out_file: `${__dirname}/../../phoenix/affinaties-staging/src/assets/flags.js`,
+    // out_file_local: `${dir}/out/flags.js`,
+  }, CONFIG)
+  var imported = yield* import_flags(config, resume.gen())
+
+  // const config = Object.assign({
+  //   dir:  `${__dirname}/svg-cards`,
+  //   out_file:  `${__dirname}/../../phoenix/affinaties-staging/src/assets/playing-cards.js`,
+  //   // out_file_local:  `${dir}/out/deck.js`,
+  // }, CONFIG)
+  // var imported = yield* import_deck(config, resume.gen())
+
+  // ------------------------------
+
+  var out = config.export === 'cjs' ? `module.exports = {\n  ${ imported.join('').replace(/\n/g, '\n') }}\n`
+    : `export default var output = {\n  ${ imported.join('').replace(/\n/g, '\n') }}\n`
+
+  if (config.out_file) yield sander.writeFile(config.out_file, out)
+  if (config.out_file_local) yield sander.writeFile(config.out_file_local, out)
+  console.log('out uncompressed:', out.length)
+
+  // --------------------------
 
   const uglify = require('uglify-js')
   // https://github.com/mishoo/UglifyJS2#compressor-options

@@ -50,36 +50,36 @@ function rename_attr (attrs, from, to) {
   }
 }
 
-function convert (inputMarkup, _opts) {
-  const parser_opts = {
+function convert (inputMarkup, _config) {
+  const parser_config = {
     xmlMode: true,
     decodeEntities: true,
   }
-  var opts = Object.assign({
+  var config = Object.assign({
     fn: 'h',
     indent: '  ',
-  }, _opts)
+  }, _config)
 
   var elementStack = []
-  var currentItemList = new ItemList(null, opts.indent)
+  var currentItemList = new ItemList(null, config.indent)
 
-  if (opts.replacements) {
-    var doc = parseDOM(inputMarkup, parser_opts)
+  if (config.replacements) {
+    var doc = parseDOM(inputMarkup, parser_config)
     var attrs, attr, val, replace
-    for (var query in opts.replacements) {
+    for (var query in config.replacements) {
       // try {
         var els = CSSselect(query, doc)
         if (els.length) {
-          var replace = opts.replacements[query]
+          var replace = config.replacements[query]
           for (var el of els) {
             if (typeof replace === 'function') {
-              replace(el)
+              replace(el, config)
             } else if (typeof replace === 'object') {
               for (attr in replace) {
                 // if (attr === 'x') debugger
                 attrs = el.attribs
                 let replacer = replace[attr]
-                if ((val = opts.attrFilter(attr, attrs[attr])) == null || val === false) {
+                if ((val = config.attrFilter(attr, attrs[attr])) == null || val === false) {
                   attrs[attr] = typeof replacer === 'function' ? replacer(attr) + '!~!' : replacer
                 } else if (val !== true) {
                   attrs[attr] = entities.encodeXML((typeof replacer === 'function' ? replacer(attr, val) : replacer) + '!~!')
@@ -91,7 +91,7 @@ function convert (inputMarkup, _opts) {
             //   for (var s of w) {
             //     debugger
             //     if (s.type === 'attribute') {
-            //       el.attribs[s.name] = opts.replacements[query]
+            //       el.attribs[s.name] = config.replacements[query]
             //
             //     }
             //   }
@@ -149,9 +149,9 @@ function convert (inputMarkup, _opts) {
         if (~attr.indexOf('-') && ~(val = svg_attrs.dashed_camelized.indexOf(attr))) rename_attr(attrs, attr, svg_attrs.dashed[val])
       }
 
-      if (opts.attrFilter) {
+      if (config.attrFilter) {
         for (attr in attrs) {
-          if ((val = opts.attrFilter(attr, attrs[attr])) == null || val === false) {
+          if ((val = config.attrFilter(attr, attrs[attr])) == null || val === false) {
             delete attrs[attr]
           } else if (val !== true) {
             attrs[attr] = val
@@ -176,13 +176,13 @@ function convert (inputMarkup, _opts) {
 
       var attrPairs = Object.keys(attrs).map((k) => (/^[a-zA-Z0-9]+$/.test(k) ? k : JSON.stringify(k)) + ': ' + (typeof attrs[k] === 'function' ? attrs[k]() : JSON.stringify(attrs[k])) )
       // if (element[0] === 'fegaussianblur') debugger // just in case I make a mistake
-      var item = opts.fn + '(' + JSON.stringify(element[0] + suffix) + (
+      var item = config.fn + '(' + JSON.stringify(element[0] + suffix) + (
         attrPairs.length
           ? ', {\n' + indent + '  ' + attrPairs.join(',\n' + indent + '  ') + '\n' + indent + '}'
           : ''
         ) + (
         elementContent.trim().length
-          ? (opts.array ? ', [' : ', ') + (elementContent[0] === '\n' ? '' : ' ') + elementContent + (elementContent.match(/\s$/) ? '' : ' ') + (opts.array ? ']' : '')
+          ? (config.array ? ', [' : ', ') + (elementContent[0] === '\n' ? '' : ' ') + elementContent + (elementContent.match(/\s$/) ? '' : ' ') + (config.array ? ']' : '')
           : ''
         ) + ')'
 
@@ -191,7 +191,7 @@ function convert (inputMarkup, _opts) {
     oncomment: function (text) {
       currentItemList.add('/*' + (text.replace(/\*\//g, '°/')) + '*/', false)
     }
-  }, parser_opts)
+  }, parser_config)
 
   parser.write(inputMarkup)
   parser.end()
