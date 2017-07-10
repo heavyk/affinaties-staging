@@ -102,7 +102,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 6.246,
@@ -167,7 +167,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.775,
@@ -215,7 +215,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.775,
@@ -263,7 +263,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.775,
@@ -311,7 +311,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.775,
@@ -359,7 +359,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.775,
@@ -407,7 +407,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.775,
@@ -455,7 +455,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.775,
@@ -503,7 +503,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('path', {
       d: 'M23.332 32.282c-5.43 0-6.154 5.449-6.154 5.449s-.725-5.449-6.155-5.449c-3.8 0-7.24 2.443-7.24 7.052 0 6.09 11.016 12.213 13.395 21.154 2.263-8.934 13.394-15.065 13.394-21.154 0-4.609-3.44-7.052-7.24-7.052zm120.669 176.964c5.43 0 6.155-5.448 6.155-5.448s.725 5.448 6.155 5.448c3.8 0 7.24-2.443 7.24-7.051 0-6.09-11.016-12.213-13.395-21.155-2.264 8.934-13.394 15.065-13.394 21.155 0 4.608 3.439 7.051 7.24 7.051zM64.728 6.596c-9.012 0-10.216 9.043-10.216 9.043S53.31 6.596 44.297 6.596c-6.309 0-12.017 4.055-12.017 11.704 0 10.107 18.284 20.27 22.232 35.112C58.27 38.583 76.744 28.407 76.744 18.3c0-7.65-5.708-11.704-12.016-11.704zM44.297 236.214c9.012 0 10.215-9.043 10.215-9.043s1.204 9.043 10.216 9.043c6.308 0 12.016-4.055 12.016-11.704 0-10.107-18.283-20.27-22.232-35.112-3.757 14.829-22.232 25.005-22.232 35.112 0 7.65 5.708 11.704 12.017 11.704zM64.728 71.83c-9.012 0-10.216 9.044-10.216 9.044S53.31 71.83 44.297 71.83c-6.309 0-12.017 4.054-12.017 11.704 0 10.107 18.284 20.27 22.232 35.112 3.758-14.83 22.232-25.005 22.232-35.112 0-7.65-5.708-11.704-12.016-11.704zm-20.431 96.934c9.012 0 10.215-9.043 10.215-9.043s1.204 9.043 10.216 9.043c6.308 0 12.016-4.055 12.016-11.704 0-10.107-18.283-20.27-22.232-35.112-3.757 14.829-22.232 25.005-22.232 35.112 0 7.65 5.708 11.704 12.017 11.704zm77.91-161.569c-9.013 0-10.216 9.043-10.216 9.043s-1.203-9.043-10.216-9.043c-6.308 0-12.016 4.054-12.016 11.704 0 10.107 18.283 20.27 22.232 35.112 3.757-14.83 22.232-25.005 22.232-35.112 0-7.65-5.708-11.704-12.016-11.704zm-20.432 229.618c9.013 0 10.216-9.043 10.216-9.043s1.203 9.043 10.216 9.043c6.308 0 12.016-4.055 12.016-11.704 0-10.107-18.284-20.27-22.232-35.112-3.757 14.829-22.232 25.005-22.232 35.112 0 7.65 5.708 11.704 12.016 11.704zM122.207 72.43c-9.013 0-10.216 9.043-10.216 9.043s-1.203-9.044-10.216-9.044c-6.308 0-12.016 4.055-12.016 11.704 0 10.107 18.283 20.271 22.232 35.112 3.757-14.828 22.232-25.005 22.232-35.112 0-7.649-5.708-11.704-12.016-11.704zm-20.432 96.933c9.013 0 10.216-9.044 10.216-9.044s1.203 9.044 10.216 9.044c6.308 0 12.016-4.055 12.016-11.704 0-10.107-18.284-20.271-22.232-35.112-3.757 14.829-22.232 25.005-22.232 35.112 0 7.649 5.708 11.704 12.016 11.704zM93.429 39.297c-9.012 0-10.216 9.043-10.216 9.043s-1.203-9.043-10.215-9.043C66.689 39.297 60.98 43.35 60.98 51c0 10.107 18.284 20.27 22.232 35.112C86.97 71.282 105.444 61.107 105.444 51c0-7.65-5.708-11.704-12.016-11.704z',
@@ -547,7 +547,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: -0.987,
@@ -699,7 +699,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 9.446,
@@ -851,7 +851,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 4.646,
@@ -1003,7 +1003,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 6.246,
@@ -1185,7 +1185,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 6.711,
@@ -1256,7 +1256,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.311,
@@ -1300,7 +1300,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.311,
@@ -1344,7 +1344,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.311,
@@ -1388,7 +1388,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.311,
@@ -1432,7 +1432,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.311,
@@ -1476,7 +1476,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.311,
@@ -1520,7 +1520,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.311,
@@ -1564,7 +1564,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.311,
@@ -1608,7 +1608,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('path', {
       d: 'M20.69 43.74s3.53-2.823 3.53-6.736c0-2.291-2.035-6.094-6.737-6.094s-6.736 3.804-6.736 6.094c0 3.913 3.529 6.736 3.529 6.736-3.92-3.053-10.906-.969-10.906 5.133 0 3.054 2.496 6.415 6.415 6.415 4.702 0 6.736-5.133 6.736-5.133s.597 5.85-2.887 8.982h7.699c-3.484-3.13-2.887-8.982-2.887-8.982s2.034 5.133 6.736 5.133c3.92 0 6.415-3.362 6.415-6.415 0-6.102-6.987-8.186-10.906-5.133zm125.794 155s-3.529 2.823-3.529 6.736c0 2.291 2.034 6.094 6.736 6.094s6.736-3.804 6.736-6.094c0-3.913-3.528-6.736-3.528-6.736 3.919 3.053 10.906.969 10.906-5.133 0-3.054-2.496-6.415-6.415-6.415-4.702 0-6.736 5.133-6.736 5.133s-.597-5.85 2.886-8.982h-7.698c3.484 3.13 2.886 8.982 2.886 8.982s-2.033-5.133-6.736-5.133c-3.92 0-6.415 3.362-6.415 6.415 0 6.102 6.987 8.186 10.907 5.133zM57.573 25.1s5.967-4.774 5.967-11.392C63.54 9.834 60.1 3.4 52.148 3.4S40.756 9.836 40.756 13.708c0 6.618 5.968 11.392 5.968 11.392-6.629-5.163-18.445-1.638-18.445 8.68 0 5.167 4.22 10.85 10.849 10.85 7.952 0 11.392-8.68 11.392-8.68s1.01 9.894-4.882 15.19h13.02c-5.892-5.294-4.882-15.19-4.882-15.19s3.44 8.68 11.392 8.68c6.631 0 10.85-5.686 10.85-10.85 0-10.318-11.817-13.843-18.445-8.68zm-.463 68.1s5.968-4.773 5.968-11.391c0-3.875-3.44-10.307-11.392-10.307-7.953 0-11.392 6.435-11.392 10.307 0 6.618 5.967 11.392 5.967 11.392-6.628-5.164-18.445-1.638-18.445 8.68 0 5.167 4.221 10.85 10.85 10.85 7.952 0 11.392-8.68 11.392-8.68s1.01 9.894-4.882 15.19h13.02c-5.892-5.294-4.882-15.19-4.882-15.19s3.44 8.68 11.392 8.68c6.63 0 10.85-5.686 10.85-10.85 0-10.318-11.817-13.844-18.446-8.68zm64.448-68.274s5.967-4.774 5.967-11.392c0-3.874-3.44-10.306-11.392-10.306s-11.392 6.434-11.392 10.306c0 6.618 5.968 11.392 5.968 11.392-6.629-5.163-18.445-1.638-18.445 8.681 0 5.166 4.22 10.85 10.85 10.85 7.951 0 11.391-8.681 11.391-8.681s1.01 9.894-4.882 15.19h13.02c-5.892-5.293-4.882-15.19-4.882-15.19s3.44 8.68 11.392 8.68c6.631 0 10.85-5.685 10.85-10.849 0-10.319-11.817-13.844-18.445-8.68zm0 68.101s5.967-4.774 5.967-11.392c0-3.874-3.44-10.307-11.392-10.307s-11.392 6.435-11.392 10.307c0 6.618 5.968 11.392 5.968 11.392-6.629-5.163-18.445-1.638-18.445 8.681 0 5.166 4.22 10.85 10.85 10.85 7.951 0 11.391-8.682 11.391-8.682s1.01 9.895-4.882 15.191h13.02c-5.892-5.294-4.882-15.19-4.882-15.19s3.44 8.68 11.392 8.68c6.631 0 10.85-5.686 10.85-10.849 0-10.32-11.817-13.844-18.445-8.681zM89.577 59.281s5.967-4.774 5.967-11.392c0-3.874-3.44-10.307-11.392-10.307S72.76 44.017 72.76 47.89c0 6.618 5.967 11.392 5.967 11.392-6.628-5.163-18.444-1.638-18.444 8.681 0 5.166 4.22 10.85 10.849 10.85 7.952 0 11.392-8.682 11.392-8.682s1.01 9.895-4.882 15.191h13.02c-5.892-5.294-4.882-15.19-4.882-15.19s3.44 8.68 11.392 8.68c6.631 0 10.85-5.686 10.85-10.849 0-10.32-11.817-13.844-18.445-8.68zm20.486 158.521s-5.968 4.774-5.968 11.392c0 3.875 3.44 10.307 11.392 10.307 7.953 0 11.392-6.435 11.392-10.307 0-6.618-5.967-11.392-5.967-11.392 6.628 5.164 18.445 1.638 18.445-8.68 0-5.167-4.221-10.85-10.85-10.85-7.952 0-11.392 8.68-11.392 8.68s-1.01-9.894 4.882-15.19h-13.02c5.892 5.294 4.882 15.19 4.882 15.19s-3.44-8.68-11.392-8.68c-6.63 0-10.85 5.686-10.85 10.85 0 10.318 11.817 13.844 18.446 8.68zm.645-68.101s-5.967 4.774-5.967 11.392c0 3.875 3.44 10.307 11.392 10.307s11.392-6.435 11.392-10.307c0-6.618-5.967-11.392-5.967-11.392 6.628 5.164 18.444 1.639 18.444-8.68 0-5.166-4.22-10.85-10.849-10.85-7.952 0-11.392 8.681-11.392 8.681s-1.01-9.894 4.882-15.191h-13.02c5.892 5.294 4.882 15.191 4.882 15.191s-3.44-8.68-11.392-8.68c-6.63 0-10.85 5.685-10.85 10.848 0 10.32 11.817 13.845 18.445 8.681zm-64.63 68.275s-5.968 4.773-5.968 11.392c0 3.874 3.44 10.306 11.392 10.306 7.953 0 11.392-6.435 11.392-10.306 0-6.619-5.967-11.392-5.967-11.392 6.628 5.163 18.445 1.638 18.445-8.681 0-5.166-4.221-10.85-10.85-10.85-7.952 0-11.392 8.681-11.392 8.681s-1.01-9.894 4.882-15.19h-13.02c5.892 5.293 4.882 15.19 4.882 15.19s-3.44-8.68-11.392-8.68c-6.63 0-10.85 5.685-10.85 10.849 0 10.319 11.817 13.844 18.446 8.68zm.183-68.101s-5.967 4.774-5.967 11.392c0 3.875 3.44 10.307 11.392 10.307s11.392-6.435 11.392-10.307c0-6.618-5.968-11.392-5.968-11.392 6.629 5.163 18.445 1.638 18.445-8.68 0-5.167-4.22-10.85-10.849-10.85-7.952 0-11.392 8.68-11.392 8.68s-1.01-9.894 4.882-15.19h-13.02c5.892 5.294 4.882 15.19 4.882 15.19s-3.44-8.68-11.392-8.68c-6.631 0-10.85 5.686-10.85 10.85 0 10.318 11.817 13.843 18.445 8.68z'
@@ -1800,7 +1800,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 9.911,
@@ -1988,7 +1988,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 5.111,
@@ -2176,7 +2176,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 6.711,
@@ -2247,7 +2247,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 6.246,
@@ -2291,7 +2291,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.547,
@@ -2335,7 +2335,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.547,
@@ -2379,7 +2379,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.547,
@@ -2423,7 +2423,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.547,
@@ -2467,7 +2467,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.547,
@@ -2511,7 +2511,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.547,
@@ -2555,7 +2555,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.547,
@@ -2599,7 +2599,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 8.547,
@@ -2643,7 +2643,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 0.044,
@@ -2832,7 +2832,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('path', {
       d: 'M7.989 3.103C7.747-.954.242-8.59 0-10.5-.242-8.591-7.747-.955-7.989 3.103c-.169 2.868 1.695 4.057 3.39 4.057 1.835-.022 3.35-2.8 3.873-3.341.242.716-1.603 6.682-2.179 6.682h5.811c-.576 0-2.421-5.966-2.179-6.682.457.496 1.797 3.258 3.874 3.341 1.694-.001 3.557-1.189 3.388-4.057z',
@@ -3020,7 +3020,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('path', {
       d: 'M7.989 3.103C7.747-.954.242-8.59 0-10.5-.242-8.591-7.747-.955-7.989 3.103c-.169 2.868 1.695 4.057 3.39 4.057 1.835-.022 3.35-2.8 3.873-3.341.242.716-1.603 6.682-2.179 6.682h5.811c-.576 0-2.421-5.966-2.179-6.682.457.496 1.797 3.258 3.874 3.341 1.694-.001 3.557-1.189 3.388-4.057z',
@@ -3208,7 +3208,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('path', {
       d: 'M7.989 3.103C7.747-.954.242-8.59 0-10.5-.242-8.591-7.747-.955-7.989 3.103c-.169 2.868 1.695 4.057 3.39 4.057 1.835-.022 3.35-2.8 3.873-3.341.242.716-1.603 6.682-2.179 6.682h5.811c-.576 0-2.421-5.966-2.179-6.682.457.496 1.797 3.258 3.874 3.341 1.694-.001 3.557-1.189 3.388-4.057z',
@@ -3334,7 +3334,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 6.246,
@@ -3389,7 +3389,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 7.846,
@@ -3433,7 +3433,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 7.846,
@@ -3477,7 +3477,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 7.846,
@@ -3521,7 +3521,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 7.846,
@@ -3565,7 +3565,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 7.846,
@@ -3609,7 +3609,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 7.846,
@@ -3653,7 +3653,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 7.846,
@@ -3697,7 +3697,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 7.846,
@@ -3741,7 +3741,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 0.408,
@@ -3861,7 +3861,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 9.446,
@@ -3971,7 +3971,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 4.646,
@@ -4081,7 +4081,7 @@ module.exports = {
     stroke: '#000'
   }),
   s('g', {
-    s: {display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }
+    s: {display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }
   }, 
     s('text', {
       x: 6.246,

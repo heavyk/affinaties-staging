@@ -118,7 +118,7 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
     return o
   }
 
-  attr_transform (k, fn) {
+  attrx (k, fn) {
     return transform(typeof k === 'string' ? this.attr(k) : k, fn)
   }
 

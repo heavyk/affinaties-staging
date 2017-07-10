@@ -198,7 +198,7 @@ export default class PoemStateMachine extends PathEmitter(HTMLElement) {
     return o
   }
 
-  attr_transform (k, fn) {
+  attrx (k, fn) {
     return transform(typeof k === 'string' ? this.attr(k) : k, fn)
   }
 

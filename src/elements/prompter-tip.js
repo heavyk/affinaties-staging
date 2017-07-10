@@ -55,7 +55,7 @@ export default class PrompterTip extends PoemBase {
       if (!_answer(a)) self.close() // remove all elements if answer did not return truthy
     }
     var innerTip = self.fn(ctx, msg, options, answer)
-    var inner, outer = h('#tooltip-outer', {s: {left: self.attr_transform('x', t_px), top: self.attr_transform('y', t_px)}},
+    var inner, outer = h('#tooltip-outer', {s: {left: self.attrx('x', t_px), top: self.attrx('y', t_px)}},
       h('#tooltip-arrow'),
       inner = h('#tooltip-inner', innerTip)
     )

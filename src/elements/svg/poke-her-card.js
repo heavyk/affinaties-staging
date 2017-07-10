@@ -39,8 +39,8 @@ export default class Card extends PoemBase {
       if (touchflip) {
         const down = this.attr('down')
         G.h.cleanupFuncs.push(
-          touch(svg)(this.attr_transform(down, _not)),
-          mousedown(svg)(this.attr_transform(down, _not))
+          touch(svg)(this.attrx(down, _not)),
+          mousedown(svg)(this.attrx(down, _not))
         )
       }
 

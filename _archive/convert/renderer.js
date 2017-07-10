@@ -39,7 +39,10 @@ const { DomUtils, DomHandler, parseDOM } = require('htmlparser2')
 const CONFIG = {
   export: 'cjs',
   indent: '  ',
-  replacements: {
+}
+
+function* import_deck (config, resume) {
+  config = Object.assign({replacements: {
     'svg': {
       width: hyper_svg_import.attr,
       height: hyper_svg_import.attr,
@@ -70,7 +73,7 @@ const CONFIG = {
 
       // make a g element
       handler._addDomElement({type: 'text', data: config.indent})
-      handler.onopentag('g', {style: `{display: this.attr_transform('down', function (v) { return v ? 'none' : '' } ) }!~!`})
+      handler.onopentag('g', {style: `{display: this.attrx('down', function (v) { return v ? 'none' : '' } ) }!~!`})
 
       // remove (and save) all elements after the path
       var next, e = el.next
@@ -84,11 +87,10 @@ const CONFIG = {
       DomUtils.appendChild(el.parent, handler.dom[0]) // the text node (indent)
       DomUtils.appendChild(el.parent, handler.dom[1]) // the g element
     },
-  }
-}
+  }}, config)
 
-function* import_deck (config, resume) {
   const dir = config.dir
+  const out_dir = path.basename(config.out_file, path.extname(config.out_file))
   const suites = [ 'hearts', 'clubs', 'spades', 'diamonds' ]
   const cards = [ 'ace', 2,3,4,5,6,7,8,9,10, 'jack', 'queen', 'king' ]
 
@@ -104,7 +106,7 @@ function* import_deck (config, resume) {
         let export_id = `['${id}'] = `
         let fn = `function (G) {\n  var s = G.s\n  return ${res}\n}`
         deck.push(`'${id}': ${fn},\n`)
-        yield sander.writeFile(`${dir}/out/${file}.js`, `exports${export_id}${fn}\n`)
+        yield sander.writeFile(`${out_dir}/${id}.js`, `exports${export_id}${fn}\n`)
         console.log(`file: ${id} :: ${file}\n${data.length} -> ${res.length}`)
       } catch (err) {
         console.error(`file: ${file}`, err)
@@ -117,18 +119,21 @@ function* import_deck (config, resume) {
 
 function* import_flags (config, resume) {
   const dir = config.dir
+  const out_dir = path.join(path.dirname(config.out_file), path.basename(config.out_file, path.extname(config.out_file)))
   var flags = []
   for (var file of yield fs.readdir(dir, resume())) {
     try {
       let ext = path.extname(file)
       let id = path.basename(file, ext)
-      let data = yield fs.readFile(`${dir}/${id}.svg`, 'utf8', resume())
+      let p = `${dir}/${id}.svg`
+      if (ext !== '.svg') {continue }
+      let data = yield fs.readFile(p, 'utf8', resume())
       let res = yield hyper_svg_import(data, config, resume())
       let export_id = `['${id}'] = `
       let fn = `function (G) {\n  var s = G.s\n  return ${res}\n}`
       flags.push(`'${id}': ${fn},\n`)
-      yield sander.writeFile(`${dir}/out/${id}.js`, `exports${export_id}${fn}\n`)
-      console.log(`file: ${id} :: ${data.length} -> ${res.length}`)
+      yield sander.writeFile(`${out_dir}/${id}.js`, `exports${export_id}${fn}\n`)
+      console.log(`file: ${id} :: ${data.length} -> ${res.length}`, `${out_dir}/${id}.js`)
     } catch (err) {
       console.error(`file: ${file}`, err)
     }
@@ -139,51 +144,59 @@ function* import_flags (config, resume) {
 
 
 genny.run(function* (resume) {
-  const config = Object.assign({
-    dir: `${__dirname}/../../node_modules/lite-flag-icon/flags/4x3`,
-    out_file: `${__dirname}/../../phoenix/affinaties-staging/src/assets/flags.js`,
-    // out_file_local: `${dir}/out/flags.js`,
-  }, CONFIG)
-  var imported = yield* import_flags(config, resume.gen())
-
   // const config = Object.assign({
-  //   dir:  `${__dirname}/svg-cards`,
-  //   out_file:  `${__dirname}/../../phoenix/affinaties-staging/src/assets/playing-cards.js`,
-  //   // out_file_local:  `${dir}/out/deck.js`,
+  //   dir: `${__dirname}/../../node_modules/lite-flag-icon/flags/4x3`,
+  //   out_file: `${__dirname}/../../src/assets/flags.js`,
   // }, CONFIG)
-  // var imported = yield* import_deck(config, resume.gen())
+  // var imported = yield* import_flags(config, resume.gen())
+
+  const config = Object.assign({
+    dir:  `${__dirname}/svg-cards`,
+    out_file:  `${__dirname}/../../src/assets/playing-cards.js`,
+  }, CONFIG)
+  var imported = yield* import_deck(config, resume.gen())
 
   // ------------------------------
 
-  var out = config.export === 'cjs' ? `module.exports = {\n  ${ imported.join('').replace(/\n/g, '\n') }}\n`
-    : `export default var output = {\n  ${ imported.join('').replace(/\n/g, '\n') }}\n`
+  var out = (config.export === 'cjs' ? 'module.exports' : 'export default var output') +
+    ` = {\n${config.indent}${imported.join('').replace(/\n/g, '\n')}}\n`
 
   if (config.out_file) yield sander.writeFile(config.out_file, out)
-  if (config.out_file_local) yield sander.writeFile(config.out_file_local, out)
+  // if (config.out_file_local) yield sander.writeFile(config.out_file_local, out)
   console.log('out uncompressed:', out.length)
 
-  // --------------------------
+  if (config.export === 'cjs' && config.minify !== false) {
+    let minified = require('uglify-js').minify(out, config.minify || {
+      fromString: true,
+      // sourceMap: {
+      //   filename: "out.js",
+      //   url: "out.js.map"
+      // },
+      parse: {},
+      mangle: {
+        toplevel: true
+      },
+      compress: {
+        unsafe: true,
+        properties: true,
+        dead_code: true,
+        pure_getters: true,
+        reduce_vars: true,
+        collapse_vars: true,
+        join_vars: true,
+        global_defs: {
+          "@alert": "console.warn"
+        },
+      },
+    })
 
-  const uglify = require('uglify-js')
-  // https://github.com/mishoo/UglifyJS2#compressor-options
-  const compressor = uglify.Compressor({
-    unsafe: true,
-    properties: true,
-    dead_code: true,
-    pure_getters: true,
-    reduce_vars: true,
-    collapse_vars: true,
-    join_vars: true,
-  })
-
-  var ast = uglify.parse(out)
-  ast.figure_out_scope()
-  var compressed_ast = ast.transform(compressor)
-  compressed_ast.figure_out_scope()
-  compressed_ast.compute_char_frequency()
-  compressed_ast.mangle_names()
-  out = compressed_ast.print_to_string({}) // source_map, comments (options available)
-  console.log('deck compressed:', out.length)
+    const ext = path.extname(config.out_file)
+    const min_outfile = path.join(path.dirname(config.out_file), path.basename(config.out_file, ext) + '.min' + ext)
+    yield sander.writeFile(min_outfile, minified.code)
+    console.log('out compressed:', minified.code.length)
+    console.log(config.out_file)
+    if (minified.map) yield sander.writeFile(min_outfile + '.map', minified.map)
+  }
 })
 
 
