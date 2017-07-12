@@ -41,6 +41,48 @@ const CONFIG = {
   indent: '  ',
 }
 
+function* export_hyper_svg (config, imported, resume) {
+  var out = (config.export === 'cjs' ? 'module.exports' : 'export default var output') +
+    ` = {\n${config.indent}${imported.join('').replace(/\n/g, '\n')}}\n`
+
+  if (config.out_file) yield sander.writeFile(config.out_file, out)
+  // if (config.out_file_local) yield sander.writeFile(config.out_file_local, out)
+  console.log('out uncompressed:', out.length)
+
+  if (config.export === 'cjs' && config.minify !== false) {
+    let minified = require('uglify-js').minify(out, config.minify || {
+      fromString: true,
+      // sourceMap: {
+      //   filename: "out.js",
+      //   url: "out.js.map"
+      // },
+      parse: {},
+      mangle: {
+        toplevel: true
+      },
+      compress: {
+        unsafe: true,
+        properties: true,
+        dead_code: true,
+        pure_getters: true,
+        reduce_vars: true,
+        collapse_vars: true,
+        join_vars: true,
+        global_defs: {
+          "@alert": "console.warn"
+        },
+      },
+    })
+
+    const ext = path.extname(config.out_file)
+    const min_outfile = path.join(path.dirname(config.out_file), path.basename(config.out_file, ext) + '.min' + ext)
+    yield sander.writeFile(min_outfile, minified.code)
+    console.log('out compressed:', minified.code.length)
+    console.log(config.out_file)
+    if (minified.map) yield sander.writeFile(min_outfile + '.map', minified.map)
+  }
+}
+
 function* import_deck (config, resume) {
   config = Object.assign({replacements: {
     'svg': {
@@ -144,59 +186,17 @@ function* import_flags (config, resume) {
 
 
 genny.run(function* (resume) {
-  // const config = Object.assign({
-  //   dir: `${__dirname}/../../node_modules/lite-flag-icon/flags/4x3`,
-  //   out_file: `${__dirname}/../../src/assets/flags.js`,
-  // }, CONFIG)
-  // var imported = yield* import_flags(config, resume.gen())
+  const flags_config = Object.assign({
+    dir: `${__dirname}/../../node_modules/lite-flag-icon/flags/4x3`,
+    out_file: `${__dirname}/../../src/assets/flags.js`,
+  }, CONFIG)
+  yield* export_hyper_svg(flags_config, (yield* import_flags(flags_config, resume.gen())), resume.gen())
 
-  const config = Object.assign({
+  const deck_config = Object.assign({
     dir:  `${__dirname}/svg-cards`,
     out_file:  `${__dirname}/../../src/assets/playing-cards.js`,
   }, CONFIG)
-  var imported = yield* import_deck(config, resume.gen())
-
-  // ------------------------------
-
-  var out = (config.export === 'cjs' ? 'module.exports' : 'export default var output') +
-    ` = {\n${config.indent}${imported.join('').replace(/\n/g, '\n')}}\n`
-
-  if (config.out_file) yield sander.writeFile(config.out_file, out)
-  // if (config.out_file_local) yield sander.writeFile(config.out_file_local, out)
-  console.log('out uncompressed:', out.length)
-
-  if (config.export === 'cjs' && config.minify !== false) {
-    let minified = require('uglify-js').minify(out, config.minify || {
-      fromString: true,
-      // sourceMap: {
-      //   filename: "out.js",
-      //   url: "out.js.map"
-      // },
-      parse: {},
-      mangle: {
-        toplevel: true
-      },
-      compress: {
-        unsafe: true,
-        properties: true,
-        dead_code: true,
-        pure_getters: true,
-        reduce_vars: true,
-        collapse_vars: true,
-        join_vars: true,
-        global_defs: {
-          "@alert": "console.warn"
-        },
-      },
-    })
-
-    const ext = path.extname(config.out_file)
-    const min_outfile = path.join(path.dirname(config.out_file), path.basename(config.out_file, ext) + '.min' + ext)
-    yield sander.writeFile(min_outfile, minified.code)
-    console.log('out compressed:', minified.code.length)
-    console.log(config.out_file)
-    if (minified.map) yield sander.writeFile(min_outfile + '.map', minified.map)
-  }
+  yield* export_hyper_svg(deck_config, (yield* import_deck(deck_config, resume.gen())), resume.gen())
 })
 
 
