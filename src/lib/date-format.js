@@ -26,7 +26,7 @@ var mask_cache = {}
 var flags = {
   // if only the value (d) is output, then the transformation function can be omitted
   d_: 'd',
-  // d: (_) => _,
+  d: (_) => _,
 
   dd_: 'd',
   dd: (_) => pad(_),
@@ -53,7 +53,7 @@ var flags = {
   yy: (_) => (_+'').slice(2),
 
   yyyy_: 'y',
-  // yyyy: (_) => _,
+  yyyy: (_) => _,
 
   h_: 'H',
   h: (_) => _ % 12 || 12,
@@ -62,19 +62,19 @@ var flags = {
   hh: (_) => pad(_ % 12 || 12),
 
   H_: 'H',
-  // H: (_) => _,
+  H: (_) => _,
 
   HH_: 'H',
   HH: (_) => pad(_),
 
   M_: 'M',
-  // M: (_) => _,
+  M: (_) => _,
 
   MM_: 'M',
   MM: (_) => pad(_),
 
   s_: 's',
-  // s: (_) => _,
+  s: (_) => _,
 
   ss_: 's',
   ss: (_) => pad(_),
@@ -113,33 +113,36 @@ var flags = {
   N: (date) => getDayOfWeek(date),
 }
 
-export default function dateFormat (date, mask, utc, gmt) {
+var saved_date, __d
+
+export default function dateFormat (_date, _mask, utc, gmt) {
+  var date, mask
 
   // You can't provide utc if you skip other args (use the 'UTC:' mask prefix)
-  if (kind_of(date) === 'string' && !mask) {
-    mask = date
+  if (kind_of(_date) === 'string' && !_mask) {
+    mask = _date
     date = new Date
-  } else if (!((date = date || new Date) instanceof Date)) {
-    date = new Date(date)
+  } else if (!((date = _date || new Date) instanceof Date)) {
+    date = new Date(_date)
   }
 
   if (isNaN(date)) {
     return 'Invalid date'
   }
 
-  mask = (dateFormat.masks[mask] || mask || dateFormat.masks['default']) + ''
+  mask = (dateFormat.masks[_mask] || _mask || dateFormat.masks['default']) + ''
 
   var ret, c, _, v = {
-    _:  () => date,
-    o: () => utc ? 0 : date.getTimezoneOffset(),
-    d: () => date[_ + 'Date'](),
-    D: () => date[_ + 'Day'](),
-    m: () => date[_ + 'Month'](),
-    y: () => date[_ + 'FullYear'](),
-    H: () => date[_ + 'Hours'](),
-    M: () => date[_ + 'Minutes'](),
-    s: () => date[_ + 'Seconds'](),
-    L: () => date[_ + 'Milliseconds'](),
+    _: (date) => date,
+    o: (date) => utc ? 0 : date.getTimezoneOffset(),
+    d: (date) => date[_ + 'Date'](),
+    D: (date) => date[_ + 'Day'](),
+    m: (date) => date[_ + 'Month'](),
+    y: (date) => date[_ + 'FullYear'](),
+    H: (date) => date[_ + 'Hours'](),
+    M: (date) => date[_ + 'Minutes'](),
+    s: (date) => date[_ + 'Seconds'](),
+    L: (date) => date[_ + 'Milliseconds'](),
   }, maskSlice = mask.slice(0, 4)
 
   // Allow setting the utc/gmt argument via the mask
@@ -149,7 +152,7 @@ export default function dateFormat (date, mask, utc, gmt) {
 
   if (c = mask_cache[mask]) {
     ret = ''
-    for (var f, i = 0; i < c.length; i++) ret += typeof(f = c[i]) === 'function' ? typeof(f.v) === 'function' ? f(f.v()) : f() : f
+    for (var f, i = 0; i < c.length; i++) ret += typeof(f = c[i]) === 'function' ? typeof(f.v) === 'function' ? f(f.v(date)) : f() : f
     return ret
   }
   else c = []
@@ -168,7 +171,7 @@ export default function dateFormat (date, mask, utc, gmt) {
     }
 
     ts[tsi += 2] = is_fn ? fn : fn = match.slice(1, match.length - 1)
-    return is_fn ? fn(fn.v && fn.v()) : fn
+    return is_fn ? fn(fn.v && fn.v(date)) : fn
   }), mask_cache[mask] = compact(ts), ret
 }
 
