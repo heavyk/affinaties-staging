@@ -1,6 +1,6 @@
 import PoemBase from './poem-base'
 
-import { t_px } from '../lib/dom/observable'
+import { _px } from '../lib/dom/observable'
 
 
 export default class PrompterTip extends PoemBase {
@@ -55,7 +55,7 @@ export default class PrompterTip extends PoemBase {
       if (!_answer(a)) self.close() // remove all elements if answer did not return truthy
     }
     var innerTip = self.fn(ctx, msg, options, answer)
-    var inner, outer = h('#tooltip-outer', {s: {left: self.attrx('x', t_px), top: self.attrx('y', t_px)}},
+    var inner, outer = h('#tooltip-outer', {s: {left: self.attrx('x', _px), top: self.attrx('y', _px)}},
       h('#tooltip-arrow'),
       inner = h('#tooltip-inner', innerTip)
     )

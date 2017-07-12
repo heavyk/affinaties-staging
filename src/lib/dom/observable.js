@@ -118,7 +118,7 @@ export function number (initialValue) {
 }
 
 // an observable object
-export function object (initialValue, _keys) {
+export function obv_obj (initialValue, _keys) {
   // if the value is already an observable, then just return it
   if (initialValue && initialValue.observable === 'object') return initialValue
 
@@ -142,7 +142,10 @@ export function object (initialValue, _keys) {
       }
     })
   }
-  for (let k of keys) props[k] = { get: () => obvs[k] || (obvs[k] = value(initialValue[k])) }
+  for (let k of keys) props[k] = {
+    get: () => obvs[k] || (obvs[k] = value(initialValue[k])),
+    set: (v) => { obvs[k](v) }
+  }
   Object.defineProperties(obj, props)
 
   return obj
@@ -185,9 +188,9 @@ export function transform (obv, down, up) {
   }
 }
 
-export var t_px = (v) => typeof v === 'string' && ~v.indexOf('px') ? v : v + 'px'
+export var _px = (v) => typeof v === 'string' && ~v.indexOf('px') ? v : v + 'px'
 export function px (observable) {
-  return transform(observable, t_px)
+  return transform(observable, _px)
 }
 
 export function listen (element, event, attr, listener) {

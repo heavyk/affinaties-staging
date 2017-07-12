@@ -3,7 +3,7 @@ import { value, transform, event, observable_property } from '../lib/dom/observa
 import { ObservableArray, context } from '../lib/dom/observable-array'
 import { MixinEmitter } from '../lib/drip/MixinEmitter'
 // TODO: remove h, s (should be retreived from the context)
-import { h, s, isNode, txt } from '../lib/dom/hyper-hermes'
+import { h, s, isNode, txt, set_style } from '../lib/dom/hyper-hermes'
 
 import { parseUri, parseQS, parseHash, parseJSON, camelize, define_getter } from '../lib/utils'
 import { pathVars, pathToRegExp, pathToStrictRegExp } from '../lib/router-utils'
@@ -132,9 +132,13 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
 
   set style (txt) {
     var self = this
+    if (typeof txt === 'object') {
+      if (!self.context().cleanupFuncs) debugger
+      return set_style(self, txt, self.context().cleanupFuncs)
+    }
     var shadow = self.shadow
     var e = ~txt.indexOf('://') ? h('link', {href: txt}) : h('style', txt)
-    if (!shadow) shadow = self.shadow = self //self.attachShadow({mode: 'open'})
+    if (!shadow) shadow = self.shadow = shadow === false ? self : self.attachShadow({mode: 'open'})
     e.é = 1 // set this, so the node won't be removed when the shadow is emptied (stupid hack... obviously)
     shadow.appendChild(e)
   }

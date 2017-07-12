@@ -49,8 +49,7 @@ function context (createElement) {
             if (!e) {
               e = createElement(v, args)
             } else {
-              s = v.substring(1, i)
-              if (v[0] === '.') {
+              if ((s = v.substring(1, i)) && v[0] === '.') {
                 e.classList.add(s)
               } else if (v[0] === '#') {
                 e.setAttribute('id', s)
@@ -155,21 +154,7 @@ function context (createElement) {
             if (typeof attr_val === 'string') {
               e.style.cssText = attr_val
             } else {
-              // if I use setProperty, then, 'borderRadius' will not work. (which is nice when using LiveScript, cause then the property does not need to be quoted)
-              for (s in attr_val) ((s, v) => {
-                if (typeof v === 'function') {
-                  // observable
-                  // e.style.setProperty(s, v())
-                  e.style[s] = v()
-                  cleanupFuncs.push(v((val) => {
-                    // e.style.setProperty(s, val)
-                    e.style[s] = val
-                  }))
-                } else {
-                  // e.style.setProperty(s, attr_val[s])
-                  e.style[s] = attr_val[s]
-                }
-              })(s, attr_val[s])
+              set_style(e, attr_val, cleanupFuncs)
             }
           // not necessary because the following clause will work just fine (e[k] is no longer set derectly)
           // } else if (k.substr(0, 5) === "data-") {
@@ -220,6 +205,24 @@ function context (createElement) {
   }
 
   return h
+}
+
+export function set_style (e, style, cleanupFuncs = []) {
+  // if I use setProperty, then, 'borderRadius' will not work. (which is nice when using LiveScript, cause then the property does not need to be quoted)
+  for (var s in style) ((s, v) => {
+    if (typeof v === 'function') {
+      // observable
+      // e.style.setProperty(s, v())
+      e.style[s] = v()
+      cleanupFuncs.push(v((val) => {
+        // e.style.setProperty(s, val)
+        e.style[s] = val
+      }))
+    } else {
+      // e.style.setProperty(s, v)
+      e.style[s] = v
+    }
+  })(s, style[s])
 }
 
 export function isNode (el) {

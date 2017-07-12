@@ -1,6 +1,6 @@
 import MixinEmitter from '../drip/MixinEmitter'
 import { define_getter, define_value } from '../utils'
-import { value, object, observable_property } from './observable'
+import { value, obv_obj, observable_property } from './observable'
 import eq from '../lodash/isEqual'
 import invoke from '../lodash/invoke'
 import set from '../lodash/set'
@@ -537,7 +537,7 @@ export class RenderingArray extends ObservableArray {
     var fl = this.fl, fn = this.fn, ret
     if (fl === 0) return fn()
     else {
-      var _d = this._d[idx] || (this._d[idx] = typeof d === 'object' ? object(d) : value(d))
+      var _d = this._d[idx] || (this._d[idx] = typeof d === 'object' ? obv_obj(d) : value(d))
       if (fl === 1) return fn(_d)
       else {
         var _ctx = this._ctx[idx] || (this._ctx[idx] = context(this.G))
