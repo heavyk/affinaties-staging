@@ -56,4 +56,4 @@ export default class Card extends PoemBase {
 }
 
 import { special_elements } from '../../lib/dom/hyper-hermes'
-special_elements.define('poke-her-card', Card, 2) // id, opts
+special_elements.define('poke-her-card', Card, ['id', 'opts'])

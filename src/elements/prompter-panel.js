@@ -24,4 +24,4 @@ export default class PrompterPanel extends PoemBase {
 }
 
 import { special_elements } from '../lib/dom/hyper-hermes'
-special_elements.define('prompter-panel', PrompterPanel, 1) // fn:(G, msg, options, answer)
+special_elements.define('prompter-panel', PrompterPanel, ['function (G, msg, options, answer)'])

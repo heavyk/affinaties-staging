@@ -351,7 +351,7 @@ export var special_elements = {}
 Object.defineProperty(special_elements, 'define', {value: (name, fn, args) => {
   // if (DEBUG) console.log('defining', name, args)
   win.customElements.define(name, fn)
-  special_elements[name] = typeof args === 'number' ? args : args.length || 0
+  special_elements[name] = typeof args === 'number' ? args : Array.isArray(args) ? args.length : fn.length || 0
 }})
 
 export var h = dom_context(1)
@@ -362,7 +362,7 @@ export function dom_context (no_cleanup) {
     var i
 
     return !~el.indexOf('-') ? doc.createElement(el)
-      : (i = special_elements[el]) !== undefined ? new (customElements.get(el))(...args.splice(0, i || 2)) // 2 is default? I can't think of a good reason why it shouldn't be 1 or 0 ...
+      : (i = special_elements[el]) !== undefined ? new (customElements.get(el))(...args.splice(0, i))
       : new (customElements.get(el))
   })
   if (!no_cleanup) h.cleanupFuncs.push(() => ctx.cleanup())

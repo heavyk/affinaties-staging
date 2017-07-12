@@ -54,4 +54,4 @@ export default class PoemFrame extends PoemBase {
 }
 
 import { special_elements } from '../lib/dom/hyper-hermes'
-special_elements.define('poem-frame', PoemFrame, 2) // id, opts
+special_elements.define('poem-frame', PoemFrame, ['opts', 'function (G)'])
