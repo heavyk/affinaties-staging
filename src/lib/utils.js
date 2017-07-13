@@ -1,4 +1,6 @@
 
+import isObject from './lodash/isObject'
+
 export function noop () {}
 
 // micro-optimization: http://jsperf.com/for-vs-foreach/292
@@ -152,8 +154,8 @@ export function stringifyQS (data) {
 export const camelize = (k) => ~k.indexOf('-') ? k.replace(/-+(.)?/g, (tmp, c) => (c || '').toUpperCase()) : k
 
 // I imagine that something better can be done than this...
-export const define_getter = (fn) => ({ configurable: true, get: fn })
-export const define_value = (fn) => ({ value: fn })
+export const define_getter = (get, configurable = true) => ({ get, configurable })
+export const define_value = (value, writable = false, configurable = true) => ({ configurable, value, writable })
 
 export function slasher (_path, leading) {
   // strip trailing slash
@@ -177,6 +179,25 @@ export function optimal_obj (obj) {
   // call twice to ensure v8 optimises the object
   enforcer()
   enforcer()
+}
+
+// knicked from: https://stackoverflow.com/questions/27936772/how-to-deep-merge-instead-of-shallow-merge
+export function mergeDeep(target, ...sources) {
+  if (!sources.length) return target
+  const source = sources.shift()
+
+  if (isObject(target) && isObject(source)) {
+    for (const key in source) {
+      if (isObject(source[key])) {
+        if (!target[key]) Object.assign(target, { [key]: {} })
+        mergeDeep(target[key], source[key])
+      } else {
+        Object.assign(target, { [key]: source[key] })
+      }
+    }
+  }
+
+  return mergeDeep(target, ...sources)
 }
 
 // left_pad((1234).toString(16), 20, '0')

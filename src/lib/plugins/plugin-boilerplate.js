@@ -1,10 +1,13 @@
 // get rid of me
-import defaults from '../lodash/defaultsDeep'
+// import defaults from '../lodash/defaultsDeep'
+import { mergeDeep } from '../utils'
 
 import { value } from '../dom/observable'
-// import { ResizeSensor } from '../dom/css-element-queries'
 import ResizeSensor from '../dom/resize-sensor'
-import { h, s, doc, body, win, IS_LOCAL, basePath } from '../dom/hyper-hermes'
+
+import { h, s } from '../dom/hyper-hermes'
+import { doc, body, win, IS_LOCAL, basePath } from '../dom/hyper-hermes'
+import { new_context, el_context } from '../dom/hyper-hermes'
 
 function parseJson (s) {
   try {
@@ -15,7 +18,9 @@ function parseJson (s) {
 
 function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) {
   var tmp, mutationObserver, G, E, _width, _height, _dpr, set_data, set_config, args
-  var config = defaults({}, parseJson(_config), DEFAULT_CONFIG)
+  // TODO: change me to Object.assign (or roll my own defaults fn)
+  // var config = defaults({}, parseJson(_config), DEFAULT_CONFIG)
+  var config = mergeDeep({}, parseJson(_config), DEFAULT_CONFIG)
 
   if (IS_LOCAL) {
     tmp = body.style
@@ -30,8 +35,10 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
         position: 'fixed',
         left: 0,
         top: 0,
-        width: '100%',
-        height: '100%',
+        bottom: 0,
+        right: 0,
+        // width: '100%',
+        // height: '100%',
         overflow: 'hidden'
       }
     }))
@@ -46,13 +53,8 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
   //   }
   // })).observe(body, { childList: true })
 
-  win.G = G = {}
+  win.G = G = frame._G = new_context({h, s})
   G.E = E = { frame: frame, body: doc.body, win: win }
-  // TODO: properly make a context and clean it up
-  G.s = s.context()
-  G.h = h.context()
-  G.s.context = s.context
-  G.h.context = h.context
 
   // TODO: get device orientation
   // https://crosswalk-project.org/documentation/tutorials/screens.html
@@ -79,14 +81,11 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
       var p = frame.parentNode
       // mutationObserver.disconnect()
       if (p) p.removeChild(frame)
-      // TODO: properly make a context and clean it up
-      G.h.cleanup()
-      G.s.cleanup()
       if (typeof _cleanup === 'function') _cleanup()
     }
   })(frame.cleanup)
 
-  G.cleanup = frame.cleanup
+  G.cleanupFuncs.push(frame.cleanup)
 
   if (!(set_config = frame.set_config)) {
     set_config = frame.set_config = value(config)
