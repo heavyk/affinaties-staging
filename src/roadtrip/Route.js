@@ -63,27 +63,28 @@ export default class Route {
     return segmentsMatch(slasher(a.pathname, 1).split('/'), this.segments)
   }
 
-  exec (target, isInitial) {
+  exec (target, isInitial, is404) {
     a.href = target.href
 
     const pathname = slasher(a.pathname, 1)
     const segments = pathname.split('/')
     const _segments = this.segments
-
-    if (segments.length !== _segments.length) {
-      return false
-    }
-
     const params = {}
 
-    for (let i = 0; i < segments.length; i++) {
-      const segment = segments[i]
-      const toMatch = _segments[i]
-
-      if (toMatch[0] === ':') {
-        params[ toMatch.slice(1) ] = segment
-      } else if (segment !== toMatch) {
+    if (!is404) {
+      if (segments.length !== _segments.length) {
         return false
+      }
+
+      for (let i = 0; i < segments.length; i++) {
+        const segment = segments[i]
+        const toMatch = _segments[i]
+
+        if (toMatch[0] === ':') {
+          params[ toMatch.slice(1) ] = segment
+        } else if (segment !== toMatch) {
+          return false
+        }
       }
     }
 

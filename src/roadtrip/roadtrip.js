@@ -36,7 +36,9 @@ export default class RoadTrip {
   }
 
   add (path, options, ctx = this) {
-    this.routes.push(new Route(this.base + (path === '/' ? '' : path), options, ctx))
+    if (path == 404) this._404 = new Route(path, options, ctx)
+    else this.routes.push(new Route(this.base + (path === '/' ? '' : path), options, ctx))
+    // this.routes.push(new Route(path == 404 ? path : this.base + (path === '/' ? '' : path), options, ctx))
     return this
   }
 
@@ -97,7 +99,10 @@ export default class RoadTrip {
     let newData
     let promise
 
-    for (let route of this.routes) {
+    if (target.options.code === 404) {
+      newRoute = this._404
+      newData = newRoute.exec(target, this.initial, true)
+    } else for (let route of this.routes) {
       if (newData = route.exec(target, this.initial)) {
         newRoute = route
         this.initial = false
@@ -168,7 +173,7 @@ export default class RoadTrip {
   //  - added link detection in custom elements
   //  -
   watchLinks (container_el) {
-    var click_handler = (event) => {
+    const click_handler = (event) => {
       let w = which(event)
       if (w !== 1 && w !== 0) return
       if (event.metaKey || event.ctrlKey || event.shiftKey) return
@@ -196,7 +201,10 @@ export default class RoadTrip {
       if (el.target) return
 
       // x-origin
-      if (!sameOrigin(el.href)) return
+      if (!sameOrigin(el.href)) {
+        console.warn('navigating outside of this origin. TODO: x-origin navigation function (which can do tracking or cancel the event)')
+        return
+      }
 
       // rebuild path
       let path = el.pathname + el.search + (el.hash || '')
@@ -208,29 +216,34 @@ export default class RoadTrip {
 
       // same page
       var goto_path = path
-
-      if (path.indexOf(this.base) === 0) {
-        path = path.substr(this.base.length)
+      // when 404ing, it's also necessary to preventDefault to prevent navigation.
+      const _goto = (path, options) => {
+        // this is no longer possible starting with chrome 56
+        // (all document level event listeners are considered passive by default)
+        // https://www.chromestatus.com/feature/5093566007214080
+        event.preventDefault()
+        event.stopImmediatePropagation()
+        return this.goto(path, options)
       }
 
-      if (this.base && goto_path === path) {
-        path = this.base + path
-        if (this.routes.some(route => route.matches(path))) goto_path = path
-        else return console.warn('potentially going to an undefined route. TODO: show 404')
+      if (this.base) {
+        if (path.indexOf(this.base) === 0) path = path.substr(this.base.length)
+        if (goto_path === path) {
+          path = this.base + path
+          if (this.routes.some(route => route.matches(path))) goto_path = path
+          else return _goto(path, {code: 404})
+        }
       }
 
-      // no match? allow navigation
-      if (!this.routes.some(route => route.matches(goto_path))) return
+      // no match? allow navigation if this._404 isn't set
+      if (!this.routes.some(route => route.matches(goto_path)) && !this._404) {
+        return _goto(goto_path, {code: 404})
+      }
 
-      // this is no longer possible starting with chrome 56
-      // (all document level event listeners are considered passive by default)
-      // https://www.chromestatus.com/feature/5093566007214080
-      event.preventDefault()
-      event.stopImmediatePropagation()
-      this.goto(goto_path)
+      _goto(goto_path)
     }
 
-    var popstate_handler = (event) => {
+    const popstate_handler = (event) => {
       if (!event.state) return // hashchange, or otherwise outside roadtrip's control
       const scroll = this.scrollHistory[ event.state.uid ]
 
