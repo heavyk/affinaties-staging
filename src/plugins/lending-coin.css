@@ -1,28 +1,62 @@
 poem-frame {
   display: grid;
   grid-template-areas:
-    "header content"
-    "sidebar content"
+    "nav nav nav"
+    "lspace icontent rspace"
   ;
   grid-template-rows: 80px 1fr;
-  grid-template-columns: 180px 1fr;
+  grid-template-columns: 1fr 20fr 1fr;
+  width: 100%;
+  height: 100%;
 }
 
-poem-frame .side-bar {
-  grid-area: sidebar;
+/*poem-frame .left {
+  grid-area: lspace;
 }
-poem-frame .top {
-  grid-area: header;
+poem-frame .right {
+  grid-area: rspace;
+}*/
+poem-frame .nav {
+  grid-area: nav;
+  margin: 5px 0;
+  border-bottom: solid 1px #dadada;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2), 0 1px 1px 0 rgba(0,0,0,0.14), 0 2px 1px -1px rgba(0,0,0,0.12);
 }
 poem-frame .middle {
-  grid-area: content;
+  grid-area: icontent;
+  overflow: hidden;
+}
+
+.logo {
+  display: inline-block;
+  margin: 20px;
+}
+
+img.logo {
+  border-radius: 50%;
+}
+
+.logo a {
+  color: #FF4827;
+  font-size: 150%;
+}
+
+.nav ul {
+  margin: 10px;
+  padding: 10px;
+  display: inline-block;
+}
+
+.nav li {
+  display: inline-block;
+  list-style: none;
+  margin: 5px 0 5px 10px;
 }
 
 /*.main-page */
 .loan-scroller {
-  position: absolute;
-  bottom: 0;
-  top: 0;
+  overflow-y: auto;
+  height: 100%;
 }
 
 .scroll-header {
@@ -90,14 +124,20 @@ div.profile .offers {
   color: #FF4827;
 }
 
+.loan .dat,
 .loan .interest,
 .loan .rating {
   border: solid 1px #dcdcdc;
-  background: #FFEC27;
+  /*background: #FFEC27;*/
   margin: 0 4px;
   border-radius: 4px;
   padding: 4px;
   display: inline-block;
+}
+
+.loan .interest,
+.loan .rating {
+  background: #FFEC27;
 }
 
 .loan .analyst-rating {
@@ -152,9 +192,10 @@ div.profile .offers {
   border: solid 1px #ccc;
   padding: 0 4px;
   border-radius: 8px;
-  width: 50%;
+  width: 25%;
   text-align: center;
   margin: 0 20px 0 0;
+  height: 20px;
 }
 
 .status .amount {
@@ -189,15 +230,6 @@ div.profile .offers {
   width: 100%;
   font-size: 69%;
   color: #FF4827;
-}
-
-img.logo {
-  border-radius: 50%;
-}
-
-.logo a {
-  color: #FF4827;
-  font-size: 150%;
 }
 
 a {
