@@ -132,7 +132,7 @@ function* import_deck (config, resume) {
   }}, config)
 
   const dir = config.dir
-  const out_dir = path.basename(config.out_file, path.extname(config.out_file))
+  const out_dir = path.join(path.dirname(config.out_file), path.basename(config.out_file, path.extname(config.out_file)))
   const suites = [ 'hearts', 'clubs', 'spades', 'diamonds' ]
   const cards = [ 'ace', 2,3,4,5,6,7,8,9,10, 'jack', 'queen', 'king' ]
 
