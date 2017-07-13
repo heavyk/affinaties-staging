@@ -1,5 +1,4 @@
 import MixinEmitter from '../drip/MixinEmitter'
-import { define_getter, define_value } from '../utils'
 import { value, obv_obj, observable_property } from './observable'
 import eq from '../lodash/isEqual'
 import invoke from '../lodash/invoke'
@@ -349,19 +348,6 @@ export function ObservableArrayApply (oarr, ...arr) {
         break
     }
   })
-}
-
-export function context (G) {
-  var ctx = {}
-  Object.defineProperties(ctx, {
-    h: define_getter(() => ctx._h || (ctx._h = G.h.context())),
-    s: define_getter(() => ctx._s || (ctx._s = G.s.context())),
-    cleanup: define_value(() => {
-      if (ctx._h) ctx._h.cleanup()
-      if (ctx._s) ctx._s.cleanup()
-    })
-  })
-  return ctx
 }
 
 function swap (o, to, from) {

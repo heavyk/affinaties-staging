@@ -1,8 +1,8 @@
 
 import { value, transform, event, observable_property } from '../lib/dom/observable'
-import { ObservableArray, context } from '../lib/dom/observable-array'
+import { ObservableArray } from '../lib/dom/observable-array'
 import { PathEmitter } from '../lib/drip/PathEmitter'
-import { win, h, s, isNode, txt, arrayFragment } from '../lib/dom/hyper-hermes'
+import { win, h, s, isNode, txt, arrayFragment, new_context } from '../lib/dom/hyper-hermes'
 
 import { parseUri, parseQS, parseHash, parseJSON, camelize, define_getter } from '../lib/utils'
 import { pathVars, pathToRegExp, pathToStrictRegExp } from '../lib/router-utils'
@@ -216,7 +216,7 @@ export default class PoemStateMachine extends PathEmitter(HTMLElement) {
   }
 
   context () {
-    return this._ctx || (this._ctx = context({h, s}))
+    return this._ctx || (this._ctx = new_context({h, s}))
   }
 
   get observables () {

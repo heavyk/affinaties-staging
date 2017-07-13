@@ -143,8 +143,8 @@ export function obv_obj (initialValue, _keys) {
     })
   }
   for (let k of keys) props[k] = {
-    get: () => obvs[k] || (obvs[k] = value(initialValue[k])),
-    set: (v) => { obvs[k](v) }
+    get: () => (obvs[k] || (obvs[k] = value(initialValue[k])))(),
+    set: (v) => obvs[k](v)
   }
   Object.defineProperties(obj, props)
 

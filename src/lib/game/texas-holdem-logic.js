@@ -1,4 +1,4 @@
-import { value, number, object, transform, compute, observable_property } from '../dom/observable'
+import { value, number, transform, compute, observable_property } from '../dom/observable'
 import { prompter } from '../dom/observable-logic'
 import { ObservableArray } from '../dom/observable-array'
 import { rankHandInt } from './rank-hand'

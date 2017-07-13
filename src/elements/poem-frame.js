@@ -1,6 +1,5 @@
 
 import { value } from '../lib/dom/observable'
-import { context } from '../lib/dom/observable-array'
 import { MixinEmitter } from '../lib/drip/MixinEmitter'
 import { win, basePath, comment } from '../lib/dom/hyper-hermes'
 

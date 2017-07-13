@@ -4,6 +4,7 @@
 // also took some inspiration from https://github.com/Raynos/mercury
 
 import { attribute, hover, focus, select, event, on, off } from './observable'
+import { define_getter, define_value } from '../utils'
 
 export const win = window
 export const doc = win.document
@@ -354,10 +355,10 @@ Object.defineProperty(special_elements, 'define', {value: (name, fn, args) => {
   special_elements[name] = typeof args === 'number' ? args : Array.isArray(args) ? args.length : fn.length || 0
 }})
 
-export var h = dom_context(1)
-export function dom_context (no_cleanup) {
+export var h = new_dom_context(1)
+export function new_dom_context (no_cleanup) {
   // TODO: turn this into ctx = new Context ((el, args) => { ... })
-  //  -- and, turn the context fn into a class
+  //  -- and, turn the context fn into a class??
   var ctx = context((el, args) => {
     var i
 
@@ -365,21 +366,66 @@ export function dom_context (no_cleanup) {
       : (i = special_elements[el]) !== undefined ? new (customElements.get(el))(...args.splice(0, i))
       : new (customElements.get(el))
   })
+
   if (!no_cleanup) h.cleanupFuncs.push(() => ctx.cleanup())
+  ctx.context = new_dom_context
   return ctx
 }
 
-h.context = dom_context
-
-export var s = svg_context(1)
-export function svg_context (no_cleanup) {
+export var s = new_svg_context(1)
+export function new_svg_context (no_cleanup) {
   var ctx = context((el) => doc.createElementNS('http://www.w3.org/2000/svg', el))
 
   if (!no_cleanup) s.cleanupFuncs.push(() => ctx.cleanup())
+  ctx.context = new_svg_context
   return ctx
 }
 
-s.context = svg_context
+export function el_context (el) {
+  var ctx
+  while ((ctx = el._G) === undefined && (el = el.parentNode) != null) {}
+  return ctx
+}
+
+export function global_context () {
+  return new_context({h, s})
+}
+
+export function new_context (G = global_context()) {
+  var cleanupFuncs = []
+  var ctx = Object.create(G, {
+  // var ctx = console.log(G, {
+    _h: define_value(null, true),
+    _s: define_value(null, true),
+    h: define_getter(() => ctx._h || (ctx._h = G.h.context())),
+    s: define_getter(() => ctx._s || (ctx._s = G.s.context())),
+    cleanupFuncs: define_value(cleanupFuncs),
+    parent: define_value(G),
+    cleanup: define_value((f) => {
+      while (f = cleanupFuncs.pop()) f()
+      if (ctx._h) ctx._h.cleanup()
+      if (ctx._s) ctx._s.cleanup()
+    })
+  })
+  return ctx
+}
+
+// export function context (G) {
+//   var ctx = {_h: null, _s: null}
+//   Object.defineProperties(ctx, {
+//     h: define_getter(() => ctx._h || (ctx._h = G.h.context())),
+//     s: define_getter(() => ctx._s || (ctx._s = G.s.context())),
+//     parent: define_value(G),
+//     cleanup: define_value(() => {
+//       if (ctx._h) ctx._h.cleanup()
+//       if (ctx._s) ctx._s.cleanup()
+//     })
+//   })
+//   return Object.create(G, ctx)
+//   return ctx
+// }
+
+// export CTX = {h, s, cleanupFuncs: []}
 
 export const makeNode = (e, v, cleanupFuncs) => isNode(v) ? v
   : Array.isArray(v) ? arrayFragment(e, v, cleanupFuncs)
