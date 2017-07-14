@@ -56,7 +56,7 @@ export default class RoadTrip {
 
     this.initial = true
     return this.goto(href, {
-      replaceState: true,
+      replace: true,
       scrollX: win.scrollX,
       scrollY: win.scrollY
     })
@@ -99,8 +99,7 @@ export default class RoadTrip {
     let newData
     let promise
 
-    if (target.options.code === 404) {
-      newRoute = this._404
+    if (target.options.code === 404 && (newRoute = this._404)) {
       newData = newRoute.exec(target, this.initial, true)
     } else for (let route of this.routes) {
       if (newData = route.exec(target, this.initial)) {
@@ -114,7 +113,7 @@ export default class RoadTrip {
 
     if (!newRoute || isSameRoute(newRoute, currentRoute, newData, currentData)) {
       // return target.fulfil()
-      target.options.replaceState = true
+      target.options.replace = true
     }
 
     this.scrollHistory[ this.currentID ] = {
@@ -126,8 +125,7 @@ export default class RoadTrip {
 
     promise =
       newRoute === currentRoute && typeof newRoute.update === 'function' ?
-      newRoute.update(newData) :
-      Promise.all([
+      newRoute.update(newData) : Promise.all([
         currentRoute.leave(currentData, newData),
         newRoute.beforeenter(newData, currentData)
       ]).then(() => {
@@ -151,12 +149,12 @@ export default class RoadTrip {
       })
       .catch(target.reject)
 
-    const { replaceState, invisible } = target.options
+    const { replace, invisible } = target.options
 
     if (target.popstate || invisible) return
 
-    const uid = replaceState ? this.currentID : ++this.uniqueID
-    win.history[ replaceState ? 'replaceState' : 'pushState' ]({ uid }, '', target.href)
+    const uid = replace ? this.currentID : ++this.uniqueID
+    win.history[ replace ? 'replaceState' : 'pushState' ]({ uid }, '', target.href)
 
     this.currentID = uid
     this.scrollHistory[ this.currentID ] = {
@@ -269,13 +267,13 @@ export default class RoadTrip {
     if (!container_el) container_el = win
     container_el.addEventListener('click', click_handler, true)
     container_el.addEventListener('touchstart', click_handler, true)
-    container_el.addEventListener('popstate', popstate_handler, true)
+    win.addEventListener('popstate', popstate_handler, {passive: true})
 
     // return a remove function
     return () => {
       container_el.removeEventListener('click', click_handler, true)
       container_el.removeEventListener('touchstart', click_handler, true)
-      container_el.removeEventListener('popstate', popstate_handler, true)
+      win.removeEventListener('popstate', popstate_handler, {passive: true})
     }
   }
 }
