@@ -18,7 +18,7 @@ poem-frame .right {
 }*/
 poem-frame .nav {
   grid-area: nav;
-  margin: 5px 0;
+  margin: 4px 0 2px;
   border-bottom: solid 1px #dadada;
   box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2), 0 1px 1px 0 rgba(0,0,0,0.14), 0 2px 1px -1px rgba(0,0,0,0.12);
 }
@@ -53,8 +53,21 @@ img.logo {
   margin: 5px 0 5px 10px;
 }
 
+.nav .session {
+  float: right;
+  margin: 12px 20px;
+  border: solid 1px #26add9;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.nav h4 {
+  float: right;
+  margin: 6px 4px;
+}
+
 /*.main-page */
-.loan-scroller {
+.proyecto-scroller {
   overflow-y: auto;
   height: 100%;
 }
@@ -69,7 +82,7 @@ img.logo {
 div.profile {
   display: grid;
   grid-template-areas:
-    "ident loans"
+    "ident proyectos"
     "actions offers"
   ;
   grid-template-rows: 180px 1fr;
@@ -80,8 +93,8 @@ div.profile .ident {
   grid-area: ident;
 }
 
-div.profile .loans {
-  grid-area: loans;
+div.profile .proyectos {
+  grid-area: proyectos;
   position: relative;
 }
 
@@ -90,7 +103,31 @@ div.profile .offers {
 }
 
 
-.loan {
+.profile-lg {
+  display: grid;
+  grid-template-areas:
+    "foto ident"
+    "foto content"
+    "foto actions"
+  ;
+  grid-template-rows: 80px 1fr;
+  grid-template-columns: 1fr 1fr 2fr;
+  /*border-bottom: solid 1px #dedede;*/
+  .foto {
+    grid-area: foto;
+  }
+  .ident {
+    grid-area: ident;
+  }
+  .content {
+    grid-area: content;
+  }
+  .actions {
+    grid-area: actions;
+  }
+}
+
+.proyecto {
   display: grid;
   grid-template-areas:
     "ident title"
@@ -102,31 +139,31 @@ div.profile .offers {
   border-bottom: solid 1px #dedede;
 }
 
-.loan .foto {
+.proyecto .foto {
   grid-area: ident;
 }
 
-.loan .title {
+.proyecto .title {
   grid-area: title;
   font-size: 120%;
   font-weight: 500;
 }
 
-.loan .content {
+.proyecto .content {
   grid-area: content;
 }
 
-.loan .foot {
+.proyecto .foot {
   grid-area: info;
 }
 
-.loan .interest {
+.proyecto .interest {
   color: #FF4827;
 }
 
-.loan .dat,
-.loan .interest,
-.loan .rating {
+.proyecto .dat,
+.proyecto .interest,
+.proyecto .rating {
   border: solid 1px #dcdcdc;
   /*background: #FFEC27;*/
   margin: 0 4px;
@@ -135,31 +172,31 @@ div.profile .offers {
   display: inline-block;
 }
 
-.loan .interest,
-.loan .rating {
+.proyecto .interest,
+.proyecto .rating {
   background: #FFEC27;
 }
 
-.loan .analyst-rating {
+.proyecto .analyst-rating {
   /*border-color: #dcdcdc;*/
 }
-.loan .captador-rating {
+.proyecto .captador-rating {
   /*border-color: #dd3;*/
 }
 
-.loan .desc {
+.proyecto .desc {
   height: 20px;
   overflow: hidden;
   transition: all 0.2s ease;
 }
 
-.loan .desc-big,
-.loan .desc {
+.proyecto .desc-big,
+.proyecto .desc {
   color: #333;
   margin: 5px 5px 0;
 }
 
-.loan .read-more {
+.proyecto .read-more {
   text-align: center;
   margin: 0 0 4px 0;
   text-decoration: underline;
@@ -168,12 +205,12 @@ div.profile .offers {
   bottom: 0;
 }
 
-.loan .offer-scroller {
+.proyecto .offer-scroller {
   display: grid;
   grid-template-columns: repeat(4, minmax(150px, 1fr));
 }
 
-.loan .offer {
+.proyecto .offer {
   margin: 4px;
   background: #fae7d6;
   border-radius: 4px;
@@ -185,7 +222,7 @@ div.profile .offers {
   color: #868686;
 }
 
-.loan .status {
+.proyecto .status {
   float: right;
   position: relative;
   font-size: 90%;
