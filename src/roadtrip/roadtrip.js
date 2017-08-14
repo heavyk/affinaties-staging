@@ -3,6 +3,7 @@
 //  - allow for multiple router instantiation
 //  - few changes to optimise for my setup
 //  - if base is '/xxx', then: /xxx/my/route, /xxx/, and /xxx are all valid starting paths. previously, '/xxx/' (trailing slash) was invalid
+//  - 404 route
 
 import Route from './Route.js'
 import isEqual from '../lib/lodash/isEqual'
@@ -38,7 +39,6 @@ export default class RoadTrip {
   add (path, options, ctx = this) {
     if (path == 404) this._404 = new Route(path, options, ctx)
     else this.routes.push(new Route(this.base + (path === '/' ? '' : path), options, ctx))
-    // this.routes.push(new Route(path == 404 ? path : this.base + (path === '/' ? '' : path), options, ctx))
     return this
   }
 
@@ -101,19 +101,24 @@ export default class RoadTrip {
 
     if (target.options.code === 404 && (newRoute = this._404)) {
       newData = newRoute.exec(target, this.initial, true)
-    } else for (let route of this.routes) {
-      if (newData = route.exec(target, this.initial)) {
-        newRoute = route
-        this.initial = false
-        break
+    } else {
+      for (let route of this.routes) {
+        if (newData = route.exec(target, this.initial)) {
+          newRoute = route
+          this.initial = false
+          break
+        }
+      }
+
+      // 404's don't replace state
+      if (isSameRoute(newRoute, currentRoute, newData, currentData)) {
+        target.options.replace = true
       }
     }
 
-    // if (newRoute === undefined) debugger
-
-    if (!newRoute || isSameRoute(newRoute, currentRoute, newData, currentData)) {
-      // return target.fulfil()
-      target.options.replace = true
+    if (!newRoute) {
+      // this can only happen if a 404 is not defined
+      return this.goto(this.base || '/')
     }
 
     this.scrollHistory[ this.currentID ] = {
@@ -125,7 +130,8 @@ export default class RoadTrip {
 
     promise =
       newRoute === currentRoute && typeof newRoute.update === 'function' ?
-      newRoute.update(newData) : Promise.all([
+        newRoute.update(newData)
+      : Promise.all([
         currentRoute.leave(currentData, newData),
         newRoute.beforeenter(newData, currentData)
       ]).then(() => {
@@ -149,12 +155,12 @@ export default class RoadTrip {
       })
       .catch(target.reject)
 
-    const { replace, invisible } = target.options
+    const { replace, invisible, code } = target.options
 
     if (target.popstate || invisible) return
 
     const uid = replace ? this.currentID : ++this.uniqueID
-    win.history[ replace ? 'replaceState' : 'pushState' ]({ uid }, '', target.href)
+    win.history[ replace ? 'replaceState' : 'pushState' ]({ uid, code }, '', target.href)
 
     this.currentID = uid
     this.scrollHistory[ this.currentID ] = {
@@ -238,7 +244,7 @@ export default class RoadTrip {
         return _goto(goto_path, {code: 404})
       }
 
-      _goto(goto_path)
+      _goto(goto_path, {code: 200})
     }
 
     const popstate_handler = (event) => {
@@ -250,7 +256,7 @@ export default class RoadTrip {
         scrollX: scroll.x,
         scrollY: scroll.y,
         popstate: true, // so we know not to manipulate the history
-        options: {},
+        options: event.state,
         fulfil: noop,
         reject: noop
       }
