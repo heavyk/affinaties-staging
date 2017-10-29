@@ -33,10 +33,6 @@ export default class PrompterTip extends PoemBase {
           display: block;
           visibility: hidden;
         }
-        /* #tooltip-inner > * {
-          all: initial;
-          background-color: #f00;
-        } */
         #tooltip-outer {
           z-index: 100;
           position: fixed;
@@ -57,9 +53,10 @@ export default class PrompterTip extends PoemBase {
     var innerTip = self.fn(ctx, msg, options, answer)
     var inner, outer = h('#tooltip-outer', {s: {left: self.attrx('x', _px), top: self.attrx('y', _px)}},
       h('#tooltip-arrow'),
-      inner = h('#tooltip-inner', innerTip)
+      inner = h('#tooltip-inner', h('slot'))
     )
     self.els(outer)
+    self.aC(innerTip)
     setTimeout(() => {
       tipW(inner.clientWidth / 2)
       tipH(inner.clientHeight / 2)
