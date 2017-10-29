@@ -1,6 +1,6 @@
 'use strict'
 
-import { define_value, forEach } from '../utils'
+import { define_value, forEach, error } from '../utils'
 // import eq from '../lodash/isEqual'
 
 // knicked from: https://github.com/dominictarr/observable/blob/master/index.js
@@ -125,14 +125,6 @@ export function obv_obj (initialValue, _keys) {
   var obj = {}
   var obvs = {}
   var keys = []
-  for (let k of Array.isArray(_keys) ? _keys : Object.keys(initialValue)) {
-    let v = initialValue[k]
-    if (v !== undefined) {
-      if (v.observable) obvs[k] = v
-      keys.push(k)
-    }
-  }
-
   var props = {
     observable: define_value('object'),
     // TODO: implement get/set,on/off for compatibility with scuttlebutt?
@@ -142,6 +134,16 @@ export function obv_obj (initialValue, _keys) {
       }
     })
   }
+
+  for (let k of Array.isArray(_keys) ? _keys : Object.keys(initialValue)) {
+    let _obv, v = initialValue[k]
+    if (v !== undefined) {
+      if (v.observable === 'value') obvs[k] = v, keys.push(k)
+      else if (v.observable) props[k] = define_value(v)
+      else keys.push(k)
+    }
+  }
+
   for (let k of keys) props[k] = {
     get: () => (obvs[k] || (obvs[k] = value(initialValue[k])))(),
     set: (v) => obvs[k](v)
@@ -261,10 +263,6 @@ export function toggle (el, up_event, down_event) {
       })
     )
   }
-}
-
-export function error (message) {
-  throw new Error(message)
 }
 
 // TODO: I believe this needs a remove function which removes all listeners

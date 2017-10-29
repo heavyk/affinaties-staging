@@ -19,8 +19,8 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
   }
 
   connectedCallback () {
-    var self = this, fn = self.body
-    if (typeof fn === 'function') self.els(fn.call(self, self.context()))
+    var e, self = this, fn = self.body
+    if (typeof fn === 'function' && (e = fn.call(self, self.context()))) self.els(e)
   }
 
   reset () {

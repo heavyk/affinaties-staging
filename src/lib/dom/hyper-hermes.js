@@ -4,7 +4,7 @@
 // also took some inspiration from https://github.com/Raynos/mercury
 
 import { attribute, hover, focus, select, event, on, off } from './observable'
-import { define_getter, define_value } from '../utils'
+import { define_getter, define_value, error } from '../utils'
 
 export const win = window
 export const doc = win.document
@@ -32,17 +32,17 @@ function context (createElement) {
 
   var cleanupFuncs = []
 
-  function add_event (e, event, listener, opts) {
+  const add_event = (e, event, listener, opts) => {
     on(e, event, listener, opts)
     cleanupFuncs.push(() => { off(e, event, listener, opts) })
   }
 
 
-  function h() {
-    var args = [].slice.call(arguments), e = null
+  function h(...args) {
+    var e
     function item (l) {
       var r, s, i, o, k
-      function parseClass (string) {
+      const parseClass = (string) => {
         var v, m = string.split(/([\.#]?[a-zA-Z0-9_:-]+)/)
         if (/^\.|#/.test(m[1])) e = createElement('div')
         for (v of m) {
@@ -50,10 +50,11 @@ function context (createElement) {
             if (!e) {
               e = createElement(v, args)
             } else {
-              if ((s = v.substring(1, i)) && v[0] === '.') {
-                e.classList.add(s)
-              } else if (v[0] === '#') {
-                e.setAttribute('id', s)
+              if ((k = v[0]) === '.' || k === '#') {
+                if (s = v.substring(1, i)) {
+                  if (k === '.') e.classList.add(s)
+                  else e.setAttribute('id', s)
+                }
               }
             }
           }
@@ -65,17 +66,17 @@ function context (createElement) {
         if (!e) {
           parseClass(l)
         } else {
-          e.appendChild(r = txt(l))
+          e.aC(r = txt(l))
         }
       } else if (typeof l === 'number'
         || typeof l === 'boolean'
         || l instanceof Date
         || l instanceof RegExp ) {
-          e.appendChild(r = txt(l.toString()))
+          e.aC(r = txt(l.toString()))
       } else if (Array.isArray(l)) {
         e.aC(l, cleanupFuncs)
       } else if (isNode(l) || l instanceof win.Text) {
-        e.appendChild(r = l)
+        e.aC(r = l)
       } else if (typeof l === 'object') {
         for (k in l) ((attr_val, _key) => {
           // convert short attributes to long versions. s -> style, c -> className
@@ -191,6 +192,7 @@ function context (createElement) {
 
       return r
     }
+
     while (args.length) {
       item(args.shift())
     }
@@ -236,7 +238,7 @@ export function isText (el) {
 
 export function arrayFragment (e, arr, cleanupFuncs) {
   var v, frag = doc.createDocumentFragment()
-  var activeElement = (o) => o === (e.activeElement || doc.activeElement)
+  var activeElement = (el) => el === (e.activeElement || doc.activeElement)
   // function deepActiveElement() {
   //   let a = doc.activeElement
   //   while (a && a.shadowRoot && a.shadowRoot.activeElement) a = a.shadowRoot.activeElement
@@ -244,7 +246,7 @@ export function arrayFragment (e, arr, cleanupFuncs) {
   // }
 
   // append nodes to the fragment, with parent node as e
-  for (v of arr) frag.appendChild(makeNode(e, v, cleanupFuncs))
+  for (v of arr) frag.aC(makeNode(e, v, cleanupFuncs))
 
   if (arr.observable === 'array') {
     // TODO: add a comment to know where the array begins and ends (a la angular)
@@ -432,7 +434,7 @@ export const makeNode = (e, v, cleanupFuncs) => isNode(v) ? v
   : v == null ? comment('null') : txt(v)
 
 export const obvNode = (e, v, cleanupFuncs = []) => {
-  var r, o, i
+  var r, o, i, nn
   if (typeof v === 'function') {
     i = v.observable === 'value' ? 1 : 0
     // var o = i ? v.call(e) : v.call(e, e) // call the observable / scope function
@@ -445,18 +447,22 @@ export const obvNode = (e, v, cleanupFuncs = []) => {
       // create a comment to be replaced by the value as soon as it comes
       r = e.aC(comment('obv'), cleanupFuncs)
 
-      // TODO: allow for an observable-array implementation
       cleanupFuncs.push(v((val) => {
         // TODO: check observable-array cleanup
-        if (r.parentElement === e) {
-          val = makeNode(e, val, cleanupFuncs)
-          e.replaceChild(val, r), r = val
+        nn = makeNode(e, val, cleanupFuncs)
+        if (Array.isArray(r)) {
+          // document fragment
+          // TODO: in the case where r has previousSibling or nextSibling (an element before or after), then insertBefore should be used instead of appendChild
+          //       for now though, this is ok
+          for (val of r) e.removeChild(val)
+          e.aC(nn)
+        } else if (r.parentNode === e) {
+          e.replaceChild(nn, r)
+          // if (r.nodeName === "#document-fragment") debugger
         } else {
-          // shouldn't happen, but maybe if removing the node from the dom, this could happen.
-          // prolly will want to remove itself from the listeners
-          // o = v, o()
-          debugger
+          error('obv unable to replace child node because parentNode is not correct')
         }
+        r = Array.isArray(val) ? val : nn
       }))
     }
     r = makeNode(e, r, cleanupFuncs)
@@ -468,6 +474,8 @@ export const obvNode = (e, v, cleanupFuncs = []) => {
 
 // shortcut to append multiple children (w/ cleanupFuncs)
 Node.prototype.aC = function (v, cleanupFuncs) { return this.appendChild(obvNode(this, v, cleanupFuncs)) }
+// shortcut to removeChild
+Node.prototype.rC = function (child) { return this.removeChild(child) }
 // shortcut to remove myself from the dom
 Node.prototype.rm = function () { return this.parentNode.removeChild(this) }
 

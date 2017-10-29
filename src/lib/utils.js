@@ -3,9 +3,13 @@ import isObject from './lodash/isObject'
 
 export function noop () {}
 
+export function error (message) {
+  throw new Error(message)
+}
+
 // micro-optimization: http://jsperf.com/for-vs-foreach/292
 export function forEach (arr, fn) {
-  for (var i = 0; i < arr.length; ++i) fn(arr[i], i)
+  for (var i = 0; i < arr.length; ++i) fn.call(arr, arr[i], i)
 }
 
 export function forEachReverse (arr, fn) {
@@ -157,11 +161,11 @@ export const camelize = (k) => ~k.indexOf('-') ? k.replace(/-+(.)?/g, (tmp, c) =
 export const define_getter = (get, configurable = true) => ({ get, configurable })
 export const define_value = (value, writable = false, configurable = true) => ({ configurable, value, writable })
 
-export function slasher (_path, leading) {
+export function slasher (_path, strip_leading) {
   // strip trailing slash
   var path = _path.replace(/\/$/, '')
   // (optionally) strip leading slash
-  return leading && path[0] === '/' ? path.slice(1) : path
+  return strip_leading && path[0] === '/' ? path.slice(1) : path
 }
 
 // get a value from options then return the value (or the default passed)
