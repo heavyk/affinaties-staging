@@ -33,3 +33,11 @@ erl_crash.dump
 # secrets file as long as you replace its contents by environment
 # variables.
 /config/prod.secret.exs
+
+# crap
+/.chrome-tab-test-data
+/web3-named-types
+/WC_VS
+/WC_WV
+/WC_IR
+/src/lib/lodash*

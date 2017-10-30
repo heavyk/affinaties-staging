@@ -1,0 +1,4 @@
+[transfer]
+fsckObjects = false
+[fetch]
+fsckObjects = false
