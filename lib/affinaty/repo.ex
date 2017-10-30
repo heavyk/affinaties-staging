@@ -5,7 +5,7 @@
 defmodule Affinaty.Repo do
   use Ecto.Repo,
     otp_app: :affinaty,
-    adapter: Mongo.Ecto
+    adapter: RethinkDB.Ecto
 end
 
 # defmodule Weather do

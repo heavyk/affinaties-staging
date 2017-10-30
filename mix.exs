@@ -25,7 +25,7 @@ defmodule Affinaty.Mixfile do
                     :logger,
                     :gettext,
                     :phoenix_ecto,
-                    :mongodb_ecto,
+                    # :mongodb_ecto,
                     # :postgrex
                     ]]
   end
@@ -41,11 +41,13 @@ defmodule Affinaty.Mixfile do
     [{:phoenix, path: "../../phoenix/phoenix", override: true},
      {:phoenix_pubsub, "~> 1.0"},
     #  {:phoenix_ecto, "~> 3.0-rc"},
+    # TODO: no more mongodb!! use rethinkdb!
     #  {:mongodb_ecto, path: "../mongodb_ecto", override: true},
-     {:phoenix_ecto, "~> 2.0"},
-     {:mongodb_ecto, "~> 0.1"},
+     {:rethinkdb_ecto, "~> 0.7"},
+     {:phoenix_ecto, "~> 3.0"},
+    #  {:mongodb_ecto, "~> 0.1.5"},
     #  {:postgrex, ">= 0.0.0"},
-     {:guardian, "~> 0.9.0"},
+     {:guardian, "~> 0.14"},
      {:phoenix_html, "~> 2.5"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:gettext, "~> 0.11"},

@@ -44,7 +44,7 @@ config :phoenix, :stacktrace_depth, 20
 #   pool_size: 10
 
 config :affinaty, Affinaty.Repo,
-  adapter: Mongo.Ecto,
+  adapter: RethinkDB.Ecto,
   database: "affinaty",
   # username: "mongodb",
   # password: "mongodb",
