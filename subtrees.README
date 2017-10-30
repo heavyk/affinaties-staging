@@ -3,9 +3,11 @@ https://www.atlassian.com/blog/git/alternatives-to-git-submodule-git-subtree
 
 to add:
 git subtree add --prefix src/spotify-sdk https://github.com/loverajoel/spotify-sdk.git master --squash
+git subtree add --prefix src/lib/lodash https://github.com/lodash/lodash.git master --squash
 
 to update:
 git subtree pull --prefix src/spotify-sdk https://github.com/loverajoel/spotify-sdk.git master --squash
+git subtree pull --prefix src/lib/lodash https://github.com/lodash/lodash.git master --squash
 
 to contribute back:
 git remote add spotify-sdk-upstream git@github.com:heavyk/spotify-sdk.git

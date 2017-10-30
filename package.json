@@ -14,7 +14,8 @@
   "scripts": {
     "start": "node gobbler/gobbler.js",
     "log": "./node_modules/.bin/psy log gobbler-affinaty",
-    "update-lodash": "lodash modularize strict exports=es -o ./src/lib/lodash && git add src/lib/lodash && git commit -m \"lodash `lodash -V`\""
+    "update-lodash": "git subtree pull --prefix src/lib/lodash https://github.com/lodash/lodash.git master --squash",
+    "update-lodash-old": "lodash modularize strict exports=es -o ./src/lib/lodash && git add src/lib/lodash && git commit -m \"lodash `lodash -V`\""
   },
   "devDependencies": {
     "autoprefixer-core": "^6.0.1",
