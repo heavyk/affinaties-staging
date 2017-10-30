@@ -191,7 +191,7 @@ textarea.animate {
 
 <script>
 import assign from '../lib/lodash/assign'
-import isEqual from '../lib/lodash/isEqual'
+import eq from '../lib/lodash/eq'
 import onresize from '../lib/dom/element-onresize'
 import findIndex from '../lib/lodash/findIndex'
 import throttle from '../lib/lodash/throttle'
@@ -207,7 +207,7 @@ component.exports = {
         debate: this.get('debate'),
         poll: this.get('poll'),
       })
-      if (isEqual(this.query, _query)) return
+      if (eq(this.query, _query)) return
       else this.query = _query
       this.skip = Infinity
       this.set('loading', true)

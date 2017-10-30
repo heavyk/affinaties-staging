@@ -2,7 +2,7 @@
 ``import each from '../lib/lodash/forEach'``
 ``import truncate from '../lib/lodash/truncate'``
 ``import defaults from '../lib/lodash/defaultsDeep'``
-``import isEqual from '../lib/lodash/isEqual'``
+# ``import eq from '../lib/lodash/eq'``
 ``import h from '../lib/dom/hyper-hermes'``
 ``import { svgArrayFragment } from '../lib/dom/hyper-hermes'``
 ``import CL from '../lib/dom/class-list'``

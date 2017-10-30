@@ -5,7 +5,7 @@
 ``import get from '../lib/lodash/get'``
 ``import shuffle from '../lib/lodash/shuffle'``
 ``import random from '../lib/lodash/random'``
-``import isEqual from '../lib/lodash/isEqual'``
+# ``import eq from '../lib/lodash/eq'``
 ``import { h, s } from '../lib/dom/hyper-hermes'``
 ``import { ObservableArray } from '../lib/dom/observable-array'``
 ``import { value, attribute, transform, compute } from '../lib/dom/observable'``

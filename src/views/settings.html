@@ -323,7 +323,7 @@ button.button-sign-up {
 import moment from 'moment'
 import assign from '../lib/lodash/assign'
 import find from '../lib/lodash/find'
-import isEqual from '../lib/lodash/isEqual'
+import eq from '../lib/lodash/eq'
 import Validator from '../validator'
 
 let net_form = new Validator('net', {
@@ -458,14 +458,14 @@ component.exports = {
       // (this can happen because of a bug in ractive option boxes setting the value to '' when no option is selected)
       if (me.c === '') delete me.c
       // if current me is different to old_me, then we save the difference.
-      if (!isEqual(me, this.old_me)) {
+      if (!eq(me, this.old_me)) {
         let update = {}
         // save it
         for (var k in me) {
           if (me[k] !== this.old_me[k])
             update[k] = me[k]
         }
-        if (!isEqual({}, update)) {
+        if (!eq({}, update)) {
           api.action('change-appearance', update, (data) => {
             if (data) {
               api.whoIaM(data)

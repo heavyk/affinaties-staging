@@ -1,7 +1,7 @@
 import MixinEmitter from '../drip/MixinEmitter'
 import { value, obv_obj, observable_property } from './observable'
 import { new_context } from './hyper-hermes'
-import eq from '../lodash/isEqual'
+import eq from '../lodash/eq'
 import invoke from '../lodash/invoke'
 import set from '../lodash/set'
 

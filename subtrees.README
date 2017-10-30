@@ -12,3 +12,7 @@ git subtree pull --prefix src/lib/lodash https://github.com/lodash/lodash.git ma
 to contribute back:
 git remote add spotify-sdk-upstream git@github.com:heavyk/spotify-sdk.git
 git subtree push --prefix src/spotify-sdk spotify-sdk-upstream master
+
+
+
+git subtree add --prefix src/lib/lodash https://github.com/lodash/lodash.git master --squash

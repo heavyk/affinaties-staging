@@ -5,7 +5,7 @@
 ``import get from '../lib/lodash/get'``
 ``import shuffle from '../lib/lodash/shuffle'``
 ``import random from '../lib/lodash/random'``
-``import isEqual from '../lib/lodash/isEqual'``
+# ``import eq from '../lib/lodash/eq'``
 ``import h from '../lib/dom/hyper-hermes'``
 ``import { s } from '../lib/dom/hyper-hermes'``
 ``import CL from '../lib/dom/class-list'``

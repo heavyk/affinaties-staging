@@ -27,7 +27,7 @@
 <script>
 import scroll from '../lib/on-scroll.js'
 import assign from '../lib/lodash/assign'
-import isEqual from '../lib/lodash/isEqual'
+import isEqual from '../lib/eq'
 import { insert } from '../lib/ordered-array'
 
 component.exports = {
