@@ -113,8 +113,6 @@ POSTCSS_PLUGINS = [
 #       sander.rimraf test-file
 # , 2000ms
 
-# class Architect extends EE
-
 rollup_cache = {}
 rollup_opts =
   format: \umd
@@ -122,6 +120,7 @@ rollup_opts =
     jsx: \h
     transforms:
       # for now we are going to use all ES6 features
+      # TODO: generate different bundles for different browsers with their capabilites (and serve accordingly)
       arrow: false
       classes: false
       collections: false
@@ -170,7 +169,6 @@ webpack_opts =
       * test: /.js$/
         loader: \source-map-loader
       * test: /.sol$/
-        # loader: \solc-loader
         loaders: <[web3-loader solc-loader]>
       ...
 
@@ -215,7 +213,8 @@ get-opts = (opts) ->
     else if opts.ext
       outfile = file + opts.ext
     else
-      throw new Error "source file does not have an extension"
+      # throw new Error "source file (#{file}) does not have an extension"
+      return
 
     opts.ext = ext
     # opts.outfile = outfile
@@ -233,7 +232,10 @@ process_src = (path, resume) ->*
   if file is \.DS_Store
     return yield rimraf src, resume!
 
-  opts = get-opts {path}
+  if file.0 is '.' or not (opts = get-opts {path})
+    console.log 'skipping', path
+    return
+
   path_lookup[path] = opts.outfile
   dest = Path.join tmp_dir, opts.outfile
 
@@ -341,13 +343,14 @@ process_poem = (path, resume) ->*
     ]
     rollup_cache[path] = bundle
     output = bundle.generate opts
-    map = output.map
-    code = output.code + "\n//# sourceMappingURL=#{Path.basename dest}.map\n"
-    # code = output.code + "\n//# sourceMappingURL=#{map.toUrl!}\n"
+    # add source map url to the last line of code
+    code = output.code + "\n//# sourceMappingURL=#{Path.basename webpack_src}.map\n"
+    # code = output.code + "\n//# sourceMappingURL=#{Path.basename dest}.map\n"
+    # code = output.code + "\n//# sourceMappingURL=#{output.map.toUrl!}\n"
 
     yield [
       (cb) !-> Fs.write-file webpack_src, code, cb
-      (cb) !-> Fs.write-file "#{webpack_src}.map", map.to-string!, cb
+      (cb) !-> Fs.write-file "#{webpack_src}.map", output.map.to-string!, cb
     ]
   catch e
     if e.id => console.error e.id
