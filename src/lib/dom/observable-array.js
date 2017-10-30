@@ -1,7 +1,7 @@
 import MixinEmitter from '../drip/MixinEmitter'
 import { value, obv_obj, observable_property } from './observable'
 import { new_context } from './hyper-hermes'
-import eq from '../lodash/eq'
+import isEqual from '../lodash/baseIsEqual'
 import invoke from '../lodash/invoke'
 import set from '../lodash/set'
 
@@ -279,7 +279,7 @@ export class ObservableArray extends MixinEmitter(Array) {
   set (idx, val) {
     idx = idx >>> 0
     // if (idx >= this.length) debugger // what should be done for sparse arrays?
-    if (eq(this[idx], val)) return
+    if (isEqual(this[idx], val)) return
     this.emit('change', { type: 'set', idx, val })
     this[idx] = val
     return this
@@ -559,7 +559,7 @@ export function isCopy (other) {
   // if (this == null || other == null) throw new TypeError("cannot use null values")
   if (l !== other.length) return false
   for (i = 0; i < l; ++i) {
-    if (hasOwnProperty.call(this, i) !== hasOwnProperty.call(other, i) || !eq(this[i], other[i])) return false
+    if (hasOwnProperty.call(this, i) !== hasOwnProperty.call(other, i) || !isEqual(this[i], other[i])) return false
   }
   return true
 }

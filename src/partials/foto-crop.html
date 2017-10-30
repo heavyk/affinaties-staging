@@ -40,7 +40,7 @@ button {
 <script>
 import extend from '../lib/lodash/assign'
 import CropHost from '../lib/crop-host'
-import eq from '../lib/lodash/eq.js'
+import isEqual from '../lib/lodash/baseIsEqual.js'
 import EventEmitter from '../lib/drip/emitter'
 
 
@@ -94,7 +94,7 @@ component.exports = {
     let lastRect
     let updateResultImage = () => {
       let rect = cropHost.getRect()
-      if (!rect.size || lastRect && eq(lastRect, rect)) return
+      if (!rect.size || lastRect && isEqual(lastRect, rect)) return
       let resultImage = cropHost.getResultImageDataURI()
       this.set('image', resultImage)
       this.set('rect', rect)

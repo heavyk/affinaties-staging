@@ -8,13 +8,13 @@
 import Route from './Route.js'
 import { win, location, origin, basePath } from '../lib/dom/hyper-hermes'
 import { noop, slasher, which } from '../lib/utils'
-import eq from '../lib/lodash/eq'
+import isEqual from '../lib/lodash/baseIsEqual'
 
 const sameOrigin = (href) => typeof href === 'string' && href.indexOf(origin) === 0
 const isSameRoute = (routeA, routeB, dataA, dataB) => routeA === routeB && (
     dataA.hash === dataB.hash &&
-    eq(dataA.params, dataB.params) &&
-    eq(dataA.query, dataB.query)
+    isEqual(dataA.params, dataB.params) &&
+    isEqual(dataA.query, dataB.query)
   )
 
 export default class RoadTrip {
