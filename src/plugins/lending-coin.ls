@@ -32,6 +32,39 @@ pull-thru-map = require 'pull-stream/throughs/map'
 pull-thru-filter = require 'pull-stream/throughs/filter'
 pull-sink-collect = require 'pull-stream/sinks/collect'
 
+Rpc = require \rpc-engine
+require! \msgpack-lite
+
+socket = new WebSocket 'ws://localhost:3000'
+socket.binaryType = 'arraybuffer'
+
+window.rpc = new Rpc {
+  send: socket.send.bind socket
+  # easier for debugging:
+  serialize: JSON.stringify
+  deserialize: JSON.parse
+  # for better bandwidth usage:
+  # serialize: msgpack-lite.encode
+  # deserialize: msgpack-lite.decode
+}
+
+rpc.set-interface {
+  browser-add: (a, b, cb) !->
+    cb null, a + b
+}
+
+# TODO: implement backoff reconnection
+socket.onopen = ->
+  console.log 'open!'
+socket.onclose = ->
+  console.log 'close!'
+socket.onmessage = (msg) !->
+  # console.log 'got msg:', (msgpack-lite.decode new Uint8Array msg.data)
+  rpc.receive msg.data
+  # rpc.receive new Uint8Array msg.data
+
+
+
 require! \currency-formatter
 require! \genny
 genny.ev = (gen) ->
@@ -726,6 +759,7 @@ GENTE_CAPTADA = {}
 PROYECTOS_ANALIZADOS = {}
 GENTE_ANALIZADA = {}
 
+# TODO: move me into the plugin
 SESSION = value!
 
 require! \seedrandom
