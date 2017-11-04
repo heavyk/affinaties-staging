@@ -99,8 +99,9 @@ export default class RoadTrip {
     let newData
     let promise
 
-    if (target.options.code === 404 && (newRoute = this._404)) {
-      newData = newRoute.exec(target, this.initial, true)
+    if (target.options.code === 404) {
+      if (newRoute = this._404) newData = newRoute.exec(target, this.initial, true)
+      else console.error('404: route not found', target.href)
     } else {
       for (let route of this.routes) {
         if (newData = route.exec(target, this.initial)) {
