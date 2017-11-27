@@ -40,4 +40,6 @@ erl_crash.dump
 /WC_VS
 /WC_WV
 /WC_IR
-/src/lib/lodash*
+
+# comment to have lodash functions open by path
+#/src/lib/lodash*
