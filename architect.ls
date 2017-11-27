@@ -9,6 +9,14 @@
 require! path: \Path
 require! fs: \Fs
 
+# es6 module support
+require = (require '@std/esm')(module, cjs: true, esm: "js")
+
+merge-deep-array = require './src/lib/utils' .merge-deep-array
+
+# lala = merge-deep-array {lala: [{one: {deep: 1}},{two: {deep: 2}},{three: {deep: 3}}]}, {lala: [{four: {deep: 4}},{five: {deep: 5}},{six: {deep: 6}}]}
+# console.log \out lala.lala
+
 src_dir = Path.join __dirname, \src
 tmp_dir = Path.join __dirname, \priv \build
 out_dir = Path.join __dirname, \priv \static
@@ -43,12 +51,26 @@ poems =
   'plugins/meditator.js':
     dest: 'plugins/meditator.js'
     css: 'plugins/meditator.css'
+    webpack:
+      plugins:
+        new (require 'html-webpack-plugin') {
+          inline-source: /.(js|css)$/
+          filename: 'meditator.html'
+        }
+        # new (require 'html-webpack-inline-source-plugin')
+        ...
   # 'plugins/metatrons-compass.js':
   #   dest: 'plugins/metatrons-compass.js'
   #   css: 'plugins/metatrons-compass.css'
-  'plugins/lending-coin.js':
-    dest: 'plugins/lending-coin.js'
-    css: 'plugins/lending-coin.css'
+  'hamsternipples/fuq.js':
+    dest: 'plugins/hamsternipples.js'
+    # css: 'plugins/hamsternipples.css'
+  # 'plugins/lending-coin.js':
+  #   dest: 'plugins/lending-coin.js'
+  #   css: 'plugins/lending-coin.css'
+  # 'plugins/lending-crowd.js':
+    # dest: 'plugins/lending-crowd.js'
+    # css: 'plugins/lending-crowd.css'
   'plugins/poke-her-starz.js':
     dest: 'plugins/poke-her-starz.js'
     css: 'plugins/poke-her-starz.css'
@@ -71,8 +93,8 @@ require! \webpack
 require! \postcss
 require! \glob
 
-glob './node_modules/*/node_modules/web3', (err, files) !->
-  console.log 'node_modules:', files
+# glob './node_modules/*/node_modules/web3', (err, files) !->
+#   console.log 'node_modules:', files
 
 # return
 
@@ -160,12 +182,33 @@ webpack_opts =
     # asset-filter: (file) !->
     #   console.log "asset:", file
   plugins:
+    # new (require 'html-webpack-plugin') {
+    #   inline-source: /.(js|css)$/
+    # }
+    # new (require 'html-webpack-inline-source-plugin')
     new webpack.DefinePlugin {
       DEBUG: true
+      # sometimes, a module can put their tests inline by saying "if (!module.parent) { ... }"
+      # so that tests will be run if run directly: node src.js
+      # so, we pretend that all files are required (and therefore have a parent)
+      'module.parent': true
     }
+    # this uses the gwt compiled (not-as-good as the java) version of the closure compiler
+    # also, it has problems parsing utf-8 js source files (var niño = true :: parse error)
+    # new (require 'google-closure-compiler-js' .webpack) {
+    #   options:
+    #     language-in: \ECMASCRIPT6
+    #     language-out: \ECMASCRIPT6
+    #     compilation-level: \ADVANCED
+    #     warning-level: \VERBOSE
+    # }
     ...
   module:
     rules:
+      * test: /\.ejs$/
+        loader: 'ejs-loader'
+      * test: /.md$/
+        loader: \raw-loader
       * test: /.js$/
         loader: \source-map-loader
       * test: /.sol$/
@@ -256,7 +299,7 @@ process_src = (path, resume) ->*
 
         resolve (if opts.json => res else res.code)
       catch e
-        console.error "error compiling: #{src} ::", e
+        console.error "error compiling: #{src} ::", e.stack or e
         reject e
 
     | \js =>
@@ -330,6 +373,11 @@ process_poem = (path, resume) ->*
   # -------
 
   cache = rollup_cache[path]
+  # opts = merge-deep-array {}, rollup_opts, {
+  #   entry: src
+  #   cache: cache
+  #   dest: webpack_src
+  # }
   opts = {} <<< rollup_opts <<< {
     entry: src
     cache: cache
@@ -339,7 +387,7 @@ process_poem = (path, resume) ->*
   try
     [bundle] = yield [
       rollup.rollup opts
-      (cb) !-> mkdirp (Path.dirname webpack_src), cb
+      (cb) !-> mkdirp (Path.dirname webpack_src), (err) !-> if err and err.code is \EEXIST => cb! else cb err
     ]
     rollup_cache[path] = bundle
     output = bundle.generate opts
@@ -366,13 +414,18 @@ process_poem = (path, resume) ->*
     # if e.snippet => console.error e.snippet
     # console.error e, (Object.keys e)
   try
-    opts = {} <<< webpack_opts <<< {
+    opts = merge-deep-array {}, webpack_opts, {
       entry: webpack_src
       output:
         path: Path.dirname dest
         filename: Path.basename dest
-    }
+    }, poem.webpack
 
+    # console.log webpack_opts
+    # console.log poem.webpack
+    console.log path, \plugins, opts.plugins.length
+    if opts.plugins.length > 1
+      console.log opts.plugins, poem.webpack.plugins
     compiler = webpack opts
     stats = yield compiler.run resume!
 
@@ -395,16 +448,15 @@ process_poem = (path, resume) ->*
     # if stats.has-warnings!
     #   console.warn ''
     #   console.log "wrote:", stats
+
+    if poem.css => yield from process_css poem.css, resume.gen!
+    console.log "poem written:", dest
   catch e
     # console.log \catch, e.message.substr 0, 1000
     console.error 'error compiling', poem.dest
-    console.error if e.to-string => e.to-string! else e.stack or e
+    console.error e.stack or if e.to-string => e.to-string! else e
     if e.details => console.error e.details
-    yield from reprocess_poem path, resume.gen!
 
-  if poem.css => yield from process_css poem.css, resume.gen!
-
-  console.log "poem written:", dest
   yield from reprocess_poem path, resume.gen!
 
 
@@ -542,5 +594,8 @@ genny.run (resume) ->*
 
     tmp_watcher.on \unlinkDir, (path) !->
       console.log \tmp.unlinkDir, path
-, (err) !->
-  console.error "main error:", err
+
+  return null
+, (err, res) !->
+  if err => console.error "main error:", err.stack or err
+  else if res => console.log res
