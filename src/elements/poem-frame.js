@@ -38,10 +38,10 @@ export default class PoemFrame extends PoemBase {
   }
 
   section (name, fn) { // TODO: add options (eg. for transitions, slide-left, slide-right)
-    let _obv = '_section_obv_' + name
-    let el = this[_obv] || (this[_obv] = value())
+    let section_name = '_section_' + name
+    let el = this[section_name] || (this[section_name] = value())
     if (typeof fn === 'function') {
-      let local_ctx = this.context('_section_ctx_' + name)
+      let local_ctx = this.context(section_name + '_ctx')
       this.context().h.cleanupFuncs.push(() => { local_ctx.cleanup() })
       el(fn.call(this, local_ctx))
     } else {

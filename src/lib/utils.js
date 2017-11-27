@@ -188,15 +188,42 @@ export function optimal_obj (obj) {
 // knicked from: https://stackoverflow.com/questions/27936772/how-to-deep-merge-instead-of-shallow-merge
 export function mergeDeep(target, ...sources) {
   if (!sources.length) return target
-  const source = sources.shift()
+  var key, src_obj, source = sources.shift()
 
   if (isObject(target) && isObject(source)) {
-    for (const key in source) {
-      if (isObject(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} })
-        mergeDeep(target[key], source[key])
+    for (key in source) {
+      if (isObject(src_obj = source[key])) {
+        // if (!target[key]) Object.assign(target, { [key]: {} })
+        if (!target[key]) target[key] = {}
+        mergeDeep(target[key], src_obj)
       } else {
-        Object.assign(target, { [key]: source[key] })
+        Object.assign(target, { [key]: src_obj })
+      }
+    }
+  }
+
+  return mergeDeep(target, ...sources)
+}
+
+export function mergeDeepArray(target, ...sources) {
+  if (!sources.length || !isObject(target)) return target
+  var key, src_val, obj_val, source
+
+  if (isObject(source = sources.shift())) {
+    for (key in source) {
+      src_val = source[key]
+      obj_val = target[key]
+      if (key == 'apply') console.log('BAD!!') && process.exit()
+      if (Array.isArray(src_val) || Array.isArray(obj_val)) {
+        target[key] = (obj_val || []).concat(src_val)
+        // console.log(key, src_val, obj_val, target[key])
+        // if (key === 'plugins') process.exit()
+      } else if (isObject(src_val)) {
+        // if (!target[key]) Object.assign(target, { [key]: {} })
+        if (!obj_val) target[key] = {}
+        mergeDeep(obj_val, src_val)
+      } else {
+        Object.assign(target, { [key]: src_val })
       }
     }
   }

@@ -30,7 +30,7 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
   }
 
   if (!frame) {
-    body.appendChild(frame = h('div.frame', {
+    body.appendChild(frame = h('div#frame', {
       s: {
         position: 'fixed',
         left: 0,

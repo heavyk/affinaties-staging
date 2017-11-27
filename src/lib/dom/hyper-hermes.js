@@ -158,7 +158,7 @@ function context (createElement) {
             } else {
               set_style(e, attr_val, cleanupFuncs)
             }
-          // not necessary because the following clause will work just fine (e[k] is no longer set derectly)
+          // no longer necessary because the setAttribute is always used (e[k] is no longer set directly)
           // } else if (k.substr(0, 5) === "data-") {
           //   e.setAttribute(k, attr_val)
           } else if (typeof attr_val !== 'undefined') {
@@ -448,6 +448,8 @@ export const obvNode = (e, v, cleanupFuncs = []) => {
       r = e.aC(comment('obv'), cleanupFuncs)
 
       cleanupFuncs.push(v((val) => {
+        // TODO: make this work with arrays (eg. obv can be called with an element or an array without a problem)
+        if (Array.isArray(val)) error('obvs replacing arrays of elements will probably break stuff')
         // TODO: check observable-array cleanup
         nn = makeNode(e, val, cleanupFuncs)
         if (Array.isArray(r)) {
@@ -457,6 +459,7 @@ export const obvNode = (e, v, cleanupFuncs = []) => {
           for (val of r) e.removeChild(val)
           e.aC(nn)
         } else if (r.parentNode === e) {
+          // TODO: in the case where val is an array, I don't think we cannot replaceChild. (check it)
           e.replaceChild(nn, r)
           // if (r.nodeName === "#document-fragment") debugger
         } else {
