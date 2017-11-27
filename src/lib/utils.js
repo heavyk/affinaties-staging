@@ -193,7 +193,6 @@ export function mergeDeep(target, ...sources) {
   if (isObject(target) && isObject(source)) {
     for (key in source) {
       if (isObject(src_obj = source[key])) {
-        // if (!target[key]) Object.assign(target, { [key]: {} })
         if (!target[key]) target[key] = {}
         mergeDeep(target[key], src_obj)
       } else {
@@ -205,6 +204,7 @@ export function mergeDeep(target, ...sources) {
   return mergeDeep(target, ...sources)
 }
 
+// same as above, but also concats arrays
 export function mergeDeepArray(target, ...sources) {
   if (!sources.length || !isObject(target)) return target
   var key, src_val, obj_val, source
@@ -213,13 +213,9 @@ export function mergeDeepArray(target, ...sources) {
     for (key in source) {
       src_val = source[key]
       obj_val = target[key]
-      if (key == 'apply') console.log('BAD!!') && process.exit()
       if (Array.isArray(src_val) || Array.isArray(obj_val)) {
         target[key] = (obj_val || []).concat(src_val)
-        // console.log(key, src_val, obj_val, target[key])
-        // if (key === 'plugins') process.exit()
       } else if (isObject(src_val)) {
-        // if (!target[key]) Object.assign(target, { [key]: {} })
         if (!obj_val) target[key] = {}
         mergeDeep(obj_val, src_val)
       } else {
