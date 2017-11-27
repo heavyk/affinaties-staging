@@ -131,7 +131,7 @@ export default class RoadTrip {
 
     promise =
       newRoute === currentRoute && typeof newRoute.update === 'function' ?
-        newRoute.update(newData)
+        newRoute.update(newData, currentData)
       : Promise.all([
         currentRoute.leave(currentData, newData),
         newRoute.beforeenter(newData, currentData)
@@ -249,15 +249,16 @@ export default class RoadTrip {
     }
 
     const popstate_handler = (event) => {
-      if (!event.state) return // hashchange, or otherwise outside roadtrip's control
-      const scroll = this.scrollHistory[ event.state.uid ]
+      const state = event.state
+      if (!state) return // hashchange, or otherwise outside roadtrip's control
+      const scroll = this.scrollHistory[ state.uid ]
 
       this._target = {
         href: location.href,
-        scrollX: scroll.x,
-        scrollY: scroll.y,
+        scrollX: scroll.x || 0,
+        scrollY: scroll.y || 0,
         popstate: true, // so we know not to manipulate the history
-        options: event.state,
+        options: state,
         fulfil: noop,
         reject: noop
       }
