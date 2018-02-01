@@ -191,9 +191,7 @@ export function transform (obv, down, up) {
 }
 
 export var _px = (v) => typeof v === 'string' && ~v.indexOf('px') ? v : v + 'px'
-export function px (observable) {
-  return transform(observable, _px)
-}
+export var px = (observable) => transform(observable, _px)
 
 export function listen (element, event, attr, listener) {
   function onEvent () {

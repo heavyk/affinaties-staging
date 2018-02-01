@@ -437,10 +437,10 @@ export const obvNode = (e, v, cleanupFuncs = []) => {
   var r, o, i, nn
   if (typeof v === 'function') {
     i = v.observable === 'value' ? 1 : 0
-    // var o = i ? v.call(e) : v.call(e, e) // call the observable / scope function
-    // o = i ? undefined : v.call(e, e) // call the observable / scope function
     // if it returns anything, we'll append the value (node, array, observable, or some text)
     if (!i && (o = v.call(e, e)) && o !== undefined) {
+      // ugly!!!
+      // TODO: should recursively call the function while its return value is a function, and until a value is returned
       r = e.aC(o, cleanupFuncs)
     }
     if (i) { // it's an observable!

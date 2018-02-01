@@ -159,7 +159,7 @@ export const camelize = (k) => ~k.indexOf('-') ? k.replace(/-+(.)?/g, (tmp, c) =
 
 // I imagine that something better can be done than this...
 export const define_getter = (get, configurable = true) => ({ get, configurable })
-export const define_value = (value, writable = false, configurable = true) => ({ configurable, value, writable })
+export const define_value = (value, writable = false, configurable = true) => ({ value, writable, configurable })
 
 export function slasher (_path, strip_leading) {
   // strip trailing slash
@@ -229,7 +229,7 @@ export function mergeDeepArray(target, ...sources) {
 
 // left_pad((1234).toString(16), 20, '0')
 // > "000000000000000004d2"
-export const left_pad = (nr, n, str) => Array((n||2)-(nr+'').length+1).join(str||'0')+nr
+export const left_pad = (nr, n = 2, str = '0') => Array((n)-(nr+'').length+1).join(str)+nr
 
 export const which = (event) => (event = event || win.event).which === null ? event.button : event.which
 
