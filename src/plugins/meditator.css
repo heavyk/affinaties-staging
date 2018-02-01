@@ -1,3 +1,18 @@
+
+body {
+  color: white;
+}
+
+a {
+  color: white;
+  text-decoration:underline;
+  font-weight: 100;
+}
+
+#frame {
+  background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+}
+
 poem-frame {
   display: grid;
   grid-template-areas:
@@ -11,13 +26,13 @@ poem-frame {
 
 poem-frame .side-bar {
   grid-area: sidebar;
-  color: red;
+  /*color: red;*/
 }
 poem-frame .top {
   grid-area: header;
-  color: green;
+  /*color: green;*/
 }
 poem-frame .middle {
   grid-area: content;
-  color: pink;
+  /*color: pink;*/
 }

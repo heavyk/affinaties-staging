@@ -1,13 +1,22 @@
 ``import pluginBoilerplate from '../lib/plugins/plugin-boilerplate'``
 ``import { value, transform, compute } from '../lib/dom/observable'``
-# ``import { ObservableArray, RenderingArray} from '../lib/dom/observable-array'``
+``import Sequence from '../lib/sound/Sequence'``
+# ``import { ObservableArray, RenderingArray } from '../lib/dom/observable-array'``
 # ``import xhr from '../lib/xhr'``
 # ``import load_sdk from '../lib/load-sdk-h'``
 # ``import { rand, rand2, randomId, randomEl, randomIds, randomPos, randomDate, randomCharactor, between, lipsum, word, obj } from '../lib/random'``
 
 ``import '../elements/poem-frame'``
+``import '../elements/parallax-stars'``
+``import '../elements/countdown-timer'``
 
-AudioContext::create-white-noise = (buffer-size = 4096) ->
+``import { left_pad } from '../lib/utils'``
+
+hyper-md = require '../lib/dom/hyper-markdown'
+
+AudioCtx = AudioContext
+
+AudioCtx::create-white-noise = (buffer-size = 4096) ->
   node = @create-script-processor buffer-size, 1, 1
   node.onaudioprocess = (e) !->
     output = e.output-buffer.get-channel-data 0
@@ -15,7 +24,7 @@ AudioContext::create-white-noise = (buffer-size = 4096) ->
       output[i] = Math.random! * 2 - 1
   return node
 
-AudioContext::create-pink-noise = (buffer-size = 4096) ->
+AudioCtx::create-pink-noise = (buffer-size = 4096) ->
   node = @create-script-processor buffer-size, 1, 1
   b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0
   node.onaudioprocess = (e) !->
@@ -33,7 +42,7 @@ AudioContext::create-pink-noise = (buffer-size = 4096) ->
       b6 := white * 0.115926
   return node
 
-AudioContext::create-brown-noise = (buffer-size = 4096) ->
+AudioCtx::create-brown-noise = (buffer-size = 4096) ->
   node = @create-script-processor buffer-size, 1, 1
   last = 0
   node.onaudioprocess = (e) !->
@@ -45,7 +54,7 @@ AudioContext::create-brown-noise = (buffer-size = 4096) ->
       output[i] *= 3.5 # (roughly) compensate for gain
   return node
 
-AudioContext::create-distortion = (k = 50, oversample = '4x') ->
+AudioCtx::create-distortion = (k = 50, oversample = '4x') ->
   node = @create-wave-shaper!
   curve = new Float32Array n_samples = node.context.sample-rate
   for i til n_samples
@@ -56,29 +65,29 @@ AudioContext::create-distortion = (k = 50, oversample = '4x') ->
   return node
 
 
-ctx = new AudioContext
-# noise = ctx.create-white-noise!
-# distortion = ctx.create-distortion 100
+window.ac = new AudioCtx
+# noise = ac.create-white-noise!
+# distortion = ac.create-distortion 100
 # noise.connect distortion
-# distortion.connect ctx.destination
+# distortion.connect ac.destination
 # console.log \connected
 
 # Saw Modulator
-pink-noise = ctx.create-pink-noise!
-pink-gain = ctx.create-gain!
-pink-filter = ctx.create-biquad-filter!
+pink-noise = ac.create-pink-noise!
+pink-gain = ac.create-gain!
+pink-filter = ac.create-biquad-filter!
 pink-gain.gain.value = 1000
 pink-filter.frequency.value = 16.18
 pink-noise.connect pink-filter
 pink-filter.connect pink-gain
 
-saw = ctx.create-oscillator!
+saw = ac.create-oscillator!
 saw.type = \sawtooth
 saw.frequency.value = 528
-saw-distortion = ctx.create-distortion 50
-saw-filter = ctx.create-biquad-filter!
+saw-distortion = ac.create-distortion 50
+saw-filter = ac.create-biquad-filter!
 saw-filter.Q.value = 2
-saw-gain = ctx.create-gain!
+saw-gain = ac.create-gain!
 saw-gain.gain.value = 0
 
 saw.start 0
@@ -88,43 +97,78 @@ saw-distortion.connect saw-filter
 saw-filter.connect saw-gain
 # saw-distortion.connect saw-gain
 pink-gain.connect saw-filter.frequency
-saw-gain.connect ctx.destination
+saw-gain.connect ac.destination
 
 # Waves
-brown-noise = ctx.create-brown-noise 16384
-brown-gain = ctx.create-gain!
+brown-noise = ac.create-brown-noise 16384
+brown-gain = ac.create-gain!
 brown-gain.gain.value = 0.3
 brown-noise.connect brown-gain
 
-lfo = ctx.create-oscillator!
+lfo = ac.create-oscillator!
 lfo.frequency.value = 0.33
-lfo-gain = ctx.create-gain!
+lfo-gain = ac.create-gain!
 lfo-gain.gain.value = 0.1
 
 lfo.start 0
 lfo.connect lfo-gain
 lfo-gain.connect brown-gain.gain
 
-waves-gain = ctx.create-gain!
+waves-gain = ac.create-gain!
 waves-gain.gain.value = 0
 brown-gain.connect waves-gain
-waves-gain.connect ctx.destination
+waves-gain.connect ac.destination
 
 # saw-gain.gain.value = 0.02
 # waves-gain.gain.value = 0.3
 
+tempo = 60
+middleC = 444
+start-time = ac.currentTime
+
+
+
+# window.seq1 = new Sequence ac, { tempo, middleC, waveType: \sine } .notes [
+#   'C4 q'
+#   'D4 q'
+#   'E4 q'
+#   'F4 q'
+#   'G4 q'
+#   'A4 q'
+#   'B4 q'
+#   'C5 q'
+#   'B4 q'
+#   'A4 q'
+#   'G4 q'
+#   'F4 q'
+#   'E4 q'
+#   'D4 q'
+# ] .play start-time
+
+# window.seq2 = new Sequence ac, { tempo, middleC } .notes [
+#   'C4 q'
+#   'D4 q'
+#   'E4 q'
+#   'F4 q'
+#   'G4 q'
+#   'A4 q'
+#   'B4 q'
+#   'C5 q'
+# ] .play start-time + (60 / tempo) * 16 # play 16 beats later
+
+# lfo.connect seq1.gain
 
 const DEFAULT_CONFIG =
-  lala: 1155
+  base: '/plugin/meditator'
 
 meditator = ({config, G, set_config, set_data}) ->
+  # TODO: save this scope into the frame and let this be the bottom-most element
   {h, s} = G
-  G.width (v, old_width) !-> console.log \width, old_width, '->', v
 
-  # additional elements?
-  # G.E.frame.aC []
+  # transformers
+  hhmmss = (v) -> left_pad v, 2
 
-  h \poem-frame, {base: '/plugin/meditator'}, (G) ->
+  h \poem-frame, {config.base}, (G) ->
     {h} = G
 
     @els [
@@ -141,17 +185,40 @@ meditator = ({config, G, set_config, set_data}) ->
     '/':
       enter: (route, prev) !->
         @section \content, ({h}) ->
-          h \div "hello world"
+          h \.container,
+            h \h2, "articles"
+            for id, article of articles
+              h \.article-link,
+                h \a href: "/article/#{id}", article.t
+          # for t in [5,10,15,20]
+          #   h \div,
+          #     h \a href: "/timer/#{t}", "#{t} min"
 
       # update: (route) !->
       # leave: (route, next) !->
 
-    '/content/:id':
+    '/parallax':
+      enter: !->
+        @section \content ({h}) ->
+          h \parallax-stars {height: 800, density: 100},
+            h \span "this is really somethin!!"
+
+    '/timer/:min':
       enter: (route) ->
-        next_id = +route.params.id + 1
+        ms = route.params.min * 60s * 1000ms
         @section \content, ({h}) ->
           h \div,
-            h \a href: "/content/#{next_id}", "content: #{next_id}"
+            h \div "timer for #{ms}ms"
+            window.timer =\
+            h \countdown-timer, {duration: ms}, ({h}) ->
+              h \.timer-frame,
+                h \span.hr, @attrx \hours, hhmmss
+                ":"
+                h \span.min, @attrx \minutes, hhmmss
+                ":"
+                h \span.sec, @attrx \seconds, hhmmss
+                "."
+                h \span.ms, @attrx \ms, hhmmss
 
 
 plugin-boilerplate null, \testing, {}, {}, DEFAULT_CONFIG, meditator
