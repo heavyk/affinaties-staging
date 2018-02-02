@@ -233,7 +233,7 @@ meditator = ({config, G, set_config, set_data}) ->
                 "start"
               h \button onclick: (-> timer.emit 'timer.stop'),
                 "stop"
-              h \button onclick: (-> timer.emit 'timer.set'), # no duration = previous duration
+              h \button onclick: (-> timer.emit 'timer.end'),
                 "reset"
               h \button onclick: (-> timer.emit 'timer.add', 5*60*1000),
                 "+5 min"

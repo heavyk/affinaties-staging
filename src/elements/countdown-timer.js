@@ -48,17 +48,16 @@ export default class CountdownTimer extends PoemBase {
       var self = this
 
       // private vars:
-      var time_start
-      var time_end
+      var time_start = 0
+      var time_end = 0
+      var time_elapsed = 0
       var t_id
       var duration = opts.duration || 10*60*1000
 
       // attributes
       var time_vals = { ms: value(0) }
-      var _fps = self.attr('fps', 20)
-      var _duration = self.attr('duration', duration)
-      var _time_start = self.attr('time_start')
-      var _time_end = self.attr('time_end')
+      var _fps = self.attr('fps', 20, true)
+      var _duration = this.attr('duration', duration, true)
       forEach(timeUnits, (unit) => {
         var k = unit[0]
         self.attr(k, time_vals[k] = value(0))
@@ -75,13 +74,14 @@ export default class CountdownTimer extends PoemBase {
       // events
       self.on('timer.set', (ms) => {
         _duration(duration = typeof ms === 'number' ? ms : ms != null ? ms.duration : (opts.duration || _duration()))
-        _update(duration)
+        _update(duration - time_elapsed)
       })
 
       self.on('timer.start', () => {
         // TODO: if fps > 10, always do a raf and then only call the update function if the time difference is more than the fps delta
-        _time_start(time_start = Date.now())
-        _time_end(time_end = time_start + duration)
+        if (time_start > 0) return
+        time_start = Date.now()
+        time_end = time_start + duration - time_elapsed
         t_id = setInterval(() => {
           var dt = time_end - Date.now()
           if (dt < 0) dt = 0
@@ -92,13 +92,22 @@ export default class CountdownTimer extends PoemBase {
 
       self.on('timer.add', (ms) => {
         _duration(duration = +(_duration() + (typeof ms === 'number' ? ms : ms != null ? ms.duration : 0)))
-        _time_end(time_end = time_start + duration)
-        if (time_start == null) _update(duration)
+        time_end = time_start + duration - time_elapsed
+        _update(duration - (time_start > 0 ? Date.now() - time_start : 0) - time_elapsed)
       })
 
       self.on('timer.stop', (evt) => {
-        clearInterval(t_id)
-        time_start = null
+        if (time_start > 0) {
+          time_elapsed += Date.now() - time_start
+          clearInterval(t_id)
+          time_end = time_start = 0
+        }
+      })
+
+      self.on('timer.end', () => {
+        self.emit('timer.stop')
+        time_elapsed = 0
+        self.emit('timer.set')
       })
 
       this.emit('timer.set', duration)
