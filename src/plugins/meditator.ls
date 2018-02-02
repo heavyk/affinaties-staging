@@ -158,6 +158,9 @@ start-time = ac.currentTime
 
 # lfo.connect seq1.gain
 
+# TODO:
+# - merge the start / stop buttons (if started, display stop, etc.)
+
 const DEFAULT_CONFIG =
   base: '/plugin/meditator'
 
@@ -207,18 +210,30 @@ meditator = ({config, G, set_config, set_data}) ->
       enter: (route) ->
         ms = route.params.min * 60s * 1000ms
         @section \content, ({h}) ->
-          h \div,
-            h \div "timer for #{ms}ms"
-            window.timer =\
-            h \countdown-timer, {duration: ms}, ({h}) ->
-              h \.timer-frame,
-                h \span.hr, @attrx \hours, hhmmss
-                ":"
-                h \span.min, @attrx \minutes, hhmmss
-                ":"
-                h \span.sec, @attrx \seconds, hhmmss
-                "."
-                h \span.ms, @attrx \ms, hhmmss
+          h \.timer-frame,
+            h \.countdown,
+              timer =\
+              window.timer =\
+              h \countdown-timer, {duration: ms}, ({h}) ->
+                h \.time-display,
+                  h \span.hr, @attrx \hours, hhmmss
+                  ":"
+                  h \span.min, @attrx \minutes, hhmmss
+                  ":"
+                  h \span.sec, @attrx \seconds, hhmmss
+                  "."
+                  h \span.ms, @attrx \ms, hhmmss
+            h \.buttons,
+              h \button onclick: (-> timer.emit 'timer.add', -5*60*1000),
+                "-5 min"
+              h \button onclick: (-> timer.emit 'timer.start'),
+                "start"
+              h \button onclick: (-> timer.emit 'timer.stop'),
+                "stop"
+              h \button onclick: (-> timer.emit 'timer.set'), # no duration = previous duration
+                "reset"
+              h \button onclick: (-> timer.emit 'timer.add', 5*60*1000),
+                "+5 min"
 
 
 plugin-boilerplate null, \testing, {}, {}, DEFAULT_CONFIG, meditator

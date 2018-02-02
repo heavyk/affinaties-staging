@@ -36,3 +36,38 @@ poem-frame .middle {
   grid-area: content;
   /*color: pink;*/
 }
+
+.timer-frame {
+  background: #5d5d5d;
+  padding: 20px 50px;
+  margin: 20px;
+  box-shadow:
+    0 1px 2px #fff,
+    0 -1px 1px #666,
+    inset 0 -1px 1px rgba(0,0,0,0.5),
+    inset 0 1px 1px rgba(255,255,255,0.8);
+}
+
+
+.time-display {
+  letter-spacing: 0.1em;
+  font-weight: 100;
+  font-size: 300%;
+
+  margin: 8px 0;
+  padding: 10px 40px;
+
+  border-radius: 4px;
+  box-shadow:
+    0 1px 2px #544d4d,
+    0 -1px 1px #585656,
+    inset 0 -1px 1px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(181, 181, 181, 0.8);
+  text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #228DFF, 0 0 35px #228DFF, 0 0 40px #228DFF, 0 0 50px #228DFF, 0 0 75px #228DFF;
+
+  background-color: #429eff;
+  background-size: 8px 8px;
+  background-image:
+    repeating-linear-gradient(-45deg, #449bf9, #449bf9 5%, transparent 5%, transparent 50%),
+    repeating-linear-gradient(45deg, #449bf9, #449bf9 5%, transparent 5%, transparent 50%);
+}

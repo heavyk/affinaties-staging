@@ -74,7 +74,7 @@ export default class CountdownTimer extends PoemBase {
 
       // events
       self.on('timer.set', (ms) => {
-        _duration(duration = typeof ms === 'number' ? ms : ms.duration || this.duration || _duration())
+        _duration(duration = typeof ms === 'number' ? ms : ms != null ? ms.duration : (opts.duration || _duration()))
         _time_start(time_start = Date.now())
         _time_end(time_end = time_start + duration)
         _update(duration)
@@ -84,14 +84,15 @@ export default class CountdownTimer extends PoemBase {
         // TODO: if fps > 10, always do a raf and then only call the update function if the time difference is more than the fps delta
         t_id = setInterval(() => {
           var dt = time_end - Date.now()
-          if (dt < 0) {
-            clearInterval(t_id)
-            dt = 0
-          }
-
+          if (dt < 0) dt = 0
           _update(dt)
           if (dt <= 0) this.emit('timer.end')
         }, (1000 / fps()))
+      })
+
+      self.on('timer.add', (ms) => {
+        var duration = +(_duration() + (typeof ms === 'number' ? ms : ms != null ? ms.duration : 0))
+        self.emit('timer.set', duration)
       })
 
       self.on('timer.stop', (evt) => {
