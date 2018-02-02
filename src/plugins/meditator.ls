@@ -217,16 +217,17 @@ meditator = ({config, G, set_config, set_data}) ->
               timer =\
               window.timer =\
               h \countdown-timer, {duration: ms}, ({h}) ->
-                # TODO: if hours, display them, otherwise do not.
+                # TODO: make this function the default in the custom element
+                hrs = @attr \hours
                 h \.time-display,
-                  # h \span.hours, @attrx \hours, hhmmss
-                  # ":"
+                  transform hrs, (v) -> if v > 0
+                    h \span.hours, hrs
                   h \span.minutes, @attrx \minutes, hhmmss
-                  ":"
                   h \span.seconds, @attrx \seconds, hhmmss
-                  # "."
-                  # h \span.ms, @attrx \ms, hhmmss
+                  transform (@attr 'show_ms'), (v) ~> if v
+                    h \span.ms, @attrx \ms, (v) -> left_pad v, 3
             h \.buttons,
+              # TODO: make a timer-buttons component which interfaces with the timer (for a proof of concept of plugin ineteraction)
               h \button onclick: (-> timer.emit 'timer.add', -5*60*1000),
                 "-5 min"
               h \button onclick: (-> timer.emit 'timer.start'),

@@ -71,3 +71,13 @@ poem-frame .middle {
     repeating-linear-gradient(-45deg, #449bf9, #449bf9 5%, transparent 5%, transparent 50%),
     repeating-linear-gradient(45deg, #449bf9, #449bf9 5%, transparent 5%, transparent 50%);
 }
+
+.time-display .hours:after {
+  content: ":";
+}
+.time-display .minutes:after {
+  content: ":";
+}
+.time-display .ms:before {
+  content: ".";
+}
