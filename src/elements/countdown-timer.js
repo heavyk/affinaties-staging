@@ -54,49 +54,51 @@ export default class CountdownTimer extends PoemBase {
       var duration = opts.duration || 10*60*1000
 
       // attributes
-      var fps = self.attr('fps', 20)
+      var time_vals = { ms: value(0) }
+      var _fps = self.attr('fps', 20)
       var _duration = self.attr('duration', duration)
       var _time_start = self.attr('time_start')
       var _time_end = self.attr('time_end')
-      var _vals = { ms: value(0) }
       forEach(timeUnits, (unit) => {
         var k = unit[0]
-        self.attr(k, _vals[k] = value(0))
+        self.attr(k, time_vals[k] = value(0))
       })
-      self.attr('ms', _vals.ms)
+      self.attr('ms', time_vals.ms)
 
       const _update = (dt) => {
         var du = dt_units(dt)
         for(var k in du) {
-          _vals[k](du[k])
+          time_vals[k](du[k])
         }
       }
 
       // events
       self.on('timer.set', (ms) => {
         _duration(duration = typeof ms === 'number' ? ms : ms != null ? ms.duration : (opts.duration || _duration()))
-        _time_start(time_start = Date.now())
-        _time_end(time_end = time_start + duration)
         _update(duration)
       })
 
       self.on('timer.start', () => {
         // TODO: if fps > 10, always do a raf and then only call the update function if the time difference is more than the fps delta
+        _time_start(time_start = Date.now())
+        _time_end(time_end = time_start + duration)
         t_id = setInterval(() => {
           var dt = time_end - Date.now()
           if (dt < 0) dt = 0
           _update(dt)
           if (dt <= 0) this.emit('timer.end')
-        }, (1000 / fps()))
+        }, (1000 / _fps()))
       })
 
       self.on('timer.add', (ms) => {
-        var duration = +(_duration() + (typeof ms === 'number' ? ms : ms != null ? ms.duration : 0))
-        self.emit('timer.set', duration)
+        _duration(duration = +(_duration() + (typeof ms === 'number' ? ms : ms != null ? ms.duration : 0)))
+        _time_end(time_end = time_start + duration)
+        if (time_start == null) _update(duration)
       })
 
       self.on('timer.stop', (evt) => {
         clearInterval(t_id)
+        time_start = null
       })
 
       this.emit('timer.set', duration)
@@ -110,4 +112,4 @@ export default class CountdownTimer extends PoemBase {
 }
 
 import { special_elements } from '../lib/dom/hyper-hermes'
-special_elements.define('countdown-timer', CountdownTimer, ['opts', 'function (G)'])
+special_elements.define('countdown-timer', CountdownTimer, ['opts = {}', 'function (G)'])

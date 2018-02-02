@@ -12,8 +12,6 @@
 
 ``import { left_pad } from '../lib/utils'``
 
-hyper-md = require '../lib/dom/hyper-markdown'
-
 AudioCtx = AudioContext
 
 AudioCtx::create-white-noise = (buffer-size = 4096) ->
@@ -160,6 +158,10 @@ start-time = ac.currentTime
 
 # TODO:
 # - merge the start / stop buttons (if started, display stop, etc.)
+# - play sound / notification at the end of the timer
+# - get rid of Sequence and only add the option to give background noise
+# - remove the stupid grid and just make it a single plugin element
+#  -> when compiling it, include the css in the js file
 
 const DEFAULT_CONFIG =
   base: '/plugin/meditator'
@@ -215,14 +217,15 @@ meditator = ({config, G, set_config, set_data}) ->
               timer =\
               window.timer =\
               h \countdown-timer, {duration: ms}, ({h}) ->
+                # TODO: if hours, display them, otherwise do not.
                 h \.time-display,
-                  h \span.hr, @attrx \hours, hhmmss
+                  # h \span.hours, @attrx \hours, hhmmss
+                  # ":"
+                  h \span.minutes, @attrx \minutes, hhmmss
                   ":"
-                  h \span.min, @attrx \minutes, hhmmss
-                  ":"
-                  h \span.sec, @attrx \seconds, hhmmss
-                  "."
-                  h \span.ms, @attrx \ms, hhmmss
+                  h \span.seconds, @attrx \seconds, hhmmss
+                  # "."
+                  # h \span.ms, @attrx \ms, hhmmss
             h \.buttons,
               h \button onclick: (-> timer.emit 'timer.add', -5*60*1000),
                 "-5 min"
