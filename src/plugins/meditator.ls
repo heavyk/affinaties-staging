@@ -11,6 +11,11 @@
 ``import '../elements/countdown-timer'``
 
 ``import { left_pad } from '../lib/utils'``
+``import { ms2human } from '../lib/format-ms'``
+
+``import pullScroll from '../lib/pull-stream/scroller'``
+pull = require 'pull-stream/pull'
+pull-src-values = require 'pull-stream/sources/values'
 
 AudioCtx = AudioContext
 
@@ -170,8 +175,16 @@ meditator = ({config, G, set_config, set_data}) ->
   # TODO: save this scope into the frame and let this be the bottom-most element
   {h, s} = G
 
+  const LC = config.locale
+
   # transformers
   hhmmss = (v) -> left_pad v, 2
+
+  program-entry = (h) -> (d) ->
+    h \.program-entry,
+      h \span.title d.title
+      " :: "
+      h \span.duration ms2human d.duration, LC
 
   h \poem-frame, {config.base}, (G) ->
     {h} = G
@@ -211,21 +224,42 @@ meditator = ({config, G, set_config, set_data}) ->
     '/timer/:min':
       enter: (route) ->
         ms = route.params.min * 60s * 1000ms
+        program =
+          * type: \countdown, duration: 20s * 1000ms, title: "programming time"
+          * type: \countdown, duration: 5s * 1000ms, title: "break time"
+          ...
+
+        # @incomplete - put all of this into a custom element (with the up-down scrollers and everything)
+        #             - also, make the component accept ObservableArray, ObservableWindow, pull-scroll-windowed
+        program-scroller = h \div.program-scroller, s: {overflow-y: 'auto'}
+
+        # the down-scroller
+        pull-src-values program
+        |> pull-scroll program-scroller, program-scroller, (program-entry h), false, false, (err) !->
+          console.log 'the end!', err
+
+        # the up-scroller
+        pull-src-values program
+        |> pull-scroll program-scroller, program-scroller, (program-entry h), true, false, (err) !->
+          console.log 'the end!', err
+
         @section \content, ({h}) ->
           h \.timer-frame,
-            h \.countdown,
-              timer =\
-              window.timer =\
-              h \countdown-timer, {duration: ms}, ({h}) ->
-                # TODO: make this function the default in the custom element
-                hrs = @attr \hours
-                h \.time-display,
-                  transform hrs, (v) -> if v > 0
-                    h \span.hours, hrs
-                  h \span.minutes, @attrx \minutes, hhmmss
-                  h \span.seconds, @attrx \seconds, hhmmss
-                  transform (@attr 'show_ms'), (v) ~> if v
-                    h \span.ms, @attrx \ms, (v) -> left_pad v, 3
+            # TODO: this should essentially be hyper-scroller thing
+            # h \timer-program, {program},
+            program-scroller
+            timer =\
+            window.timer =\
+            h \countdown-timer, {duration: ms}, ({h}) ->
+              # TODO: make this function the default in the custom element
+              hrs = @attr \hours
+              h \.time-display,
+                transform hrs, (v) -> if v > 0
+                  h \span.hours, hrs
+                h \span.minutes, @attrx \minutes, hhmmss
+                h \span.seconds, @attrx \seconds, hhmmss
+                transform (@attr 'show_ms'), (v) ~> if v
+                  h \span.ms, @attrx \ms, (v) -> left_pad v, 3
             h \.buttons,
               # TODO: make a timer-buttons component which interfaces with the timer (for a proof of concept of plugin ineteraction)
               h \button onclick: (-> timer.emit 'timer.add', -5*60*1000),

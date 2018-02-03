@@ -48,6 +48,12 @@ export function compact (array) {
   return array
 }
 
+// adapted from: https://gist.github.com/rmariuzzo/8761698
+export function sprintf(format, ...args) {
+  var i = 0
+  return format.replace(/%[s|d]/g, () => args[i++])
+}
+
 export function parseHash (hash, keys) {
   try {
     var parsed = compact(JSON.parse(decodeURIComponent(hash.substr(2))))

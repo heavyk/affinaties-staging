@@ -1,44 +1,10 @@
 import PoemBase from './poem-base'
 
 import { value } from '../lib/dom/observable'
-import raf from '../lib/dom/request-animation-frame'
+// import raf from '../lib/dom/request-animation-frame'
 
 import { forEach } from '../lib/utils'
-
-// @unfinished - locale configuration
-// see moment and also: https://github.com/betsol/time-delta/blob/master/lib/time-delta.js
-
-const timeUnits = [
-  ['seconds', 1000],
-  ['minutes',   60],
-  ['hours',     60],
-  ['days',      24],
-  ['weeks',      7],
-  ['months',     4],
-  ['years',     12]
-]
-
-function init () {
-  var divider = 1
-  forEach(timeUnits, (unit) => {
-    unit[1] = divider = divider * unit[1]
-  })
-  timeUnits.reverse()
-}
-
-init()
-
-function dt_units(dt) {
-  var results = {}
-  forEach(timeUnits, function (unit) {
-    var divider = unit[1]
-    var value = dt > 0 ? Math.floor(dt / divider) : 0
-    dt -= value * divider
-    results[unit[0]] = value
-  })
-  results.ms = dt
-  return results
-}
+import { time_units, ms2units } from '../lib/format-ms'
 
 export default class CountdownTimer extends PoemBase {
   constructor (opts, fn) {
@@ -58,17 +24,16 @@ export default class CountdownTimer extends PoemBase {
       var time_vals = { ms: value(0) }
       var _fps = self.attr('fps', 20, true)
       var _duration = this.attr('duration', duration, true)
-      forEach(timeUnits, (unit) => {
+      forEach(time_units, (unit) => {
         var k = unit[0]
         self.attr(k, time_vals[k] = value(0))
       })
       self.attr('ms', time_vals.ms)
 
       const _update = (dt) => {
-        var du = dt_units(dt)
-        for(var k in du) {
-          time_vals[k](du[k])
-        }
+        forEach(ms2units(dt), (u) => {
+          time_vals[u[0]](u[1])
+        })
       }
 
       // events
