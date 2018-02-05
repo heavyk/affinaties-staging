@@ -11,7 +11,7 @@
 ``import '../elements/countdown-timer'``
 
 ``import { left_pad } from '../lib/utils'``
-``import { ms2human } from '../lib/format-ms'``
+``import { dt2human } from '../lib/format-dt'``
 
 ``import pullScroll from '../lib/pull-stream/scroller'``
 pull = require 'pull-stream/pull'
@@ -184,7 +184,7 @@ meditator = ({config, G, set_config, set_data}) ->
     h \.program-entry,
       h \span.title d.title
       " :: "
-      h \span.duration ms2human d.duration, LC
+      h \span.duration dt2human d.duration, LC
 
   h \poem-frame, {config.base}, (G) ->
     {h} = G
