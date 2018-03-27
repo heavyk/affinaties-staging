@@ -19,32 +19,32 @@ export const time_units = (() => {
   }).reverse()
 })()
 
-export function ms2unit (ms) {
-  ms = Math.abs(ms)
+export function dt2unit (dt) {
+  dt = Math.abs(dt)
   var u, v, i = 0
   for (; i < time_units.length; i++) {
     u = time_units[i]
-    if ((v = Math.floor(ms / u[1])) > 0) return [u[0], v]
+    if ((v = Math.floor(dt / u[1])) > 0) return [u[0], v]
   }
 }
 
-export function ms2units (ms) {
-  ms = Math.abs(ms)
+export function dt2units (dt) {
+  dt = Math.abs(dt)
   var results = []
   forEach(time_units, (unit) => {
     var divider = unit[1]
-    var value = ms > 0 ? Math.floor(ms / divider) : 0
+    var value = dt > 0 ? Math.floor(dt / divider) : 0
     var key = unit[0]
-    ms -= value * divider
+    dt -= value * divider
     results[key] = value
     if (value > 0) results.push([key, value])
   })
-  results.ms = ms
+  results.ms = dt
   return results
 }
 
-export function format_ms (units) {
-  if (typeof units === 'number') units = ms2units(units)
+export function format_dt (units) {
+  if (typeof units === 'number') units = dt2units(units)
   var results = []
   forEach(time_units, ([k]) => {
     var v = units[k]
@@ -115,8 +115,8 @@ var locales = {
   }
 }
 
-export function ms2human (ms, locale) {
-  return ms2units(ms).map(([k, v]) =>
+export function dt2human (dt, locale) {
+  return dt2units(dt).map(([k, v]) =>
     substitute_relative(
       k == 'seconds' ? (v <= 1 ? 's' : 'ss') :
       k == 'minutes' ? (v <= 1 ? 'm' : 'mm') :
@@ -129,11 +129,14 @@ export function ms2human (ms, locale) {
   )
 }
 
-export function ms2relative (ms, without_suffix, locale) {
-  var u = ms2unit(ms)
+export function dt2relative (dt, without_suffix, locale) {
+  var u = dt2unit(dt)
   var k = u[0], v = u[1]
 
   // @optimise: the 'k' condition can be simplified further (save a few bytes!)
+  // also, it's backwards... look here:
+  // https://github.com/moment/moment/blob/master/src/lib/duration/humanize.js
+  // and, threshholds is handled incorrectly (cause of the non-fallthrough behaviour I want to have)
   k = k == 'seconds' && v <= thresholds.ss ? 's' :
       k == 'seconds' && v < thresholds.s   ? 'ss' :
       k == 'minutes' && v <= 1             ? 'm' :
@@ -147,7 +150,7 @@ export function ms2relative (ms, without_suffix, locale) {
       k == 'years'   && v <= 1             ? 'y' :
                                              'yy'
 
-  return substitute_relative.call(null, k, v, without_suffix, +ms > 0, locale)
+  return substitute_relative.call(null, k, v, without_suffix, +dt > 0, locale)
 }
 
 function substitute_relative (key, number, without_suffix, is_future, locale) {

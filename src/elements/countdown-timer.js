@@ -4,7 +4,7 @@ import { value } from '../lib/dom/observable'
 // import raf from '../lib/dom/request-animation-frame'
 
 import { forEach } from '../lib/utils'
-import { time_units, ms2units } from '../lib/format-ms'
+import { time_units, dt2units } from '../lib/format-dt'
 
 export default class CountdownTimer extends PoemBase {
   constructor (opts, fn) {
@@ -31,7 +31,7 @@ export default class CountdownTimer extends PoemBase {
       self.attr('ms', time_vals.ms)
 
       const _update = (dt) => {
-        forEach(ms2units(dt), (u) => {
+        forEach(dt2units(dt), (u) => {
           time_vals[u[0]](u[1])
         })
       }
