@@ -1,0 +1,112 @@
+
+body {
+  color: white;
+}
+
+a {
+  color: white;
+  text-decoration:underline;
+  font-weight: 100;
+}
+
+select {
+  background: #eee;
+}
+
+#frame {
+  background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+}
+
+poem-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "sidebar content"
+    "footer footer"
+  ;
+  grid-template-rows: 80px 1fr 40px;
+  grid-template-columns: 200px 1fr;
+}
+
+poem-frame .side-bar {
+  grid-area: sidebar;
+  /*color: red;*/
+}
+poem-frame .top {
+  grid-area: header;
+  /*color: green;*/
+}
+poem-frame .middle {
+  grid-area: content;
+  /*color: pink;*/
+}
+
+.timer-frame {
+  /* TODO: make this 100% and fit everything into the size of the frame */
+  width: 600px;
+  background: #5d5d5d;
+  padding: 20px 50px;
+  margin: 20px;
+  box-shadow:
+    0 1px 2px #fff,
+    0 -1px 1px #666,
+    inset 0 -1px 1px rgba(0,0,0,0.5),
+    inset 0 1px 1px rgba(255,255,255,0.8);
+}
+
+
+.time-display {
+  letter-spacing: 0.1em;
+  font-weight: 100;
+  font-size: 300%;
+
+  margin: 8px 0;
+  padding: 10px 40px;
+
+  border-radius: 4px;
+  box-shadow:
+    0 1px 2px #544d4d,
+    0 -1px 1px #585656,
+    inset 0 -1px 1px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(181, 181, 181, 0.8);
+  text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #228DFF, 0 0 35px #228DFF, 0 0 40px #228DFF, 0 0 50px #228DFF, 0 0 75px #228DFF;
+
+  background-color: #429eff;
+  background-size: 8px 8px;
+  background-image:
+    repeating-linear-gradient(-45deg, #449bf9, #449bf9 5%, transparent 5%, transparent 50%),
+    repeating-linear-gradient(45deg, #449bf9, #449bf9 5%, transparent 5%, transparent 50%);
+
+  .hours:after {
+    content: ":";
+  }
+  .minutes:after {
+    content: ":";
+  }
+  .ms:before {
+    content: ".";
+  }
+}
+
+
+.program-scroller {
+  background: #3f51b5;
+  border: solid 1px #333;
+  /* border-bottom: solid 0px #555; */
+  margin: 8px 0px;
+  border-radius: 8px;
+  padding: 4px 8px;
+  .done {
+    color: #888;
+  }
+  .active {
+    color: #f00;
+  }
+}
+
+.program-entry {
+  border-bottom: solid 1px #333;
+}
