@@ -132,12 +132,12 @@ export default class RoadTrip {
     promise =
       newRoute === currentRoute && typeof newRoute.update === 'function' ?
         newRoute.update(newData, currentData)
-      : Promise.all([
-        currentRoute.leave(currentData, newData),
-        newRoute.beforeenter(newData, currentData)
-      ]).then(() => {
-        newRoute.enter(newData, currentData)
-      })
+      : currentRoute.leave(currentData, newData)
+        .then(() => newRoute.beforeenter(newData, currentData))
+        .then(() => newRoute.enter(newData, currentData))
+        .catch((err) => {
+          console.error('ERROR!', err)
+        })
 
     promise
       .then((val) => {
@@ -176,7 +176,8 @@ export default class RoadTrip {
   // MIT license https://github.com/visionmedia/page.js#license
   // further modification from https://github.com/Rich-Harris/roadtrip/blob/master/src/utils/watchLinks.js
   //  - added link detection in custom elements
-  //  -
+  //  - allow the link watching to be contained to an element (workaround for document level passive listeners)
+
   watchLinks (container_el) {
     const click_handler = (event) => {
       let w = which(event)
@@ -223,7 +224,7 @@ export default class RoadTrip {
       var goto_path = path
       // when 404ing, it's also necessary to preventDefault to prevent navigation.
       const _goto = (path, options) => {
-        // this is no longer possible starting with chrome 56
+        // preventDefault on document level ecents is no longer possible starting with chrome 56
         // (all document level event listeners are considered passive by default)
         // https://www.chromestatus.com/feature/5093566007214080
         event.preventDefault()
