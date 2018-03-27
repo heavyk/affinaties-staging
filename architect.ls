@@ -59,21 +59,32 @@ poems =
         }
         # new (require 'html-webpack-inline-source-plugin')
         ...
+  'plugins/new-form.js':
+    dest: 'plugins/new-form.js'
+    css: 'plugins/new-form.css'
+    webpack:
+      plugins:
+        new (require 'html-webpack-plugin') {
+          inline-source: /.(js|css)$/
+          filename: 'new-form.html'
+        }
+        # new (require 'html-webpack-inline-source-plugin')
+        ...
   # 'plugins/metatrons-compass.js':
   #   dest: 'plugins/metatrons-compass.js'
   #   css: 'plugins/metatrons-compass.css'
-  'hamsternipples/fuq.js':
-    dest: 'plugins/hamsternipples.js'
-    # css: 'plugins/hamsternipples.css'
+  # 'hamsternipples/fuq.js':
+  #   dest: 'plugins/hamsternipples.js'
+  #   # css: 'plugins/hamsternipples.css'
   # 'plugins/lending-coin.js':
   #   dest: 'plugins/lending-coin.js'
   #   css: 'plugins/lending-coin.css'
   # 'plugins/lending-crowd.js':
     # dest: 'plugins/lending-crowd.js'
     # css: 'plugins/lending-crowd.css'
-  'plugins/poke-her-starz.js':
-    dest: 'plugins/poke-her-starz.js'
-    css: 'plugins/poke-her-starz.css'
+  # 'plugins/poke-her-starz.js':
+  #   dest: 'plugins/poke-her-starz.js'
+  #   css: 'plugins/poke-her-starz.css'
   # 'plugins/meatr.js':
   #   dest: 'plugins/meatr.js'
 
