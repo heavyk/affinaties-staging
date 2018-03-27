@@ -5,6 +5,7 @@
 # ``import xhr from '../lib/xhr'``
 # ``import load_sdk from '../lib/load-sdk-h'``
 # ``import { rand, rand2, randomId, randomEl, randomIds, randomPos, randomDate, randomCharactor, between, lipsum, word, obj } from '../lib/random'``
+``import { rand } from '../lib/random'``
 
 ``import '../elements/poem-frame'``
 ``import '../elements/parallax-stars'``
@@ -18,6 +19,8 @@ pull = require 'pull-stream/pull'
 pull-src-values = require 'pull-stream/sources/values'
 
 AudioCtx = AudioContext
+
+# AudioCtx.audioWorklet.addModule 'modules/bypassFilter.js'
 
 AudioCtx::create-white-noise = (buffer-size = 4096) ->
   node = @create-script-processor buffer-size, 1, 1
@@ -67,8 +70,15 @@ AudioCtx::create-distortion = (k = 50, oversample = '4x') ->
   node.oversample = oversample
   return node
 
+# use pulses to find frequency
+# limits:
+# l ear: 14300 saw, 14400 sine
+# r ear: 13200 saw, 13500 sine
 
-window.ac = new AudioCtx
+# sightly more irritating: 13400 12300
+# make the freq some sort of octave or some meaningful multiple of the other
+
+window.ac = new AudioCtx sample-rate: 96000, latency-hint: \playback
 # noise = ac.create-white-noise!
 # distortion = ac.create-distortion 100
 # noise.connect distortion
@@ -76,60 +86,72 @@ window.ac = new AudioCtx
 # console.log \connected
 
 # Saw Modulator
-pink-noise = ac.create-pink-noise!
-pink-gain = ac.create-gain!
-pink-filter = ac.create-biquad-filter!
-pink-gain.gain.value = 1000
-pink-filter.frequency.value = 16.18
-pink-noise.connect pink-filter
-pink-filter.connect pink-gain
-
-saw = ac.create-oscillator!
-saw.type = \sawtooth
-saw.frequency.value = 528
-saw-distortion = ac.create-distortion 50
-saw-filter = ac.create-biquad-filter!
-saw-filter.Q.value = 2
-saw-gain = ac.create-gain!
-saw-gain.gain.value = 0
-
-saw.start 0
-# saw.connect saw-filter
-saw.connect saw-distortion
-saw-distortion.connect saw-filter
-saw-filter.connect saw-gain
-# saw-distortion.connect saw-gain
-pink-gain.connect saw-filter.frequency
-saw-gain.connect ac.destination
-
-# Waves
-brown-noise = ac.create-brown-noise 16384
-brown-gain = ac.create-gain!
-brown-gain.gain.value = 0.3
-brown-noise.connect brown-gain
-
-lfo = ac.create-oscillator!
-lfo.frequency.value = 0.33
-lfo-gain = ac.create-gain!
-lfo-gain.gain.value = 0.1
-
-lfo.start 0
-lfo.connect lfo-gain
-lfo-gain.connect brown-gain.gain
-
-waves-gain = ac.create-gain!
-waves-gain.gain.value = 0
-brown-gain.connect waves-gain
-waves-gain.connect ac.destination
-
-# saw-gain.gain.value = 0.02
-# waves-gain.gain.value = 0.3
-
-tempo = 60
-middleC = 444
-start-time = ac.currentTime
-
-
+# pink-noise = ac.create-pink-noise!
+# pink-gain = ac.create-gain!
+# pink-filter = ac.create-biquad-filter!
+# pink-gain.gain.value = 1000
+# pink-filter.frequency.value = 16.18
+# pink-noise.connect pink-filter
+# pink-filter.connect pink-gain
+#
+# saw = ac.create-oscillator!
+# saw.type = \sawtooth
+# saw.frequency.value = 528
+# saw-distortion = ac.create-distortion 50
+# saw-filter = ac.create-biquad-filter!
+# saw-filter.Q.value = 2
+# saw-gain = ac.create-gain!
+# saw-gain.gain.value = 0
+#
+# saw.start 0
+# # saw.connect saw-filter
+# saw.connect saw-distortion
+# saw-distortion.connect saw-filter
+# saw-filter.connect saw-gain
+# # saw-distortion.connect saw-gain
+# pink-gain.connect saw-filter.frequency
+# saw-gain.connect ac.destination
+#
+# # Waves
+# brown-noise = ac.create-brown-noise 16384
+# brown-gain = ac.create-gain!
+# brown-gain.gain.value = 0.3
+# brown-noise.connect brown-gain
+#
+# lfo = ac.create-oscillator!
+# lfo.frequency.value = 0.33
+# lfo-gain = ac.create-gain!
+# lfo-gain.gain.value = 0.1
+#
+# lfo.start 0
+# lfo.connect lfo-gain
+# lfo-gain.connect brown-gain.gain
+#
+# waves-gain = ac.create-gain!
+# waves-gain.gain.value = 0
+# brown-gain.connect waves-gain
+# waves-gain.connect ac.destination
+#
+# # saw-gain.gain.value = 0.02
+# # waves-gain.gain.value = 0.3
+#
+# tempo = 60
+# middleC = 444
+# start-time = ac.currentTime
+#
+# multi = ac.create-constant-source!
+# multi.offset.value = 10
+#
+# osc = ac.create-oscillator!
+# osc.type = \sine
+# osc.frequency.value = 432
+# osc-gain = ac.create-gain!
+# osc-gain.gain.value = 100
+# osc.connect ac.destination
+# # osc.connect osc-gain
+# osc-gain.connect ac.destination
+# # osc.start 0
+# console.log 'started!!', osc.frequency
 
 # window.seq1 = new Sequence ac, { tempo, middleC, waveType: \sine } .notes [
 #   'C4 q'
@@ -161,8 +183,64 @@ start-time = ac.currentTime
 
 # lfo.connect seq1.gain
 
+# class f_osc
+#   (@f = 432, @f_lr = 20, @qv = 0.5, @f-type = \triangle) ->
+
+
+f_animate = (o, ms_min, ms_max, f_min, f_max, f_lr_min, f_lr_max) ->
+  ms = rand ms_max, ms_min
+  f = rand f_max, f_min
+  f_lr = rand f_lr_max, f_lr_min
+  # console.log "ms: #{ms} (#{ms_min}/#{ms_max}) f: #{f} (#{f_min}/#{f_max}) f_lr: #{f_lr} (#{f_lr_min}/#{f_lr_max})"
+  # console.log "ms: #{ms}ms f: #{o.f} -> #{f} (#{f_min}/#{f_max}) f_lr: #{o.f_lr} -> #{f_lr} (#{f_lr_min}/#{f_lr_max})"
+  # console.log "#{o.i}: #{ms / 1000}s f_lr: #{o.f_lr} -> #{f_lr} (#{f_lr_min}/#{f_lr_max}) tc: #{ms/1000}"
+  mid = f_lr / 2
+  f-l = f + mid
+  f-r = f - mid
+  t = ac.currentTime + (ms/1000)
+  # instead we're going to calculate and set the target, so that we decay into (but never quite reach) the new value
+  # we also need some way of animating the whole unit instead of just the individual parts to give the feeling of a big transition
+  # instead of a bunch of random transitions... maybe each "part" can have different time constants.
+  console.log "#{o.i}L: #{o.L.frequency.value.toFixed 1} -> #{f-l.toFixed 1}"
+  console.log "#{o.i}R: #{o.R.frequency.value.toFixed 1} -> #{f-r.toFixed 1}"
+  o.L.frequency.setTargetAtTime f-l, 0, (ms/1000)
+  o.R.frequency.setTargetAtTime f-r, 0, (ms/1000)
+  # o.L.frequency.exponentialRampToValueAtTime f-l, t
+  # o.R.frequency.exponentialRampToValueAtTime f-r, t
+  o.timeout = set-timeout !->
+    f_animate o, ms_min, ms_max, f_min, f_max, f_lr_min, f_lr_max
+  , ms+ms
+
+f_osc = (f = 432, f_lr = 20, qv = 0.5, f-type = \triangle) ->
+  mid = f_lr / 2
+  f-l = f + mid
+  f-r = f - mid
+
+  merger = ac.create-channel-merger 2
+  osc-l = ac.create-oscillator!
+  osc-l.type = f-type
+  osc-l.frequency.setValueAtTime f-l, ac.currentTime
+  osc-l.connect merger, 0, 0
+
+  osc-r = ac.create-oscillator!
+  osc-r.type = f-type
+  osc-r.frequency.setValueAtTime f-r, ac.currentTime
+  osc-r.connect merger, 0, 1
+
+  gain = ac.create-gain!
+  gain.gain.setValueAtTime qv, ac.currentTime
+  merger.connect gain
+
+  {L: osc-l, R: osc-r, Q: gain, f, f_lr}
+
+freq = (f, oct) -> f * Math.pow 2, oct
+
 # TODO:
+# - make a list element which accepts an ObservableArray or a stream
+#  -> multi-selection? and active, selected, and other status (eg. completed)
+#  -> it'd be cool if this were draggable and stuff
 # - merge the start / stop buttons (if started, display stop, etc.)
+#  -> need a status on the timer for running
 # - play sound / notification at the end of the timer
 # - get rid of Sequence and only add the option to give background noise
 # - remove the stupid grid and just make it a single plugin element
@@ -204,16 +282,109 @@ meditator = ({config, G, set_config, set_data}) ->
       enter: (route, prev) !->
         @section \content, ({h}) ->
           h \.container,
-            h \h2, "articles"
-            for id, article of articles
-              h \.article-link,
-                h \a href: "/article/#{id}", article.t
-          # for t in [5,10,15,20]
-          #   h \div,
-          #     h \a href: "/timer/#{t}", "#{t} min"
+            h \h2, "TODO"
 
       # update: (route) !->
       # leave: (route, next) !->
+
+    '/binaural': do ->
+      # TODO: it would be really nice to have some sort of "tracks" layout...
+      #   like, a RenderingArray with a whole bunch of oscillators, their
+      #   settings and all merged
+
+
+      # f = 432
+      # f = 12300
+      # f = 8900
+
+      # todo?: put subliminal messages into it :)
+      # TODO: make freq function: f, octave
+      # TODO: pass this an array of obvs
+
+      # f = freq 1000 / 9, 4 # 555.55 Hz, up 4 octaves
+      # osc = [
+      #   # f_osc f, (100/9), (1/9), \triangle
+      #   # f_osc f, (200/9), (2/9), \triangle
+      #   # f_osc f+f, (300/9), (3/9), \triangle
+      #   # f_osc f+f, (400/9), (4/9), \triangle
+      #   # f_osc f+f+f, (500/9), (5/9), \triangle
+      #   # f_osc f+f, (600/9), (4/9), \triangle
+      #   # f_osc f+f, (700/9), (3/9), \triangle
+      #   # f_osc f, (800/9), (2/9), \triangle
+      #   # f_osc f, (900/9), (1/9), \triangle
+      #   # ---------
+      #   # f_osc f, (100/9), (5/9), \triangle
+      #   # f_osc f, (200/9), (4/9), \triangle
+      #   # f_osc f+f, (300/9), (3/9), \triangle
+      #   # f_osc f+f, (400/9), (2/9), \triangle
+      #   # f_osc f+f+f, (500/9), (1/9), \triangle
+      #   # f_osc f+f, (600/9), (2/9), \triangle
+      #   # f_osc f+f, (700/9), (3/9), \triangle
+      #   # f_osc f, (800/9), (4/9), \triangle
+      #   # f_osc f, (900/9), (5/9), \triangle
+      #   # ---------
+      # ]
+
+      f = freq (1000/9), 7 # 555.55 Hz, up 7 octaves
+      osc = [
+        f_osc f, 54, (4/5)#, \sine
+        f_osc f, 108, (3/5)#, \sine
+        f_osc f, 216, (2/5)#, \sine
+        f_osc f, 432, (1/5)#, \sine
+        # ---------
+        # f_osc f, 54, (1/5)#, \sine
+        # f_osc f, 108, (2/5)#, \sine
+        # f_osc f, 216, (3/5)#, \sine
+        # f_osc f, 432, (4/5)#, \sine
+      ]
+      # f-l = f + 216
+      # f-r = f - 216
+      # f-l = 14256
+      # f-r = 13392
+
+      for o in osc
+        o.L.start ac.currentTime
+        o.R.start ac.currentTime
+
+      # window.osc = osc
+      enter: (route) !->
+        # this should actually be button activated
+        # TODO: this should recreate the nodes every time the sound begins play
+        for o in osc
+          o.Q.connect ac.destination
+
+        # set-interval !->
+        #   for o, i in osc
+        #     l = o.L.frequency.value
+        #     r = o.R.frequency.value
+        #     console.log "#{i}: f: #{f.toFixed 1} L: #{(l - f).toFixed 1} R: #{(r - f).toFixed 1}"
+        # , 5000
+
+        # TODO: try a shepherd tone constantly rising / falling
+        # TODO: modulate the wave with noisr
+        
+        set-timeout !->
+          for o, i in osc
+            o.i = i
+            f = o.f
+            f_m = f / 8
+            f_lr = o.f_lr
+            f_lr_m = o.f_lr / 4
+            f_min = Math.round f - f_m
+            f_max = Math.round f + f_m
+            f_lr_min = Math.round f_lr - f_lr_m
+            f_lr_max = Math.round f_lr + f_lr_m
+            f_animate o, 10000, 20000, f_min, f_max, f_lr_min, f_lr_max
+        , 0
+
+
+      leave: !->
+        for o in osc
+          o.Q.disconnect!
+          if o.timeout isnt void
+            clearTimeout o.timeout
+
+
 
     '/parallax':
       enter: !->
@@ -247,7 +418,6 @@ meditator = ({config, G, set_config, set_data}) ->
           h \.timer-frame,
             # TODO: this should essentially be hyper-scroller thing
             # h \timer-program, {program},
-            program-scroller
             timer =\
             window.timer =\
             h \countdown-timer, {duration: ms}, ({h}) ->
@@ -260,6 +430,7 @@ meditator = ({config, G, set_config, set_data}) ->
                 h \span.seconds, @attrx \seconds, hhmmss
                 transform (@attr 'show_ms'), (v) ~> if v
                   h \span.ms, @attrx \ms, (v) -> left_pad v, 3
+            program-scroller
             h \.buttons,
               # TODO: make a timer-buttons component which interfaces with the timer (for a proof of concept of plugin ineteraction)
               h \button onclick: (-> timer.emit 'timer.add', -5*60*1000),

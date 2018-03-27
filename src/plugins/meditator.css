@@ -38,6 +38,8 @@ poem-frame .middle {
 }
 
 .timer-frame {
+  /* TODO: make this 100% and fit everything into the size of the frame */
+  width: 600px;
   background: #5d5d5d;
   padding: 20px 50px;
   margin: 20px;
@@ -70,14 +72,34 @@ poem-frame .middle {
   background-image:
     repeating-linear-gradient(-45deg, #449bf9, #449bf9 5%, transparent 5%, transparent 50%),
     repeating-linear-gradient(45deg, #449bf9, #449bf9 5%, transparent 5%, transparent 50%);
+
+  .hours:after {
+    content: ":";
+  }
+  .minutes:after {
+    content: ":";
+  }
+  .ms:before {
+    content: ".";
+  }
 }
 
-.time-display .hours:after {
-  content: ":";
+
+.program-scroller {
+  background: #3f51b5;
+  border: solid 1px #333;
+  /* border-bottom: solid 0px #555; */
+  margin: 8px 0px;
+  border-radius: 8px;
+  padding: 4px 8px;
+  .done {
+    color: #888;
+  }
+  .active {
+    color: #f00;
+  }
 }
-.time-display .minutes:after {
-  content: ":";
-}
-.time-display .ms:before {
-  content: ".";
+
+.program-entry {
+  border-bottom: solid 1px #333;
 }
