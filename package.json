@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@std/esm": "^0.16.0",
+    "audioparam": "github:sebpiq/AudioParam",
     "autoprefixer-core": "^6.0.1",
     "babelfish": "^1.1.2",
     "benchmark": "^2.1.4",
@@ -72,6 +73,7 @@
     "raw-loader": "^0.5.1",
     "source-map-support": "^0.4.18",
     "spin.js": "^2.3.2",
+    "three": "^0.90.0",
     "tree-kill": "^1.2.0"
   },
   "unusedDependencies": {
