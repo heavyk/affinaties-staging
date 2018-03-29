@@ -183,9 +183,6 @@ window.ac = new AudioCtx sample-rate: 96000, latency-hint: \playback
 
 # lfo.connect seq1.gain
 
-# class f_osc
-#   (@f = 432, @f_lr = 20, @qv = 0.5, @f-type = \triangle) ->
-
 
 f_animate = (o, ms_min, ms_max, f_min, f_max, f_lr_min, f_lr_max) ->
   ms = rand ms_max, ms_min
@@ -197,14 +194,15 @@ f_animate = (o, ms_min, ms_max, f_min, f_max, f_lr_min, f_lr_max) ->
   mid = f_lr / 2
   f-l = f + mid
   f-r = f - mid
-  t = ac.currentTime + (ms/1000)
+  tc = ms / 1000
+  t = ac.currentTime + tc
   # instead we're going to calculate and set the target, so that we decay into (but never quite reach) the new value
   # we also need some way of animating the whole unit instead of just the individual parts to give the feeling of a big transition
   # instead of a bunch of random transitions... maybe each "part" can have different time constants.
   console.log "#{o.i}L: #{o.L.frequency.value.toFixed 1} -> #{f-l.toFixed 1}"
-  console.log "#{o.i}R: #{o.R.frequency.value.toFixed 1} -> #{f-r.toFixed 1}"
-  o.L.frequency.setTargetAtTime f-l, 0, (ms/1000)
-  o.R.frequency.setTargetAtTime f-r, 0, (ms/1000)
+  console.log "#{o.i}R: #{o.R.frequency.value.toFixed 1} -> #{f-r.toFixed 1} tc: #{tc}"
+  o.L.frequency.setTargetAtTime f-l, 0, tc
+  o.R.frequency.setTargetAtTime f-r, 0, tc
   # o.L.frequency.exponentialRampToValueAtTime f-l, t
   # o.R.frequency.exponentialRampToValueAtTime f-r, t
   o.timeout = set-timeout !->
@@ -326,27 +324,29 @@ meditator = ({config, G, set_config, set_data}) ->
       # ]
 
       f = freq (1000/9), 7 # 555.55 Hz, up 7 octaves
-      osc = [
-        f_osc f, 54, (4/5)#, \sine
-        f_osc f, 108, (3/5)#, \sine
-        f_osc f, 216, (2/5)#, \sine
-        f_osc f, 432, (1/5)#, \sine
-        # ---------
-        # f_osc f, 54, (1/5)#, \sine
-        # f_osc f, 108, (2/5)#, \sine
-        # f_osc f, 216, (3/5)#, \sine
-        # f_osc f, 432, (4/5)#, \sine
+      f2 = freq 432, 5 # 432 Hz, up 5 octaves
+
+      osc_stable = [
+        # f_osc f, (432/8), (4/5)#, \sine
+        # f_osc f, (432/4), (3/5)#, \sine
+        f_osc f, (432/2), (2/5)#, \sine
+        f_osc f, (432/1), (1/5)#, \sine
       ]
-      # f-l = f + 216
-      # f-r = f - 216
-      # f-l = 14256
-      # f-r = 13392
+
+      osc_moving = [
+        f_osc f2, (432/8), (1/20)#, \sine
+        f_osc f2, (432/4), (2/20)#, \sine
+        # f_osc f2, (432/2), (3/20)#, \sine
+        # f_osc f2, (432/1), (4/20)#, \sine
+      ]
+
+      osc = osc_stable ++ osc_moving
 
       for o in osc
         o.L.start ac.currentTime
         o.R.start ac.currentTime
 
-      # window.osc = osc
+      window.osc = osc
       enter: (route) !->
         # this should actually be button activated
         # TODO: this should recreate the nodes every time the sound begins play
@@ -360,11 +360,20 @@ meditator = ({config, G, set_config, set_data}) ->
         #     console.log "#{i}: f: #{f.toFixed 1} L: #{(l - f).toFixed 1} R: #{(r - f).toFixed 1}"
         # , 5000
 
-        # TODO: try a shepherd tone constantly rising / falling
-        # TODO: modulate the wave with noisr
-        
+        # VERY_FIRST: convert from an array to an object with each property a device
+        # SECOND_FIRST: make a BinauralOscillatorNode which can be used like this (custom AudioParam is just a GainNode::gain)
+        #               see: http://sebpiq.github.io/AudioParam/test/js/AudioParam-latest.js
+        # FIRST: make a real-time display showing the current frequency/status, or "state" of the device
+        # LATER: different state templates, and allow for randomisation and animation between them
+        #        these "keyframes" could be defined as indexed properties 'osc1.frequency', target_value, time_const
+        # IDEA: try a shepherd tone constantly rising / falling
+        # IDEA: modulate the wave with noise
+
+        # target calculation:
+        # % @ t :: 1 - (1 / e^(t * tc))
+
         set-timeout !->
-          for o, i in osc
+          for o, i in osc_moving
             o.i = i
             f = o.f
             f_m = f / 8
@@ -374,7 +383,7 @@ meditator = ({config, G, set_config, set_data}) ->
             f_max = Math.round f + f_m
             f_lr_min = Math.round f_lr - f_lr_m
             f_lr_max = Math.round f_lr + f_lr_m
-            f_animate o, 10000, 20000, f_min, f_max, f_lr_min, f_lr_max
+            f_animate o, 100000, 200000, f_min, f_max, f_lr_min, f_lr_max
         , 0
 
 
