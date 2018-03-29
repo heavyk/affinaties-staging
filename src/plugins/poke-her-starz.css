@@ -4,24 +4,8 @@ body {
   background: #7649bf;
 }
 
-/* tooltips */
-#T {
-  position:absolute;
-  display:block;
-}
-#Tcont {
-  display:block;
-  padding: 2px 12px 3px 7px;
-  margin:5px;
-  background:#666;
-  color:#fff;
-  border: solid 1px #ccc;
-  border-radius: 12px;
-}
-
 
 div.top-bar {
-  /*width: 103%;*/
   background-color: #c66;
   height: 50px;
 }
@@ -54,4 +38,8 @@ div.bet, div.prev-bet {
   padding: 2px 4px;
   position: fixed;
   height: 20px;
+}
+
+.qbet {
+  border: solid 2px green;
 }

@@ -16,6 +16,14 @@
 ``import '../elements/svg/poke-her-card'``
 # ``import '../elements/svg/poke-her-playa'``
 
+# get better svg cards:
+# https://www.google.com/search?hl=en&q=playing+cards+file+svg&tbm=isch&source=iu&pf=m&ictx=1&tbs=simg:CAESlwEJuvvo5AfFqxMaiwELEKjU2AQaBAgVCAgMCxCwjKcIGmIKYAgDEiicCp0KnBT4CLIJ7AaDCukDtwKyCsY_19T2cNZ80tj3BPcA9_1D2uPb89GjA_18IRqER2NJq7cKkiGYUQnjXjd9491hC_1zkAIGq0M32xtx0rMRvfFcz7m_1ucO5Yg0gBAwLEI6u_1ggaCgoICAESBO8c7I8M&fir=c94x0NjhoE87oM%253A%252CVf6OiY6y9_ujPM%252C_&usg=__BUMwBkTGwcqJFlrlEDsXePBoDgc%3D&sa=X&ved=0ahUKEwiI64ihmIrXAhUIsVQKHchQDwoQ9QEIMTAC#imgrc=c94x0NjhoE87oM:
+# svg backfaces:
+# https://openclipart.org/search/?query=cards+simple
+
+# if you wanna make a game with chars preloaded, just use the pokeman database:
+# https://pokemondb.net/pokedex/
+
 const HALF_PI = Math.PI / 180
 const DEFAULT_CONFIG =
   lala: 1155
@@ -377,7 +385,7 @@ poke-her-starz = ({config, G, set_config, set_data}) !->
           h \button, {onclick: -> answer 'fold'}, "fold"
           h \button, {onclick: -> answer 'call'}, "call"
           h \button, {onclick: -> answer 'all-in'}, "all-in"
-        h \.bet,
+        h \.bbet,
           input =\
           h \input, {
             type: \number
