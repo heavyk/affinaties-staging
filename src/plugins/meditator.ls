@@ -323,7 +323,7 @@ meditator = ({config, G, set_config, set_data}) ->
       #   # ---------
       # ]
 
-      f = freq (1000/9), 7 # 555.55 Hz, up 7 octaves
+      f = freq (1000/9), 7 # 111.11 Hz, up 7 octaves
       f2 = freq 432, 5 # 432 Hz, up 5 octaves
 
       osc_stable = [
@@ -340,13 +340,13 @@ meditator = ({config, G, set_config, set_data}) ->
         # f_osc f2, (432/1), (4/20)#, \sine
       ]
 
+      window.osc = \
       osc = osc_stable ++ osc_moving
 
       for o in osc
         o.L.start ac.currentTime
         o.R.start ac.currentTime
 
-      window.osc = osc
       enter: (route) !->
         # this should actually be button activated
         # TODO: this should recreate the nodes every time the sound begins play
