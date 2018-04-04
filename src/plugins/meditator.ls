@@ -183,6 +183,37 @@ window.ac = new AudioCtx sample-rate: 96000, latency-hint: \playback
 
 # lfo.connect seq1.gain
 
+f_expand = (o, ms_min, ms_max, f, f_lr, f_lr_min, f_lr_max) ->
+  ms = rand ms_max, ms_min
+  mid = f_lr / 2
+  f-l = f + mid
+  f-r = f - mid
+  tc = ms / 200
+
+  # reset the frequency down to the minimum one
+  if f_lr is f_lr_min
+    # tc = 0.1
+    ms = 100
+
+  t = ac.currentTime + tc
+
+  # o.L.frequency.exponentialRampToValueAtTime f-l, t
+  # o.R.frequency.exponentialRampToValueAtTime f-r, t
+  o.L.frequency.setTargetAtTime f-l, 0, tc
+  o.R.frequency.setTargetAtTime f-r, 0, tc
+
+  next_f_lr = ((f_lr_max - f_lr_min) / 2) + f_lr
+  console.log "in #{(ms/1000).toFixed 1}s #{f_lr.toFixed 2} -> #{next_f_lr.toFixed 2} (#{(f_lr_max - f_lr_min).toFixed 2}) {#{tc}}"
+  if next_f_lr > f_lr_max
+    console.info "maxed out:", next_f_lr, '>', f_lr_max
+    next_f_lr = f_lr_min
+
+  o.timeout = set-timeout !->
+    f_expand o, ms_min, ms_max, f, next_f_lr, f_lr_min, f_lr_max
+  , ms
+
+
+
 
 f_animate = (o, ms_min, ms_max, f_min, f_max, f_lr_min, f_lr_max) ->
   ms = rand ms_max, ms_min
@@ -323,21 +354,37 @@ meditator = ({config, G, set_config, set_data}) ->
       #   # ---------
       # ]
 
-      f = freq (1000/9), 7 # 111.11 Hz, up 7 octaves
+      f = freq (1000/9), 6 # 111.11 Hz, up 7 octaves
       f2 = freq 432, 5 # 432 Hz, up 5 octaves
+      console.log "f: #{f} f2: #{f2}"
 
+      # osc_stable = [
+      #   # f_osc f, (432/8), (4/5)#, \sine
+      #   # f_osc f, (432/4), (3/5)#, \sine
+      #   f_osc f, (432/2), (2/5)#, \sine
+      #   f_osc f, (432/1), (1/5)#, \sine
+      # ]
+
+      # osc_moving = [
+      #   f_osc f2, (432/8), (1/20)#, \sine
+      #   f_osc f2, (432/4), (2/20)#, \sine
+      #   # f_osc f2, (432/2), (3/20)#, \sine
+      #   # f_osc f2, (432/1), (4/20)#, \sine
+      # ]
       osc_stable = [
         # f_osc f, (432/8), (4/5)#, \sine
         # f_osc f, (432/4), (3/5)#, \sine
-        f_osc f, (432/2), (2/5)#, \sine
-        f_osc f, (432/1), (1/5)#, \sine
+        # f_osc f, (400/9), (1/5)#, \sine
+        # f_osc f, (300/9), (1/5)#, \sine
+        # f_osc f, (200/9), (1/5)#, \sine
+        # f_osc f, (100/9), (1/5)#, \sine
       ]
 
       osc_moving = [
-        f_osc f2, (432/8), (1/20)#, \sine
-        f_osc f2, (432/4), (2/20)#, \sine
-        # f_osc f2, (432/2), (3/20)#, \sine
-        # f_osc f2, (432/1), (4/20)#, \sine
+        # f_osc f, (432/8), (1/20)#, \sine
+        f_osc f, (400/9), (1/5)#, \sine
+        f_osc f, (300/9), (1/5)#, \sine
+        f_osc f, (200/9), (1/5)#, \sine
       ]
 
       window.osc = \
@@ -379,11 +426,14 @@ meditator = ({config, G, set_config, set_data}) ->
             f_m = f / 8
             f_lr = o.f_lr
             f_lr_m = o.f_lr / 4
-            f_min = Math.round f - f_m
-            f_max = Math.round f + f_m
+            # f_min = Math.round f - f_m
+            # f_max = Math.round f + f_m
+            # f_lr_min = Math.round f_lr - f_lr_m
+            # f_lr_max = Math.round f_lr + f_lr_m
             f_lr_min = Math.round f_lr - f_lr_m
             f_lr_max = Math.round f_lr + f_lr_m
-            f_animate o, 100000, 200000, f_min, f_max, f_lr_min, f_lr_max
+            # f_animate o, 100000, 200000, f_min, f_max, f_lr_min, f_lr_max
+            f_expand o, 1000, 20000, f, f_lr, f_lr_min, f_lr_max
         , 0
 
 
