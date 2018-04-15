@@ -2,12 +2,13 @@
 // import defaults from '../lodash/defaultsDeep'
 import { mergeDeep } from '../utils'
 
-import { value } from '../dom/observable'
+import { value, transform, compute, modify } from '../dom/observable'
 import ResizeSensor from '../dom/resize-sensor'
 
 import { h, s } from '../dom/hyper-hermes'
 import { doc, body, win, IS_LOCAL, basePath } from '../dom/hyper-hermes'
-import { new_context, el_context } from '../dom/hyper-hermes'
+import { new_context, el_context } from '../dom/hyper-hermes' // I think some cleanup is is order, lol
+import { makeNode } from '../dom/hyper-hermes'
 
 function parseJson (s) {
   try {
@@ -18,7 +19,7 @@ function parseJson (s) {
 
 function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) {
   var tmp, mutationObserver, G, E, _width, _height, _dpr, set_data, set_config, args
-  var config = mergeDeep({}, parseJson(_config), DEFAULT_CONFIG)
+  var C = mergeDeep({}, parseJson(_config), DEFAULT_CONFIG)
 
   if (IS_LOCAL) {
     tmp = body.style
@@ -63,8 +64,8 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
   tmp.onchange = function (e) { G.orientation((tmp = e.target).type.split('-').concat(tmp.angle)) }
   G.orientation = value(tmp.type.split('-').concat(tmp.angle))
 
-  G.width = value(_width = frame.clientWidth || config.width || 300)
-  G.height = value(_height = frame.clientHeight || config.height || 300)
+  G.width = value(_width = frame.clientWidth || C.width || 300)
+  G.height = value(_height = frame.clientHeight || C.height || 300)
 
   if ((_dpr = Math.round(win.devicePixelRatio || 1)) > 4) _dpr = 4
   G.dpr = value(_dpr)
@@ -86,12 +87,12 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
   G.cleanupFuncs.push(frame.cleanup)
 
   if (!(set_config = frame.set_config)) {
-    set_config = frame.set_config = value(config)
-    set_config((config) => {
+    set_config = frame.set_config = value(C)
+    set_config((C) => {
       var k, v, o
-      console.log('setting config:', config)
-      for (k in config) {
-        v = config[k]
+      console.log('setting config:', C)
+      for (k in C) {
+        v = C[k]
         if (typeof (o = G[k]) === 'undefined') {
           G[k] = value(v)
         } else {
@@ -111,7 +112,7 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
   // }, false)
 
 
-  args = { config, G, set_config, set_data }
+  args = { C, G, set_config, set_data, v: value, t: transform, c: compute, m: modify}
 
   ;(function (onload) {
     function loader () {
@@ -123,7 +124,12 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
         if (e.nodeName[0] === '#') body.removeChild(e)
         else i++
 
+      // it would be really cool if this would work with generators, promises, async and normal functions
+      // it wouldn't be difficult actually, just borrow some code from `co`
+      // https://github.com/tj/co/blob/master/index.js
       if (typeof onload === 'function') {
+        // e = makeNode(frame, onload.bind(e, args), h.cleanupFuncs)
+        // frame.aC(e)
         if (e = onload(args)) {
           frame.aC(e)
         }
