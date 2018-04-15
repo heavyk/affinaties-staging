@@ -18,8 +18,6 @@ function parseJson (s) {
 
 function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) {
   var tmp, mutationObserver, G, E, _width, _height, _dpr, set_data, set_config, args
-  // TODO: change me to Object.assign (or roll my own defaults fn)
-  // var config = defaults({}, parseJson(_config), DEFAULT_CONFIG)
   var config = mergeDeep({}, parseJson(_config), DEFAULT_CONFIG)
 
   if (IS_LOCAL) {
@@ -30,7 +28,7 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
   }
 
   if (!frame) {
-    body.appendChild(frame = h('div#frame', {
+    body.aC(frame = h('div#frame', {
       s: {
         position: 'fixed',
         left: 0,
@@ -44,14 +42,14 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
     }))
   }
 
-  // (mutationObserver = new MutationObserver(function (mutations) {
-  //   var i, j, removed, len
-  //   for (i = 0; i < mutations.length; ++i) {
-  //     for (j = 0, len = (removed = mutations[i].removedNodes).length; j < len; ++j) {
-  //       if (removed[j] === frame) frame.cleanup()
-  //     }
-  //   }
-  // })).observe(body, { childList: true })
+  (mutationObserver = new MutationObserver(function (mutations) {
+    var i, j, removed, len
+    for (i = 0; i < mutations.length; ++i) {
+      for (j = 0, len = (removed = mutations[i].removedNodes).length; j < len; ++j) {
+        if (removed[j] === frame) frame.cleanup()
+      }
+    }
+  })).observe(frame.parentNode, { childList: true })
 
   win.G = G = frame._G = new_context({h, s})
   G.E = E = { frame: frame, body: doc.body, win: win }
@@ -79,7 +77,7 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
   ;(function (_cleanup) {
     frame.cleanup = () => {
       var p = frame.parentNode
-      // mutationObserver.disconnect()
+      mutationObserver.disconnect()
       if (p) p.removeChild(frame)
       if (typeof _cleanup === 'function') _cleanup()
     }
@@ -103,10 +101,15 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
     })
   }
 
-  win.addEventListener('DOMNodeRemoved', (e) => {
-    // debugger
-    if (e.target === frame) frame.cleanup()
-  }, false)
+  // https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Mutation_events
+  // this is SUPER SLOW
+  // instead, convert this to MutationObserver and don't listen to subtree modifications
+  // https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
+  // win.addEventListener('DOMNodeRemoved', (e) => {
+  //   // TODO: make this passive??
+  //   if (e.target === frame) frame.cleanup()
+  // }, false)
+
 
   args = { config, G, set_config, set_data }
 
@@ -122,17 +125,7 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
 
       if (typeof onload === 'function') {
         if (e = onload(args)) {
-          // load the state as the current path
           frame.aC(e)
-          // debugger
-          // TODO: change this to path / paths
-          if (e.state && e.states) {
-            // TODO: do this similar to roadtrip (may need to modify some of its functionality)
-            // win.history.replaceState({}, '', basePath + '/~' + e.state)
-            // e.on('now', () => {
-            //   win.history.pushState({}, '', basePath + '/~' + e.state)
-            // })
-          }
         }
       }
 

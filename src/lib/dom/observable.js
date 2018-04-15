@@ -16,6 +16,12 @@ import { define_value, forEach, error } from '../utils'
 // (TODO) add better documentation for each function
 
 
+export function expect_obv (obv) {
+  if (typeof obv !== 'function')
+    error('expected an observable')
+}
+
+
 // bind a to b -- One Way Binding
 export function bind1 (a, b) {
   a(b())
@@ -175,8 +181,7 @@ export function property (model, key) {
 }
 
 export function transform (obv, down, up) {
-  if (typeof obv !== 'function')
-    error('transform expects an observable')
+  expect_obv(obv)
 
   observable.observable = 'value'
   return observable
@@ -188,6 +193,10 @@ export function transform (obv, down, up) {
     : obv((_val, old) => { val(down(_val, old)) })
     )
   }
+}
+
+export function modify (o, fn = (v) => !v) {
+  return (evt) => o(fn(o(), evt))
 }
 
 export var _px = (v) => typeof v === 'string' && ~v.indexOf('px') ? v : v + 'px'
@@ -301,9 +310,9 @@ export function compute (observables, compute) {
   }
 }
 
-export function boolean (observable, truthy, falsey) {
+export function boolean (obv, truthy, falsey) {
   return (
-    transform(observable,
+    transform(obv,
       (val) => val ? truthy : falsey,
       (val) => val == truthy ? true : false
     )

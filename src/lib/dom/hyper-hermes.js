@@ -59,6 +59,27 @@ function context (createElement) {
             }
           }
         }
+      },
+      // improve with `e.preventDefault()` like these articles recommend:
+      // https://www.html5rocks.com/en/mobile/touchandmouse/
+      // https://www.html5rocks.com/en/mobile/touch/
+      // also, look into the passive as a good way to skip the preventDefault thing?
+      do_boink = (obv, el) => {
+        cleanupFuncs.push(
+          // listen(el, 'click', modify(obv)), // modify's default behaviour is to toggle obv's value
+          // listen(el, 'touchstart', modify(obv))
+          listen(el, 'click', () => obv(!!!obv())), // ohh, three bangs, three bangs, she moves, she moves :)
+          listen(el, 'touchstart', () => obv(!!!obv()))
+        )
+      },
+      do_press = (obv, el, pressed = true, normal = false) => {
+        obv(normal)
+        cleanupFuncs.push(
+          listen(el, 'mouseup', () => obv(normal)),
+          listen(el, 'mousedown', () => obv(pressed)),
+          listen(el, 'touchend', () => obv(normal)),
+          listen(el, 'touchstart', () => obv(pressed))
+        )
       }
 
       if (l != null)
@@ -117,8 +138,15 @@ function context (createElement) {
           } else if (k === 'html') {
             e.innerHTML = attr_val
           // ------------------ testing ---------------
+        } else if (k === 'press') {
+            debugger
+            do_press(attr_val, e)
+          } else if (k === 'boink') {
+            debugger
+            do_boink(attr_val, e)
           } else if (k === 'observe') {
             setTimeout(((attr_val, e) => {
+              // TODO: move this a scope down, so it can be re-used
               for (s in attr_val) ((s, v) => {
                 // observable
                 switch (s) {
@@ -396,7 +424,6 @@ export function global_context () {
 export function new_context (G = global_context()) {
   var cleanupFuncs = []
   var ctx = Object.create(G, {
-  // var ctx = console.log(G, {
     _h: define_value(null, true),
     _s: define_value(null, true),
     h: define_getter(() => ctx._h || (ctx._h = G.h.context())),
@@ -412,61 +439,38 @@ export function new_context (G = global_context()) {
   return ctx
 }
 
-// export function context (G) {
-//   var ctx = {_h: null, _s: null}
-//   Object.defineProperties(ctx, {
-//     h: define_getter(() => ctx._h || (ctx._h = G.h.context())),
-//     s: define_getter(() => ctx._s || (ctx._s = G.s.context())),
-//     parent: define_value(G),
-//     cleanup: define_value(() => {
-//       if (ctx._h) ctx._h.cleanup()
-//       if (ctx._s) ctx._s.cleanup()
-//     })
-//   })
-//   return Object.create(G, ctx)
-//   return ctx
-// }
-
-// export CTX = {h, s, cleanupFuncs: []}
-
 export const makeNode = (e, v, cleanupFuncs) => isNode(v) ? v
   : Array.isArray(v) ? arrayFragment(e, v, cleanupFuncs)
+  : typeof v === 'function' ? (() => {
+    while (typeof v === 'function')
+      v = v.call(e, e)
+    return makeNode(e, v, cleanupFuncs)
+  })()
   : v == null ? comment('null') : txt(v)
 
 export const obvNode = (e, v, cleanupFuncs = []) => {
-  var r, o, i, nn
+  var r, o, is_obv, nn, clean = [], placeholder
   if (typeof v === 'function') {
-    i = v.observable === 'value' ? 1 : 0
-    // if it returns anything, we'll append the value (node, array, observable, or some text)
-    if (!i && (o = v.call(e, e)) && o !== undefined) {
-      // ugly!!!
-      // TODO: should recursively call the function while its return value is a function, and until a value is returned
-      r = e.aC(o, cleanupFuncs)
-    }
-    if (i) { // it's an observable!
-      // create a comment to be replaced by the value as soon as it comes
-      r = e.aC(comment('obv'), cleanupFuncs)
-
+    if (is_obv = v.observable === 'value' ? 1 : 0) {
+      // observable
+      e.aC(placeholder = comment('obv bottom'))
       cleanupFuncs.push(v((val) => {
-        // TODO: make this work with arrays (eg. obv can be called with an element or an array without a problem)
-        if (Array.isArray(val)) error('obvs replacing arrays of elements will probably break stuff')
-        // TODO: check observable-array cleanup
         nn = makeNode(e, val, cleanupFuncs)
         if (Array.isArray(r)) {
-          // document fragment
-          // TODO: in the case where r has previousSibling or nextSibling (an element before or after), then insertBefore should be used instead of appendChild
-          //       for now though, this is ok
-          for (val of r) e.removeChild(val)
-          e.aC(nn)
-        } else if (r.parentNode === e) {
-          // TODO: in the case where val is an array, I don't think we cannot replaceChild. (check it)
-          e.replaceChild(nn, r)
-          // if (r.nodeName === "#document-fragment") debugger
-        } else {
-          error('obv unable to replace child node because parentNode is not correct')
+          for (val of r) e.rC(val)
+        } else if (r) {
+          if (r.parentNode === e) e.rC(r)
+          // this should never really happen. probably some better way to report the error should be in order.
+          else error('obv unable to replace child node because parentNode has changed')
         }
+
+        e.iB(nn, placeholder)
         r = Array.isArray(val) ? val : nn
-      }))
+      }), () => { e.rC(placeholder) })
+    } else {
+      // normal function
+      o = makeNode(e, v, cleanupFuncs)
+      if (o != null) r = e.aC(o, cleanupFuncs)
     }
     r = makeNode(e, r, cleanupFuncs)
   } else {
@@ -476,7 +480,9 @@ export const obvNode = (e, v, cleanupFuncs = []) => {
 }
 
 // shortcut to append multiple children (w/ cleanupFuncs)
-Node.prototype.aC = function (v, cleanupFuncs) { return this.appendChild(obvNode(this, v, cleanupFuncs)) }
+Node.prototype.iB = function (el, ref, cleanupFuncs) { return this.insertBefore(obvNode(this, el, cleanupFuncs), ref) }
+// shortcut to append multiple children (w/ cleanupFuncs)
+Node.prototype.aC = function (el, cleanupFuncs) { return this.appendChild(obvNode(this, el, cleanupFuncs)) }
 // shortcut to removeChild
 Node.prototype.rC = function (child) { return this.removeChild(child) }
 // shortcut to remove myself from the dom
