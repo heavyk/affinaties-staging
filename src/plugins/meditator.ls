@@ -186,8 +186,14 @@ window.ac = new AudioCtx sample-rate: 96000, latency-hint: \playback
 f_expand = (o, ms_min, ms_max, f, f_lr, f_lr_min, f_lr_max) ->
   ms = rand ms_max, ms_min
   mid = f_lr / 2
-  f-l = f + mid
-  f-r = f - mid
+  if o.forward = !!!o.forward
+    f-l = f + mid
+    f-r = f - mid
+    console.log 'forward'
+  else
+    f-l = f - mid
+    f-r = f + mid
+    console.log 'backward'
   tc = ms / 200
 
   # reset the frequency down to the minimum one
@@ -223,8 +229,14 @@ f_animate = (o, ms_min, ms_max, f_min, f_max, f_lr_min, f_lr_max) ->
   # console.log "ms: #{ms}ms f: #{o.f} -> #{f} (#{f_min}/#{f_max}) f_lr: #{o.f_lr} -> #{f_lr} (#{f_lr_min}/#{f_lr_max})"
   # console.log "#{o.i}: #{ms / 1000}s f_lr: #{o.f_lr} -> #{f_lr} (#{f_lr_min}/#{f_lr_max}) tc: #{ms/1000}"
   mid = f_lr / 2
-  f-l = f + mid
-  f-r = f - mid
+  if o.forward = !!!o.forward
+    f-l = f + mid
+    f-r = f - mid
+    console.log 'forward'
+  else
+    f-l = f - mid
+    f-r = f + mid
+    console.log 'backward'
   tc = ms / 1000
   t = ac.currentTime + tc
   # instead we're going to calculate and set the target, so that we decay into (but never quite reach) the new value
