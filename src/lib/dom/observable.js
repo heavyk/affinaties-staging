@@ -203,12 +203,12 @@ export var _px = (v) => typeof v === 'string' && ~v.indexOf('px') ? v : v + 'px'
 export var px = (observable) => transform(observable, _px)
 
 export function listen (element, event, attr, listener) {
-  function onEvent () {
-    listener(typeof attr === 'function' ? attr() : element[attr])
+  function onEvent (e) {
+    listener(typeof attr === 'function' ? attr() : attr ? element[attr] : e)
   }
   on(element, event, onEvent)
   onEvent()
-  return () => { off(element, event, onEvent) }
+  return () => off(element, event, onEvent)
 }
 
 //observe html element - aliased as `input`

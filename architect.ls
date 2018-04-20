@@ -59,6 +59,16 @@ poems =
         }
         # new (require 'html-webpack-inline-source-plugin')
         ...
+  'plugins/plugger.js':
+    dest: 'plugins/plugger.js'
+    webpack:
+      plugins:
+        new (require 'html-webpack-plugin') {
+          inline-source: /.(js|css)$/
+          filename: 'meditator.html'
+        }
+        # new (require 'html-webpack-inline-source-plugin')
+        ...
   'plugins/new-form.js':
     dest: 'plugins/new-form.js'
     css: 'plugins/new-form.css'

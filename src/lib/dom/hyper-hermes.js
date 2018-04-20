@@ -3,7 +3,7 @@
 // many modifications...
 // also took some inspiration from https://github.com/Raynos/mercury
 
-import { attribute, hover, focus, select, event, on, off } from './observable'
+import { attribute, hover, focus, select, event, on, off, listen } from './observable'
 import { define_getter, define_value, error } from '../utils'
 
 export const win = window
@@ -24,6 +24,7 @@ TODO ITEMS:
 
 // add your own (or utilise this to make your code smaller!)
 export var short_attrs = { s: 'style', c: 'class' }
+export var common_tags = []
 
 export const txt = (t) => doc.createTextNode(t)
 export const comment = (t) => doc.createComment(t)
@@ -35,6 +36,27 @@ function context (createElement) {
   const add_event = (e, event, listener, opts) => {
     on(e, event, listener, opts)
     cleanupFuncs.push(() => { off(e, event, listener, opts) })
+  },
+  // improve with `e.preventDefault()` like these articles recommend:
+  // https://www.html5rocks.com/en/mobile/touchandmouse/
+  // https://www.html5rocks.com/en/mobile/touch/
+  // also, look into `passive: true` !!!
+  do_boink = (el, obv) => {
+    cleanupFuncs.push(
+      listen(el, 'click', false, () => obv(!!!obv())), // ohh, three bangs, three bangs, she moves, she moves :)
+      listen(el, 'touchstart', false, (e) => {
+        e && e.preventDefault()
+        obv(!!!obv())
+      })
+    )
+  },
+  do_press = (el, obv, pressed = true, normal = false) => {
+    cleanupFuncs.push(
+      listen(el, 'mouseup', false, () => obv(normal)),
+      listen(el, 'mousedown', false, () => obv(pressed)),
+      listen(el, 'touchend', false, () => obv(normal)),
+      listen(el, 'touchstart', false, () => obv(pressed))
+    ), obv(normal)
   }
 
 
@@ -42,7 +64,7 @@ function context (createElement) {
     var e
     function item (l) {
       var r, s, i, o, k
-      const parseClass = (string) => {
+      const parseSelector = (string) => {
         var v, m = string.split(/([\.#]?[a-zA-Z0-9_:-]+)/)
         if (/^\.|#/.test(m[1])) e = createElement('div')
         for (v of m) {
@@ -59,33 +81,33 @@ function context (createElement) {
             }
           }
         }
-      },
-      // improve with `e.preventDefault()` like these articles recommend:
-      // https://www.html5rocks.com/en/mobile/touchandmouse/
-      // https://www.html5rocks.com/en/mobile/touch/
-      // also, look into the passive as a good way to skip the preventDefault thing?
-      do_boink = (obv, el) => {
-        cleanupFuncs.push(
-          // listen(el, 'click', modify(obv)), // modify's default behaviour is to toggle obv's value
-          // listen(el, 'touchstart', modify(obv))
-          listen(el, 'click', () => obv(!!!obv())), // ohh, three bangs, three bangs, she moves, she moves :)
-          listen(el, 'touchstart', () => obv(!!!obv()))
-        )
-      },
-      do_press = (obv, el, pressed = true, normal = false) => {
-        obv(normal)
-        cleanupFuncs.push(
-          listen(el, 'mouseup', () => obv(normal)),
-          listen(el, 'mousedown', () => obv(pressed)),
-          listen(el, 'touchend', () => obv(normal)),
-          listen(el, 'touchstart', () => obv(pressed))
-        )
       }
+
+      // enable a byte saving optimisation:
+      // h(1,{value:11})
+      //     vs.
+      // h('input',{value:11})
+      // when common_tags = ['div','input']
+      //
+      // however, it's less efficient if either a class or id is specified:
+      // h(0,{c:'lala'})
+      //     vs.
+      // h('div.lala')
+      //
+      // though, maybe this idea can be further expanded to:
+      // h('0.lala')
+      //     vs.
+      // h('div.lala')
+      //     or,
+      // h(2)
+      // when common_tags = ['div','input','div.lala']
+
+      if (!e && typeof l === 'number' && l < common_tags.length) e = parseSelector(common_tags[l])
 
       if (l != null)
       if (typeof l === 'string') {
         if (!e) {
-          parseClass(l)
+          parseSelector(l)
         } else {
           e.aC(r = txt(l))
         }
@@ -127,9 +149,10 @@ function context (createElement) {
             o = e.classList
             if (Array.isArray(attr_val)) for (s of attr_val) if (s) o.add(s)
             else o.add(attr_val)
-          } else if ((i = (k === 'on')) || k === 'imm') {
-            // 'imm' is used to denote the capture phase of event propagation
+          } else if ((i = (k === 'on')) || k === 'before') {
+            // 'before' is used to denote the capture phase of event propagation
             // see: http://stackoverflow.com/a/10654134 to understand the capture / bubble phases
+            // before: {click: (do) => something}
             if (typeof attr_val === 'object') {
               for (s in attr_val)
                 if (typeof (o = attr_val[s]) === 'function')
@@ -137,21 +160,16 @@ function context (createElement) {
             }
           } else if (k === 'html') {
             e.innerHTML = attr_val
-          // ------------------ testing ---------------
-        } else if (k === 'press') {
-            debugger
-            do_press(attr_val, e)
-          } else if (k === 'boink') {
-            debugger
-            do_boink(attr_val, e)
           } else if (k === 'observe') {
-            setTimeout(((attr_val, e) => {
-              // TODO: move this a scope down, so it can be re-used
-              for (s in attr_val) ((s, v) => {
+            // I believe the set-timeout here is to allow the element time to be added to the dom.
+            // it is likely that this is undesirable most of the time (because it can create a sense of a value 'popping' into the dom)
+            // so, likely I'll want to move the whole thing out to a function which is called sometimes w/ set-timeout and sometimes not.
+            setTimeout(((obj, e) => {
+              for (s in obj) ((s, v) => {
                 // observable
                 switch (s) {
                   case 'input':
-                    cleanupFuncs.push(attribute(e, attr_val[s+'.attr'], attr_val[s+'.on'])(v))
+                    cleanupFuncs.push(attribute(e, obj[s+'.attr'], obj[s+'.on'])(v))
                     break
                   case 'hover':
                     cleanupFuncs.push(hover(e)(v))
@@ -163,9 +181,10 @@ function context (createElement) {
                     cleanupFuncs.push(select(e)(v))
                     break
                   case 'boink':
-                    // cleanupFuncs.push(select(e)(v))
-                    console.log('TODO: mouse/touch events')
-                    debugger
+                    cleanupFuncs.push(do_boink(e, v))
+                    break
+                  case 'press':
+                    cleanupFuncs.push(do_press(e, v))
                     break
                   default:
                   // case 'keyup':
@@ -174,12 +193,11 @@ function context (createElement) {
                   // case 'touchend':
                     if (!~s.indexOf('.')) {
                       if (typeof v !== 'function') debugger
-                      cleanupFuncs.push(event(e, attr_val[s+'.attr'], attr_val[s+'.on'] || s, attr_val[s+'.event'])(v))
+                      cleanupFuncs.push(event(e, obj[s+'.attr'], obj[s+'.on'] || s, obj[s+'.event'])(v))
                     }
                 }
               })(s, attr_val[s])
             }).bind(e, attr_val, e), 0)
-          // ------------------ testing ---------------
           } else if (k === 'style') {
             if (typeof attr_val === 'string') {
               e.style.cssText = attr_val
@@ -453,6 +471,7 @@ export const obvNode = (e, v, cleanupFuncs = []) => {
   if (typeof v === 'function') {
     if (is_obv = v.observable === 'value' ? 1 : 0) {
       // observable
+      e.aC(r = comment('obv value'))
       e.aC(placeholder = comment('obv bottom'))
       cleanupFuncs.push(v((val) => {
         nn = makeNode(e, val, cleanupFuncs)

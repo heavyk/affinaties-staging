@@ -1,8 +1,5 @@
 import pluginBoilerplate from '../lib/plugins/plugin-boilerplate'
 import { value, transform, compute, modify } from '../lib/dom/observable'
-import requestAnimationFrame from '../lib/dom/request-animation-frame'
-
-import '../elements/poem-frame'
 
 function plugger (starting_panel, C = {}, D = {}) {
   let beginner = ({G, C}) => {
@@ -24,18 +21,30 @@ function callback ({G, C}) {
   return h('poem-frame', {base: C.base}, router)
 }
 
+// consent is not imposing your will on someone and having them just, not resist
+// consent means the other person wants to be doing the thing that you're doing.
+// -vox 2016
+
 function button_adder ({G, C}) {
-  const {h, t, v} = G
+  const {h, t, v, m} = G
   // var/cod is retrieved from the C.
   // const {cod} = C
   let num = v(11)
+  let boinked = v()
+  let pressed = v()
   let tpl_cod = () => h('div', 'condition is:', cod)
   let tpl_obv = ({num}) => h('div', 'num is:', num)
   let tpl_boink = ({num}) => h('div',
-    h('button', {onclick: modify(num, num => num + 1)}, 'num++'),
-    h('button', {onclick: modify(num, num => num - 1)}, 'num--')
-    // h('button', {onclick: () => num(num() + 1)}, 'num++'),
-    // h('button', {onclick: () => num(num() - 1)}, 'num--')
+    h('div.click',
+      h('button', {onclick: m(num, num => num + 1)}, 'num++'),
+      h('button', {onclick: m(num, num => num - 1)}, 'num--')
+    ), h('div.boink',
+      h('span', 'boinked: ', t(boinked, (v) => v ? 'YES!' : 'no...')),
+      h('button', {observe: {boink: boinked}}, 'boink')
+    ), h('div.press',
+      h('span', 'pressed: ', t(pressed, (v) => v ? 'YES!' : 'no...')),
+      h('button', {observe: {press: pressed}}, 'press me')
+    )
   )
   // ...
   let el = h('div',
