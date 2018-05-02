@@ -3,7 +3,7 @@
 // many modifications...
 // also took some inspiration from https://github.com/Raynos/mercury
 
-import { attribute, hover, focus, select, event, on, off, listen } from './observable'
+import { attribute, hover, focus, select, event, on, off, listen, is_obv } from './observable'
 import { define_getter, define_value, error } from '../utils'
 
 export const win = window
@@ -33,30 +33,29 @@ function context (createElement) {
 
   var cleanupFuncs = []
 
+  // here's an idea: set cleanupFuncs as `this` in the function, and move these to another file
+  // then, call like this `add_event.call(cleanupFuncs, el, listener, opts)`
+  // furthermore, it may be wise to make the `cleanupFuncs = this` for all these type of functions
   const add_event = (e, event, listener, opts) => {
     on(e, event, listener, opts)
     cleanupFuncs.push(() => { off(e, event, listener, opts) })
   },
-  // improve with `e.preventDefault()` like these articles recommend:
   // https://www.html5rocks.com/en/mobile/touchandmouse/
   // https://www.html5rocks.com/en/mobile/touch/
-  // also, look into `passive: true` !!!
+  // look into `passive: true` as a replacement for the `preventDefault` functionality.
   do_boink = (el, obv) => {
     cleanupFuncs.push(
-      listen(el, 'click', false, () => obv(!!!obv())), // ohh, three bangs, three bangs, she moves, she moves :)
-      listen(el, 'touchstart', false, (e) => {
-        e && e.preventDefault()
-        obv(!!!obv())
-      })
+      listen(el, 'click', false, () => { is_obv(obv) ? obv(!obv()) : obv() }),
+      listen(el, 'touchstart', false, (e) => { e && e.preventDefault(); is_obv(obv) ? obv(!obv()) : obv() })
     )
   },
   do_press = (el, obv, pressed = true, normal = false) => {
     cleanupFuncs.push(
-      listen(el, 'mouseup', false, () => obv(normal)),
-      listen(el, 'mousedown', false, () => obv(pressed)),
-      listen(el, 'touchend', false, () => obv(normal)),
-      listen(el, 'touchstart', false, () => obv(pressed))
-    ), obv(normal)
+      listen(el, 'mouseup', false, () => { obv(normal) }),
+      listen(el, 'mousedown', false, () => { obv(pressed) }),
+      listen(el, 'touchend', false, (e) => { e && e.preventDefault(); obv(normal) }),
+      listen(el, 'touchstart', false, (e) => { e && e.preventDefault(); obv(pressed) })
+    )
   }
 
 
@@ -129,17 +128,30 @@ function context (createElement) {
             // if (/^on\w+/.test(k)) {
             if (k.substr(0, 2) === 'on') {
               add_event(e, k.substr(2), attr_val, false)
-            } else if (k.substr(0, 2) === 'imm') {
-              add_event(e, k.substr(3), attr_val, true)
+            } else if (k.substr(0, 6) === 'before') {
+              add_event(e, k.substr(6), attr_val, true)
             } else {
-              // observable
+              // observable write-only value
               if ((s = attr_val()) != null) e.setAttribute(k, s)
-              if (typeof s === 'number' && isNaN(s)) debugger
-              // console.log('set-attribute', k, s)
               cleanupFuncs.push(attr_val((v) => {
                 if (v != null) e.setAttribute(k, v)
-                // console.log('set attribute', k, '->', v)
               }))
+              // to update the observable in real-time, one must listen to the events.
+              // however, it changes -- for example, for input boxes, it's onkeyup.
+              // for option boxes, it's onchange... etc.
+              // there may be another solution though:
+              // a mutation observer could be used to pick up changes in real-time
+              // https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationObserverInit
+              // ----
+              // cleanupFuncs.push(() => {
+              //   var observer = new MutationObserver((mutations) => {
+              //     for (var m of mutations)
+              //       if (m.attributeName === k)
+              //         attr_value(e[k])
+              //   })
+              //   observer.observe(e, {attributes: true, attributeFilter: [k]})
+              //   return () => observer.disconnect()
+              // }())
             }
           } else if (k === 'data') {
             for(s in attr_val) e.dataset[s] = attr_val[s]
@@ -192,7 +204,7 @@ function context (createElement) {
                   // case 'touchstart':
                   // case 'touchend':
                     if (!~s.indexOf('.')) {
-                      if (typeof v !== 'function') debugger
+                      if (typeof v !== 'function') error('observer must be a function')
                       cleanupFuncs.push(event(e, obj[s+'.attr'], obj[s+'.on'] || s, obj[s+'.event'])(v))
                     }
                 }
@@ -459,17 +471,18 @@ export function new_context (G = global_context()) {
 
 export const makeNode = (e, v, cleanupFuncs) => isNode(v) ? v
   : Array.isArray(v) ? arrayFragment(e, v, cleanupFuncs)
-  : typeof v === 'function' ? (() => {
-    while (typeof v === 'function')
-      v = v.call(e, e)
-    return makeNode(e, v, cleanupFuncs)
-  })()
+  : typeof v === 'function' ? (
+    is_obv(v) ? obvNode(e, v, cleanupFuncs) : (() => {
+      while (typeof v === 'function') v = v.call(e, e)
+      return makeNode(e, v, cleanupFuncs)
+    })()
+  )
   : v == null ? comment('null') : txt(v)
 
 export const obvNode = (e, v, cleanupFuncs = []) => {
-  var r, o, is_obv, nn, clean = [], placeholder
+  var r, o, nn, clean = [], placeholder
   if (typeof v === 'function') {
-    if (is_obv = v.observable === 'value' ? 1 : 0) {
+    if (is_obv(v)) {
       // observable
       e.aC(r = comment('obv value'))
       e.aC(placeholder = comment('obv bottom'))
