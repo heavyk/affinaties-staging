@@ -8,8 +8,8 @@
 ``import { rand } from '../lib/random'``
 
 ``import '../elements/poem-frame'``
-``import '../elements/parallax-stars'``
-``import '../elements/countdown-timer'``
+# ``import '../elements/parallax-stars'``
+# ``import '../elements/countdown-timer'``
 
 ``import { left_pad } from '../lib/utils'``
 ``import { dt2human } from '../lib/format-dt'``
@@ -19,6 +19,8 @@ pull = require 'pull-stream/pull'
 pull-src-values = require 'pull-stream/sources/values'
 
 AudioCtx = AudioContext
+
+raf = requestAnimationFrame
 
 # AudioCtx.audioWorklet.addModule 'modules/bypassFilter.js'
 
@@ -78,7 +80,8 @@ AudioCtx::create-distortion = (k = 50, oversample = '4x') ->
 # sightly more irritating: 13400 12300
 # make the freq some sort of octave or some meaningful multiple of the other
 
-window.ac = new AudioCtx sample-rate: 96000, latency-hint: \playback
+# window.ac = new AudioCtx sample-rate: 96000, latency-hint: \playback
+window.ac = new AudioCtx latency-hint: \playback
 # noise = ac.create-white-noise!
 # distortion = ac.create-distortion 100
 # noise.connect distortion
@@ -189,11 +192,11 @@ f_expand = (o, ms_min, ms_max, f, f_lr, f_lr_min, f_lr_max) ->
   if o.forward = !!!o.forward
     f-l = f + mid
     f-r = f - mid
-    console.log 'forward'
+    # console.log 'forward'
   else
     f-l = f - mid
     f-r = f + mid
-    console.log 'backward'
+    # console.log 'backward'
   tc = ms / 200
 
   # reset the frequency down to the minimum one
@@ -209,13 +212,13 @@ f_expand = (o, ms_min, ms_max, f, f_lr, f_lr_min, f_lr_max) ->
   o.R.frequency.setTargetAtTime f-r, 0, tc
 
   next_f_lr = ((f_lr_max - f_lr_min) / 2) + f_lr
-  console.log "in #{(ms/1000).toFixed 1}s #{f_lr.toFixed 2} -> #{next_f_lr.toFixed 2} (#{(f_lr_max - f_lr_min).toFixed 2}) {#{tc}}"
+  # console.log "in #{(ms/1000).toFixed 1}s #{f_lr.toFixed 2} -> #{next_f_lr.toFixed 2} (#{(f_lr_max - f_lr_min).toFixed 2}) {#{tc}}"
   if next_f_lr > f_lr_max
-    console.info "maxed out:", next_f_lr, '>', f_lr_max
+    # console.info "maxed out:", next_f_lr, '>', f_lr_max
     next_f_lr = f_lr_min
 
   o.timeout = set-timeout !->
-    f_expand o, ms_min, ms_max, f, next_f_lr, f_lr_min, f_lr_max
+    raf !-> f_expand o, ms_min, ms_max, f, next_f_lr, f_lr_min, f_lr_max
   , ms
 
 
@@ -232,24 +235,24 @@ f_animate = (o, ms_min, ms_max, f_min, f_max, f_lr_min, f_lr_max) ->
   if o.forward = !!!o.forward
     f-l = f + mid
     f-r = f - mid
-    console.log 'forward'
+    # console.log 'forward'
   else
     f-l = f - mid
     f-r = f + mid
-    console.log 'backward'
+    # console.log 'backward'
   tc = ms / 1000
   t = ac.currentTime + tc
   # instead we're going to calculate and set the target, so that we decay into (but never quite reach) the new value
   # we also need some way of animating the whole unit instead of just the individual parts to give the feeling of a big transition
   # instead of a bunch of random transitions... maybe each "part" can have different time constants.
-  console.log "#{o.i}L: #{o.L.frequency.value.toFixed 1} -> #{f-l.toFixed 1}"
-  console.log "#{o.i}R: #{o.R.frequency.value.toFixed 1} -> #{f-r.toFixed 1} tc: #{tc}"
+  # console.log "#{o.i}L: #{o.L.frequency.value.toFixed 1} -> #{f-l.toFixed 1}"
+  # console.log "#{o.i}R: #{o.R.frequency.value.toFixed 1} -> #{f-r.toFixed 1} tc: #{tc}"
   o.L.frequency.setTargetAtTime f-l, 0, tc
   o.R.frequency.setTargetAtTime f-r, 0, tc
   # o.L.frequency.exponentialRampToValueAtTime f-l, t
   # o.R.frequency.exponentialRampToValueAtTime f-r, t
   o.timeout = set-timeout !->
-    f_animate o, ms_min, ms_max, f_min, f_max, f_lr_min, f_lr_max
+    raf -> f_animate o, ms_min, ms_max, f_min, f_max, f_lr_min, f_lr_max
   , ms+ms
 
 f_osc = (f = 432, f_lr = 20, qv = 0.5, f-type = \triangle) ->
@@ -272,6 +275,34 @@ f_osc = (f = 432, f_lr = 20, qv = 0.5, f-type = \triangle) ->
   gain.gain.setValueAtTime qv, ac.currentTime
   merger.connect gain
 
+  buffer-size = 4096
+  noise = ac.create-script-processor buffer-size, 2, 2
+  prints = 40
+  b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0
+  noise.onaudioprocess = (e) !->
+    out-l = e.output-buffer.get-channel-data 0
+    out-r = e.output-buffer.get-channel-data 1
+    for i til buffer-size
+      white = Math.random! * 2 - 1
+      b0 := 0.99886 * b0 + white * 0.0555179
+      b1 := 0.99332 * b1 + white * 0.0750759
+      b2 := 0.96900 * b2 + white * 0.1538520
+      b3 := 0.86650 * b3 + white * 0.3104856
+      b4 := 0.55000 * b4 + white * 0.5329522
+      b5 := -0.7616 * b5 - white * 0.0168980
+      l-gain = (1 - (Math.abs out-l[i])) * 0.9
+      r-gain = (1 - (Math.abs out-r[i])) * 0.9
+      gain = Math.min l-gain, r-gain, 0.9 # 0.11 # (roughly) compensate for gain
+      # if --prints > 0 then console.log l-gain, gain, r-gain
+      out = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362)
+      out-l[i] += out * gain
+      out-r[i] += -out * gain
+      b6 := white * 0.115926
+
+  # merger.connect noise
+  # noise.connect gain
+  # console.log "connected"
+
   {L: osc-l, R: osc-r, Q: gain, f, f_lr}
 
 freq = (f, oct) -> f * Math.pow 2, oct
@@ -290,11 +321,11 @@ freq = (f, oct) -> f * Math.pow 2, oct
 const DEFAULT_CONFIG =
   base: '/plugin/meditator'
 
-meditator = ({config, G, set_config, set_data}) ->
+meditator = ({C, G, set_config, set_data}) ->
   # TODO: save this scope into the frame and let this be the bottom-most element
   {h, s} = G
 
-  const LC = config.locale
+  const LC = C.locale
 
   # transformers
   hhmmss = (v) -> left_pad v, 2
@@ -305,7 +336,7 @@ meditator = ({config, G, set_config, set_data}) ->
       " :: "
       h \span.duration dt2human d.duration, LC
 
-  h \poem-frame, {config.base}, (G) ->
+  h \poem-frame, {C.base}, (G) ->
     {h} = G
 
     @els [
@@ -322,8 +353,8 @@ meditator = ({config, G, set_config, set_data}) ->
     '/':
       enter: (route, prev) !->
         @section \content, ({h}) ->
-          h \.container,
-            h \h2, "TODO"
+          h \div,
+            h \a href: '/binaural', 'start binaral 1'
 
       # update: (route) !->
       # leave: (route, next) !->
@@ -447,6 +478,10 @@ meditator = ({config, G, set_config, set_data}) ->
             # f_animate o, 100000, 200000, f_min, f_max, f_lr_min, f_lr_max
             f_expand o, 1000, 20000, f, f_lr, f_lr_min, f_lr_max
         , 0
+
+        # @section \content ({h}) ->
+        #   h \div,
+        #     h \a href: '/binaural'
 
 
       leave: !->
