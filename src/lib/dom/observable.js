@@ -1,7 +1,6 @@
 'use strict'
 
 import { define_value, forEach, error } from '../utils'
-// import eq from '../lodash/isEqual'
 
 // knicked from: https://github.com/dominictarr/observable/blob/master/index.js
 // mostly unmodified...
@@ -62,8 +61,6 @@ function compactor (ary) {
 export function remove (ary, item) {
   var i = ary.indexOf(item)
   if (~i) ary[i] = null // in the compactor function, we explicitly check to see if it's null.
-  // if (~i) setTimeout(() => { ary.splice(i, 1) }, 1)
-  // else debugger
 }
 
 // register a listener
@@ -84,15 +81,21 @@ export function value (initialValue) {
   if (typeof initialValue === 'function' && initialValue.observable === 'value') return initialValue
   var _val = initialValue, listeners = []
   observable.set = (val) => emit(listeners, _val, _val = val === undefined ? _val : val)
+  observable.once = (fn, imm) => {
+    var remove = observable((val, prev) => {
+      fn(val, prev)
+      remove()
+    }, imm)
+    return remove
+  }
   observable.observable = 'value'
   return observable
 
-  function observable (val) {
+  function observable (val, imm) {
     return (
       val === undefined ? _val                                                               // getter
-    // : typeof val !== 'function' ? emit(listeners, _val, _val = val)                       // this is the old way.. it'll always emit, even if the value is the same
-    : typeof val !== 'function' ? (_val === val ? void 0 : emit(listeners, _val, _val = val), val) // setter (the new way - only sets if the value has changed)
-    : (listeners.push(val), (_val === undefined ? _val : val(_val)), () => {                 // listener
+    : typeof val !== 'function' ? (_val === val ? void 0 : emit(listeners, _val, _val = val), val) // setter only sets if the value has changed (won't work for byref things like objects or arrays)
+    : (listeners.push(val), (_val === undefined || imm === false ? _val : val(_val)), () => {                 // listener
         remove(listeners, val)
       })
     )
@@ -111,12 +114,11 @@ export function number (initialValue) {
   observable.observable = 'value'
   return observable
 
-  function observable (val) {
+  function observable (val, imm) {
     return (
       val === undefined ? _val                                                               // getter
-    // : typeof val !== 'function' ? emit(listeners, _val, _val = val)                       // this is the old way.. it'll always emit, even if the value is the same
-    : typeof val !== 'function' ? (_val === val ? void 0 : emit(listeners, _val, _val = val), val) // setter (the new way - only sets if the value has changed)
-    : (listeners.push(val), (_val === undefined ? _val : val(_val)), () => {                 // listener
+    : typeof val !== 'function' ? (_val === val ? void 0 : emit(listeners, _val, _val = val), val) // setter only sets if the value has changed (won't work for byref things like objects or arrays)
+    : (listeners.push(val), (_val === undefined || imm === false ? _val : val(_val)), () => {                 // listener
         remove(listeners, val)
       })
     )
@@ -186,11 +188,11 @@ export function transform (obv, down, up) {
   observable.observable = 'value'
   return observable
 
-  function observable (val) {
+  function observable (val, imm) {
     return (
       val === undefined ? down(obv())
     : typeof val !== 'function' ? obv((up || down)(val))
-    : obv((_val, old) => { val(down(_val, old)) })
+    : obv((_val, old) => { val(down(_val, old)) }, imm)
     )
   }
 }
@@ -207,7 +209,9 @@ export function listen (element, event, attr, listener) {
     listener(typeof attr === 'function' ? attr() : attr ? element[attr] : e)
   }
   on(element, event, onEvent)
-  onEvent()
+  // TODO: I realllllly need testing on this libary to guarantee intended functionality...
+  // I don't know why onEvent is called when listening. I think it's to automatically automatically give the listener its value
+  attr && onEvent()
   return () => off(element, event, onEvent)
 }
 
@@ -251,19 +255,19 @@ export function select (element) {
 
 //toggle based on an event, like mouseover, mouseout
 export function toggle (el, up_event, down_event) {
-  var i = false
+  var _val = false
   observable.observable = 'toggle'
   return observable
 
   function observable (val) {
     function onUp() {
-      i || val(i = true)
+      _val || val(i = true)
     }
     function onDown () {
-      i && val(i = false)
+      _val && val(i = false)
     }
     return (
-      val === undefined ? i
+      val === undefined ? _val
     : typeof val !== 'function' ? undefined //read only
     : (on(el, up_event, onUp), on(el, down_event || up_event, onDown), val(i), () => {
         off(el, up_event, onUp); off(el, down_event || up_event, onDown)
@@ -272,39 +276,38 @@ export function toggle (el, up_event, down_event) {
   }
 }
 
-// TODO: I believe this needs a remove function which removes all listeners
-//  (unfortunately, it requires the modification of value())
-// TODO: now that I can remove the listeners to observables, figure out where this is actually useful
-export function compute (observables, compute) {
-  var init = 1, l = observables.length
+// transform an array of obvs
+export function compute (observables, compute_fn) {
+  var is_init = true, l = observables.length
   var cur = new Array(l)
-  var listeners = [], removables = [], _val, f
+  var listeners = [], removables = [], _val, fn
 
   for (let i = 0; i < l; i++) {
-    f = observables[i]
-    if (typeof f === 'function') {
-      removables.push(f((v) => {
+    fn = observables[i]
+    if (typeof fn === 'function') {
+      removables.push(fn((v) => {
         var prev = cur[i]
         cur[i] = v
-        if (prev !== v && init === 0) observable(compute.apply(null, cur))
+        if (prev !== v && is_init === false) observable(compute_fn.apply(null, cur))
       }))
     } else {
-      cur[i] = f
+      cur[i] = fn
     }
   }
 
-  _val = compute.apply(null, cur)
+  _val = compute_fn.apply(null, cur)
   observable.observable = 'value'
-  init = 0
+  is_init = false
 
   return observable
 
-  function observable (val) {
+  function observable (val, imm) {
     return (
       val === undefined ? _val                                                               // getter
     : typeof val !== 'function' ? (_val === val ? void 0 : emit(listeners, _val, _val = val), val) // setter (the new way - only sets if the value has changed)
-    : (listeners.push(val), (_val === undefined ? _val : val(_val)), () => {                 // listener
+    : (listeners.push(val), (_val === undefined || imm === false ? _val : val(_val)), () => {                 // listener
         remove(listeners, val)
+        for (fn of removables) _val()
       })
     )
   }
@@ -336,6 +339,10 @@ export function event (element, attr, event, truthy) {
       })
     )
   }
+}
+
+export function is_obv (obv, type = null) {
+  return typeof obv === 'function' && ((!type && obv.observable) || obv.observable === type)
 }
 
 export function observable_property (obj, key, o) {
