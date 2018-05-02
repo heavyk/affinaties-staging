@@ -26,18 +26,18 @@ function callback ({G, C}) {
 // -vox 2016
 
 function button_adder ({G, C}) {
-  const {h, t, v, m} = G
-  // var/cod is retrieved from the C.
-  // const {cod} = C
+  const {h, t, c, v, m} = G
+  let lala = v(C.lala)
   let num = v(11)
-  let boinked = v()
-  let pressed = v()
-  let tpl_cod = () => h('div', 'condition is:', cod)
+  let sum = c([num, lala], (num, lala) => num + lala)
+  let boinked = v(false)
+  let pressed = v(false)
+  let tpl_cod = () => h('div', 'condition (lala) is:', lala, ' + (num) = ', sum)
   let tpl_obv = ({num}) => h('div', 'num is:', num)
   let tpl_boink = ({num}) => h('div',
     h('div.click',
-      h('button', {onclick: m(num, num => num + 1)}, 'num++'),
-      h('button', {onclick: m(num, num => num - 1)}, 'num--')
+      h('button', {observe: {boink: m(num, num => num + 1)}}, 'num++'),
+      h('button', {observe: {boink: m(num, num => num - 1)}}, 'num--')
     ), h('div.boink',
       h('span', 'boinked: ', t(boinked, (v) => v ? 'YES!' : 'no...')),
       h('button', {observe: {boink: boinked}}, 'boink')
@@ -50,6 +50,7 @@ function button_adder ({G, C}) {
   let el = h('div',
     h('h1', 'button adder!'),
     tpl_obv({num}),
+    tpl_cod(),
     tpl_boink({num})
   )
   return el
@@ -63,6 +64,6 @@ function button_adder ({G, C}) {
 
 // testing to make sure it works...
 // now, we need something like button_adder to be made by elixir
-plugger(button_adder)
+plugger(button_adder, {lala: 1234})
 
 // export default plugger
