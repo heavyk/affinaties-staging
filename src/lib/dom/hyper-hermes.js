@@ -3,9 +3,14 @@
 // many modifications...
 // also took some inspiration from https://github.com/Raynos/mercury
 
+// TODO: to make errors a bit more user-friedly, I began utilising the error function.
+//       however, when building the plugin library, an errorless version should be created (to reduce size)
+//       additionally, other things unnecessary (old/unused) things can be omitted as wel, for further savings.
+
 import { attribute, hover, focus, select, event, on, off, listen, is_obv } from './observable'
 import { define_getter, define_value, error } from '../utils'
 
+// commonly used globals exported (to save a few bytes)
 export const win = window
 export const doc = win.document
 export const body = doc.body
@@ -14,18 +19,11 @@ export const IS_LOCAL = ~location.host.indexOf('localhost')
 export const basePath = location.pathname
 export const origin = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '')
 
-/*
-TODO ITEMS:
- * convert to short function syntax (and perhaps use this)
- * experiment with the idea of making the h function's context be attached to `this` - that way I could move contexts around and stuff
- * extract out the attribute setting function and make it available to the attribute observable so setting attributes will work properyly for shortcut syntax
- * test all the observable-array events to make sure there's no element smashing
-*/
-
 // add your own (or utilise this to make your code smaller!)
 export var short_attrs = { s: 'style', c: 'class' }
 export var common_tags = []
 
+// shortcut document creation functions
 export const txt = (t) => doc.createTextNode(t)
 export const comment = (t) => doc.createComment(t)
 
@@ -131,6 +129,7 @@ function context (createElement) {
             } else if (k.substr(0, 6) === 'before') {
               add_event(e, k.substr(6), attr_val, true)
             } else {
+              // https://stackoverflow.com/questions/22151560/what-is-happening-behind-setattribute-vs-attribute
               // observable write-only value
               if ((s = attr_val()) != null) e.setAttribute(k, s)
               cleanupFuncs.push(attr_val((v) => {
@@ -143,24 +142,39 @@ function context (createElement) {
               // a mutation observer could be used to pick up changes in real-time
               // https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationObserverInit
               // ----
-              // cleanupFuncs.push(() => {
+              // cleanupFuncs.push((() => {
               //   var observer = new MutationObserver((mutations) => {
+              //     console.log('mutations', mutation)
               //     for (var m of mutations)
               //       if (m.attributeName === k)
               //         attr_value(e[k])
               //   })
-              //   observer.observe(e, {attributes: true, attributeFilter: [k]})
+              //   observer.observe(e, {attributes: true})
+              //   // observer.observe(e, {attributes: true, attributeFilter: [k]})
               //   return () => observer.disconnect()
-              // }())
+              // })())
             }
-          } else if (k === 'data') {
-            for(s in attr_val) e.dataset[s] = attr_val[s]
+          } else
+          if (k === 'data') {
+            if (typeof attr_val === 'object')
+              for(s in attr_val) e.dataset[s] = attr_val[s]
+            else error('data property should be passed as an object')
+          } else if (k === 'multiple') {
+            e.multiple = !!attr_val
+          } else if (k === 'selected') {
+            e.defaultSelected = !!attr_val
+          } else if (k === 'checked') {
+            e.defaultChecked = !!attr_val
+          } else if (k === 'value') {
+            e.defaultValue = attr_val
           } else if (k === 'for') {
             e.htmlFor = attr_val
-          } else if (k === 'class' && attr_val) {
-            o = e.classList
-            if (Array.isArray(attr_val)) for (s of attr_val) if (s) o.add(s)
-            else o.add(attr_val)
+          } else if (k === 'class') {
+            if (attr_val) {
+              o = e.classList
+              if (Array.isArray(attr_val)) for (s of attr_val) s && o.add(s)
+              else o.add(attr_val)
+            }
           } else if ((i = (k === 'on')) || k === 'before') {
             // 'before' is used to denote the capture phase of event propagation
             // see: http://stackoverflow.com/a/10654134 to understand the capture / bubble phases
@@ -228,18 +242,15 @@ function context (createElement) {
               if (k.substr(0, i) === 'xlink') {
                 e.setAttributeNS('http://www.w3.org/1999/xlink', k.substr(++i), attr_val)
               } else {
-                console.error('unknown namespace for attribute:', k)
+                error('unknown namespace for attribute: ' + k)
               }
-            // } else if (k === 'src' && e.tagName === 'IMG' && ~attr_val.indexOf('holder.js')) {
-            //   e.dataset.src = attr_val
-            //   console.log('you are using holder ... fix this')
-            //   // setTimeout(function () {
-            //   //   require('holderjs').run({images: e})
-            //   // },0)
             } else {
               // this won't work for svgs. for example, s('rect', {cx: 5}) will fail, as cx is a read-only property
+              // however, it is worth noting that setAttribute is about 30% slower than setting the property directly
+              // https://jsperf.com/setattribute-vs-property-assignment/7
+              // should check memory requirements, but because of the weirdness associated with mixing property and value,
+              // it may be prudent to use property access unless it's a svg (or some other non-standard) context.
               // e[k] = attr_val
-              // console.log('set-attribute', k, attr_val)
               e.setAttribute(k, attr_val)
             }
           }
