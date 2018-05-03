@@ -7,7 +7,7 @@
 //       however, when building the plugin library, an errorless version should be created (to reduce size)
 //       additionally, other things unnecessary (old/unused) things can be omitted as wel, for further savings.
 
-import { attribute, hover, focus, select, event, on, off, listen, is_obv } from './observable'
+import { attribute, hover, focus, select, event, on, off, bind2, listen, is_obv } from './observable'
 import { define_getter, define_value, error } from '../utils'
 
 // commonly used globals exported (to save a few bytes)
@@ -148,20 +148,25 @@ export function set_attr (e, _key, v, cleanupFuncs = []) {
   // convert short attributes to long versions. s -> style, c -> className
   var s, o, i, k = short_attrs[_key] || _key
   if (typeof v === 'function') {
-    if (k.substr(0, 2) === 'on') {
-      add_event.call(cleanupFuncs, e, k.substr(2), v, false)
-    } else if (k.substr(0, 6) === 'before') {
-      add_event.call(cleanupFuncs, e, k.substr(6), v, true)
-    } else {
-      // setAttribute is used here, primarily because of svg support.
-      // however, as mentioned in this article it may be desirable to use property access instead
-      // https://stackoverflow.com/questions/22151560/what-is-happening-behind-setattribute-vs-attribute
-      // observable (write-only) value
-      if ((s = v()) != null) e.setAttribute(k, s)
-      cleanupFuncs.push(v((v) => {
-        if (v != null) e.setAttribute(k, v)
-      }))
-    }
+    setTimeout(() => {
+      if (k.substr(0, 2) === 'on') {
+        add_event.call(cleanupFuncs, e, k.substr(2), v, false)
+      } else if (k.substr(0, 6) === 'before') {
+        add_event.call(cleanupFuncs, e, k.substr(6), v, true)
+      } else {
+        // setAttribute is used here, primarily because of svg support.
+        // however, as mentioned in this article it may be desirable to use property access instead
+        // https://stackoverflow.com/questions/22151560/what-is-happening-behind-setattribute-vs-attribute
+        // observable (write-only) value
+        if ((s = v()) != null) e.setAttribute(k, s)
+        cleanupFuncs.push(v((v) => {
+          if (v != null) e.setAttribute(k, v)
+        }))
+        s = e.nodeName
+        s === "INPUT" && cleanupFuncs.push(bind2(attribute(e), v))
+        s === "SELECT" && cleanupFuncs.push(bind2(select(e), v))
+      }
+    }, 0)
   } else
   if (k === 'data') {
     if (typeof v === 'object')
@@ -174,7 +179,7 @@ export function set_attr (e, _key, v, cleanupFuncs = []) {
   } else if (k === 'checked') {
     e.defaultChecked = !!v
   } else if (k === 'value') {
-    e.defaultValue = v
+    e.defaultValue = e.value = v
   } else if (k === 'for') {
     e.htmlFor = v
   } else if (k === 'class') {

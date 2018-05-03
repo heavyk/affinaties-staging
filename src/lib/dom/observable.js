@@ -234,7 +234,8 @@ export function attribute (element, _attr, _event) {
 // observe a select element
 export function select (element) {
   function _attr () {
-    return element[element.selectedIndex].value
+    var idx = element.selectedIndex
+    return ~idx ? element.options[idx].value : null
   }
   function _set(val) {
     for (var i = 0; i < element.options.length; i++) {
