@@ -27,35 +27,34 @@ export var common_tags = []
 export const txt = (t) => doc.createTextNode(t)
 export const comment = (t) => doc.createComment(t)
 
+// here's an idea: set cleanupFuncs as `this` in the function, and move these to another file
+// then, call like this `add_event.call(cleanupFuncs, el, listener, opts)`
+// furthermore, it may be wise to make the `cleanupFuncs = this` for all these type of functions
+export function add_event (e, event, listener, opts) {
+  on(e, event, listener, opts)
+  this.push(() => { off(e, event, listener, opts) })
+}
+// https://www.html5rocks.com/en/mobile/touchandmouse/
+// https://www.html5rocks.com/en/mobile/touch/
+// look into `passive: true` as a replacement for the `preventDefault` functionality.
+export function do_boink (el, obv) {
+  this.push(
+    listen(el, 'click', false, () => { is_obv(obv) ? obv(!obv()) : obv() }),
+    listen(el, 'touchstart', false, (e) => { e && e.preventDefault(); is_obv(obv) ? obv(!obv()) : obv() })
+  )
+}
+
+export function do_press (el, obv, pressed = true, normal = false) {
+  this.push(
+    listen(el, 'mouseup', false, () => { obv(normal) }),
+    listen(el, 'mousedown', false, () => { obv(pressed) }),
+    listen(el, 'touchend', false, (e) => { e && e.preventDefault(); obv(normal) }),
+    listen(el, 'touchstart', false, (e) => { e && e.preventDefault(); obv(pressed) })
+  )
+}
+
 function context (createElement) {
-
   var cleanupFuncs = []
-
-  // here's an idea: set cleanupFuncs as `this` in the function, and move these to another file
-  // then, call like this `add_event.call(cleanupFuncs, el, listener, opts)`
-  // furthermore, it may be wise to make the `cleanupFuncs = this` for all these type of functions
-  const add_event = (e, event, listener, opts) => {
-    on(e, event, listener, opts)
-    cleanupFuncs.push(() => { off(e, event, listener, opts) })
-  },
-  // https://www.html5rocks.com/en/mobile/touchandmouse/
-  // https://www.html5rocks.com/en/mobile/touch/
-  // look into `passive: true` as a replacement for the `preventDefault` functionality.
-  do_boink = (el, obv) => {
-    cleanupFuncs.push(
-      listen(el, 'click', false, () => { is_obv(obv) ? obv(!obv()) : obv() }),
-      listen(el, 'touchstart', false, (e) => { e && e.preventDefault(); is_obv(obv) ? obv(!obv()) : obv() })
-    )
-  },
-  do_press = (el, obv, pressed = true, normal = false) => {
-    cleanupFuncs.push(
-      listen(el, 'mouseup', false, () => { obv(normal) }),
-      listen(el, 'mousedown', false, () => { obv(pressed) }),
-      listen(el, 'touchend', false, (e) => { e && e.preventDefault(); obv(normal) }),
-      listen(el, 'touchstart', false, (e) => { e && e.preventDefault(); obv(pressed) })
-    )
-  }
-
 
   function h(...args) {
     var e
@@ -118,143 +117,9 @@ function context (createElement) {
       } else if (isNode(l) || l instanceof win.Text) {
         e.aC(r = l)
       } else if (typeof l === 'object') {
-        for (k in l) ((attr_val, _key) => {
-          // convert short attributes to long versions. s -> style, c -> className
-          var k = short_attrs[_key] || _key
-          if (typeof attr_val === 'function') {
-            // TODO: not sure which one is faster: regex or substr test
-            // if (/^on\w+/.test(k)) {
-            if (k.substr(0, 2) === 'on') {
-              add_event(e, k.substr(2), attr_val, false)
-            } else if (k.substr(0, 6) === 'before') {
-              add_event(e, k.substr(6), attr_val, true)
-            } else {
-              // https://stackoverflow.com/questions/22151560/what-is-happening-behind-setattribute-vs-attribute
-              // observable write-only value
-              if ((s = attr_val()) != null) e.setAttribute(k, s)
-              cleanupFuncs.push(attr_val((v) => {
-                if (v != null) e.setAttribute(k, v)
-              }))
-              // to update the observable in real-time, one must listen to the events.
-              // however, it changes -- for example, for input boxes, it's onkeyup.
-              // for option boxes, it's onchange... etc.
-              // there may be another solution though:
-              // a mutation observer could be used to pick up changes in real-time
-              // https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationObserverInit
-              // ----
-              // cleanupFuncs.push((() => {
-              //   var observer = new MutationObserver((mutations) => {
-              //     console.log('mutations', mutation)
-              //     for (var m of mutations)
-              //       if (m.attributeName === k)
-              //         attr_value(e[k])
-              //   })
-              //   observer.observe(e, {attributes: true})
-              //   // observer.observe(e, {attributes: true, attributeFilter: [k]})
-              //   return () => observer.disconnect()
-              // })())
-            }
-          } else
-          if (k === 'data') {
-            if (typeof attr_val === 'object')
-              for(s in attr_val) e.dataset[s] = attr_val[s]
-            else error('data property should be passed as an object')
-          } else if (k === 'multiple') {
-            e.multiple = !!attr_val
-          } else if (k === 'selected') {
-            e.defaultSelected = !!attr_val
-          } else if (k === 'checked') {
-            e.defaultChecked = !!attr_val
-          } else if (k === 'value') {
-            e.defaultValue = attr_val
-          } else if (k === 'for') {
-            e.htmlFor = attr_val
-          } else if (k === 'class') {
-            if (attr_val) {
-              o = e.classList
-              if (Array.isArray(attr_val)) for (s of attr_val) s && o.add(s)
-              else o.add(attr_val)
-            }
-          } else if ((i = (k === 'on')) || k === 'before') {
-            // 'before' is used to denote the capture phase of event propagation
-            // see: http://stackoverflow.com/a/10654134 to understand the capture / bubble phases
-            // before: {click: (do) => something}
-            if (typeof attr_val === 'object') {
-              for (s in attr_val)
-                if (typeof (o = attr_val[s]) === 'function')
-                  add_event(e, s, o, i ? false : true)
-            }
-          } else if (k === 'html') {
-            e.innerHTML = attr_val
-          } else if (k === 'observe') {
-            // I believe the set-timeout here is to allow the element time to be added to the dom.
-            // it is likely that this is undesirable most of the time (because it can create a sense of a value 'popping' into the dom)
-            // so, likely I'll want to move the whole thing out to a function which is called sometimes w/ set-timeout and sometimes not.
-            setTimeout(((obj, e) => {
-              for (s in obj) ((s, v) => {
-                // observable
-                switch (s) {
-                  case 'input':
-                    cleanupFuncs.push(attribute(e, obj[s+'.attr'], obj[s+'.on'])(v))
-                    break
-                  case 'hover':
-                    cleanupFuncs.push(hover(e)(v))
-                    break
-                  case 'focus':
-                    cleanupFuncs.push(focus(e)(v))
-                    break
-                  case 'select':
-                    cleanupFuncs.push(select(e)(v))
-                    break
-                  case 'boink':
-                    cleanupFuncs.push(do_boink(e, v))
-                    break
-                  case 'press':
-                    cleanupFuncs.push(do_press(e, v))
-                    break
-                  default:
-                  // case 'keyup':
-                  // case 'keydown':
-                  // case 'touchstart':
-                  // case 'touchend':
-                    if (!~s.indexOf('.')) {
-                      if (typeof v !== 'function') error('observer must be a function')
-                      cleanupFuncs.push(event(e, obj[s+'.attr'], obj[s+'.on'] || s, obj[s+'.event'])(v))
-                    }
-                }
-              })(s, attr_val[s])
-            }).bind(e, attr_val, e), 0)
-          } else if (k === 'style') {
-            if (typeof attr_val === 'string') {
-              e.style.cssText = attr_val
-            } else {
-              set_style(e, attr_val, cleanupFuncs)
-            }
-          // no longer necessary because the setAttribute is always used (e[k] is no longer set directly)
-          // } else if (k.substr(0, 5) === "data-") {
-          //   e.setAttribute(k, attr_val)
-          } else if (typeof attr_val !== 'undefined') {
-            // for namespaced attributes, such as xlink:href
-            // (I'm really not aware of any others than xlink... PRs accepted!)
-            // ref: http://stackoverflow.com/questions/7379319/how-to-use-creatensresolver-with-lookupnamespaceuri-directly
-            // ref: https://developer.mozilla.org/en-US/docs/Web/API/Document/createNSResolver
-            if (~(i = k.indexOf(':'))) {
-              if (k.substr(0, i) === 'xlink') {
-                e.setAttributeNS('http://www.w3.org/1999/xlink', k.substr(++i), attr_val)
-              } else {
-                error('unknown namespace for attribute: ' + k)
-              }
-            } else {
-              // this won't work for svgs. for example, s('rect', {cx: 5}) will fail, as cx is a read-only property
-              // however, it is worth noting that setAttribute is about 30% slower than setting the property directly
-              // https://jsperf.com/setattribute-vs-property-assignment/7
-              // should check memory requirements, but because of the weirdness associated with mixing property and value,
-              // it may be prudent to use property access unless it's a svg (or some other non-standard) context.
-              // e[k] = attr_val
-              e.setAttribute(k, attr_val)
-            }
-          }
-        })(l[k], k)
+        // TODO: it may be prudent to move out the set_attribute stuff into a function (this is already a function anyway)
+        //       so that different behaviour can be used for svg/normal use, eg. setAttribute for svg and property access for normal
+        for (k in l) set_attr(e, k, l[k], cleanupFuncs)
       } else if (typeof l === 'function') {
         r = obvNode(e, l, cleanupFuncs)
       }
@@ -277,6 +142,126 @@ function context (createElement) {
   }
 
   return h
+}
+
+export function set_attr (e, _key, v, cleanupFuncs = []) {
+  // convert short attributes to long versions. s -> style, c -> className
+  var s, o, i, k = short_attrs[_key] || _key
+  if (typeof v === 'function') {
+    if (k.substr(0, 2) === 'on') {
+      add_event.call(cleanupFuncs, e, k.substr(2), v, false)
+    } else if (k.substr(0, 6) === 'before') {
+      add_event.call(cleanupFuncs, e, k.substr(6), v, true)
+    } else {
+      // setAttribute is used here, primarily because of svg support.
+      // however, as mentioned in this article it may be desirable to use property access instead
+      // https://stackoverflow.com/questions/22151560/what-is-happening-behind-setattribute-vs-attribute
+      // observable (write-only) value
+      if ((s = v()) != null) e.setAttribute(k, s)
+      cleanupFuncs.push(v((v) => {
+        if (v != null) e.setAttribute(k, v)
+      }))
+    }
+  } else
+  if (k === 'data') {
+    if (typeof v === 'object')
+      for(s in v) e.dataset[s] = v[s]
+    else error('data property should be passed as an object')
+  } else if (k === 'multiple') {
+    e.multiple = !!v
+  } else if (k === 'selected') {
+    e.defaultSelected = !!v
+  } else if (k === 'checked') {
+    e.defaultChecked = !!v
+  } else if (k === 'value') {
+    e.defaultValue = v
+  } else if (k === 'for') {
+    e.htmlFor = v
+  } else if (k === 'class') {
+    if (v) {
+      o = e.classList
+      if (Array.isArray(v)) for (s of v) s && o.add(s)
+      else o.add(v)
+    }
+  } else if ((i  = (k === 'on')) || k === 'before') {
+    // 'before' is used to denote the capture phase of event propagation
+    // see: http://stackoverflow.com/a/10654134 to understand the capture / bubble phases
+    // before: {click: (do) => something}
+    if (typeof v === 'object') {
+      for (s in v)
+        if (typeof (o = v[s]) === 'function')
+          add_event.call(cleanupFuncs, e, s, o, i ? false : true)
+    }
+  } else if (k === 'html') {
+    e.innerHTML = v
+  } else if (k === 'observe') {
+    // I believe the set-timeout here is to allow the element time to be added to the dom.
+    // it is likely that this is undesirable most of the time (because it can create a sense of a value 'popping' into the dom)
+    // so, likely I'll want to move the whole thing out to a function which is called sometimes w/ set-timeout and sometimes not.
+    setTimeout(((obj, e) => {
+      for (s in obj) ((s, v) => {
+        // observable
+        switch (s) {
+          case 'input':
+            cleanupFuncs.push(attribute(e, obj[s+'.attr'], obj[s+'.on'])(v))
+            break
+          case 'hover':
+            cleanupFuncs.push(hover(e)(v))
+            break
+          case 'focus':
+            cleanupFuncs.push(focus(e)(v))
+            break
+          case 'select':
+            cleanupFuncs.push(select(e)(v))
+            break
+          case 'boink':
+            do_boink.call(cleanupFuncs, e, v)
+            break
+          case 'press':
+            do_press.call(cleanupFuncs, e, v)
+            break
+          default:
+          // case 'keyup':
+          // case 'keydown':
+          // case 'touchstart':
+          // case 'touchend':
+            if (!~s.indexOf('.')) {
+              if (typeof v !== 'function') error('observer must be a function')
+              cleanupFuncs.push(event(e, obj[s+'.attr'], obj[s+'.on'] || s, obj[s+'.event'])(v))
+            }
+        }
+      })(s, v[s])
+    }).bind(e, v, e), 0)
+  } else if (k === 'style') {
+    if (typeof v === 'string') {
+      e.style.cssText = v
+    } else {
+      set_style(e, v, cleanupFuncs)
+    }
+  // no longer necessary because the setAttribute is always used (e[k] is no longer set directly)
+  // } else if (k.substr(0, 5) === "data-") {
+  //   e.setAttribute(k, v)
+} else if (typeof v !== 'undefined') {
+    // for namespaced attributes, such as xlink:href
+    // (I'm really not aware of any others than xlink... PRs accepted!)
+    // ref: http://stackoverflow.com/questions/7379319/how-to-use-creatensresolver-with-lookupnamespaceuri-directly
+    // ref: https://developer.mozilla.org/en-US/docs/Web/API/Document/createNSResolver
+    if (~(i = k.indexOf(':'))) {
+      if (k.substr(0, i) === 'xlink') {
+        e.setAttributeNS('http://www.w3.org/1999/xlink', k.substr(++i), v)
+      } else {
+        error('unknown namespace for attribute: ' + k)
+      }
+    } else {
+      // this won't work for svgs. for example, s('rect', {cx: 5}) will fail, as cx is a read-only property
+      // however, it is worth noting that setAttribute is about 30% slower than setting the property directly
+      // https://jsperf.com/setattribute-vs-property-assignment/7
+      // should check memory requirements, but because of the weirdness associated with mixing property and value,
+      // it may be prudent to use property access unless it's a svg (or some other non-standard) context.
+      // e[k] = v
+      e.setAttribute(k, v)
+    }
+  }
 }
 
 export function set_style (e, style, cleanupFuncs = []) {
