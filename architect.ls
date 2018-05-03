@@ -14,9 +14,6 @@ require = (require '@std/esm')(module, cjs: true, esm: "js")
 
 merge-deep-array = require './src/lib/utils' .merge-deep-array
 
-# lala = merge-deep-array {lala: [{one: {deep: 1}},{two: {deep: 2}},{three: {deep: 3}}]}, {lala: [{four: {deep: 4}},{five: {deep: 5}},{six: {deep: 6}}]}
-# console.log \out lala.lala
-
 src_dir = Path.join __dirname, \src
 tmp_dir = Path.join __dirname, \priv \build
 out_dir = Path.join __dirname, \priv \static
@@ -482,6 +479,7 @@ process_poem = (path, resume) ->*
 
 
 # =======================
+#         MAIN
 # =======================
 
 genny.run (resume) ->*
