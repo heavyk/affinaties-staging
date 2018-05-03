@@ -24,7 +24,7 @@ function callback ({G, C}) {
 // consent means the other person wants to be doing the thing that you're doing.
 // -vox 2016
 
-function button_adder ({G, C}) {
+function plugin_demo ({G, C}) {
   const {h, t, c, v, m} = G
   let lala = v(C.lala)
   let num = v(11)
@@ -99,15 +99,5 @@ function button_adder ({G, C}) {
     tpl_select()
   )
 }
-//
-// export function (router, main) {
-//   return {
-//
-//   }
-// }
 
-// testing to make sure it works...
-// now, we need something like button_adder to be made by elixir
-plugger(button_adder, {lala: 1234})
-
-// export default plugger
+plugger(plugin_demo, {lala: 1234})

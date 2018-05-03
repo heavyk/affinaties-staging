@@ -6,10 +6,9 @@ defmodule Affinaty.PageController do
   end
 
   def plugin(conn, params) do
-    [ name | _ ] = params["path"]
     conn
     |> put_layout(false)
-    |> render("plugin.html", name: name, description: "", author: "")
+    |> render("plugin.html", name: hd(params["path"]), description: "", author: "")
   end
 
   def time_machine(conn, params) do

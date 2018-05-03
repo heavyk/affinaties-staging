@@ -39,7 +39,7 @@ defmodule Affinaty.Router do
     get "/*path", PageController, :plugin
   end
 
-  scope "/time_machine", PoemWeb do
+  scope "/time_machine", Affinaty do
     pipe_through :browser
 
     get "/*path", PageController, :time_machine

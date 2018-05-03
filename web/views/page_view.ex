@@ -53,7 +53,6 @@ defmodule Affinaty.PageView do
         link rel: "stylesheet", href: static_path(@conn, "/plugins/" <> @name <> ".css")
       end
       body do
-        # render @view_module, @view_template, assigns
         script src: static_path(@conn, "/plugins/" <> @name <> ".js")
       end
     end
