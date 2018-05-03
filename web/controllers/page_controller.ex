@@ -6,9 +6,15 @@ defmodule Affinaty.PageController do
   end
 
   def plugin(conn, params) do
-    # path = Enum.join(params["path"], "/")
     [ name | _ ] = params["path"]
-    conn = put_layout conn, false
-    render conn, "plugin.html", name: name
+    conn
+    |> put_layout(false)
+    |> render("plugin.html", name: name, description: "", author: "")
+  end
+
+  def time_machine(conn, params) do
+    conn
+    |> put_layout({Affinaty.Dispatch, "plugin.html"})
+    |> render("time_machine.html", name: hd(params["path"]))
   end
 end

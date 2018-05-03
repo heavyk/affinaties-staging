@@ -38,19 +38,13 @@ defmodule Affinaty.Mixfile do
   #
   # Type `mix help deps` for examples and options.
   defp deps do
-    [{:phoenix, path: "../../phoenix/phoenix", override: true},
+    [{:phoenix, "~> 1.3"},
+     {:time_machine, path: "../time_machine", override: true},
      {:phoenix_pubsub, "~> 1.0"},
-    #  {:phoenix_ecto, "~> 3.0-rc"},
-    # TODO: no more mongodb!! use rethinkdb!
-    #  {:mongodb_ecto, path: "../mongodb_ecto", override: true},
      {:rethinkdb_ecto, "~> 0.7"},
      {:phoenix_ecto, "~> 3.0"},
-    #  {:mongodb_ecto, "~> 0.1.5"},
-    #  {:postgrex, ">= 0.0.0"},
      {:guardian, "~> 0.14"},
-     # {:blogit, "~> 1.1"},
-     {:eml, github: "zambal/eml"},
-     {:marker, "~> 2.0"},
+     {:marker, path: "../marker", override: true},
      {:phoenix_html, "~> 2.5"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:gettext, "~> 0.11"},
