@@ -21,17 +21,17 @@ export function expect_obv (obv) {
 }
 
 
-// bind a to b -- One Way Binding
-export function bind1 (a, b) {
-  a(b())
-  return b(a)
+// one-way binding: bind lhs to rhs -- starting with the rhs value
+export function bind1 (l, r) {
+  l(r())
+  return r(l)
 }
 
-//bind a to b and b to a -- Two Way Binding
-export function bind2 (a, b) {
-  b(a())
-  var r0 = a(b), r1 = b(a)
-  return () => { r0(); r1() } // remove function
+// two-way binding: bind lhs to rhs and rhs to lhs -- starting with the rhs value
+export function bind2 (l, r) {
+  l(r())
+  var remove_l = l(r), remove_r = r(l)
+  return () => { remove_l(); remove_r() }
 }
 
 //trigger all listeners
