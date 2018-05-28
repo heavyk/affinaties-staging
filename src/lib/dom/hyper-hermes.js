@@ -14,6 +14,7 @@ import { define_getter, define_value, error } from '../utils'
 export const win = window
 export const doc = win.document
 export const body = doc.body
+export const customElements = win.customElements
 export const location = doc.location
 export const IS_LOCAL = ~location.host.indexOf('localhost')
 export const basePath = location.pathname
@@ -144,12 +145,52 @@ function context (createElement) {
   return h
 }
 
-export function set_attr (e, _key, v, cleanupFuncs = []) {
+export function observe (e, observe_obj) {
+  var s, cleanupFuncs = this
+  for (s in observe_obj) ((s, v) => {
+    // observable
+    switch (s) {
+      case 'input':
+        cleanupFuncs.push(attribute(e, obj[s+'.attr'], obj[s+'.on'])(v))
+        break
+      case 'hover':
+        cleanupFuncs.push(hover(e)(v))
+        break
+      case 'focus':
+        cleanupFuncs.push(focus(e)(v))
+        break
+      case 'select':
+        cleanupFuncs.push(select(e)(v))
+        break
+      case 'boink':
+        do_boink.call(cleanupFuncs, e, v)
+        break
+      case 'press':
+        do_press.call(cleanupFuncs, e, v)
+        break
+      default:
+      // case 'keyup':
+      // case 'keydown':
+      // case 'touchstart':
+      // case 'touchend':
+        if (!~s.indexOf('.')) {
+          if (typeof v !== 'function') error('observer must be a function')
+          cleanupFuncs.push(event(e, obj[s+'.attr'], obj[s+'.on'] || s, obj[s+'.event'])(v))
+        }
+    }
+  })(s, observe_obj[s])
+}
+
+export function set_attr (e, key_, v, cleanupFuncs = []) {
   // convert short attributes to long versions. s -> style, c -> className
-  var s, o, i, k = short_attrs[_key] || _key
+  var s, o, i, k = short_attrs[key_] || key_
   if (typeof v === 'function') {
     setTimeout(() => {
-      if (k.substr(0, 2) === 'on') {
+      if (k === 'boink') {
+        observe.call(cleanupFuncs, e, {boink: v})
+      } else if (k === 'press') {
+        observe.call(cleanupFuncs, e, {press: v})
+      } else if (k.substr(0, 2) === 'on') {
         add_event.call(cleanupFuncs, e, k.substr(2), v, false)
       } else if (k.substr(0, 6) === 'before') {
         add_event.call(cleanupFuncs, e, k.substr(6), v, true)
@@ -167,104 +208,73 @@ export function set_attr (e, _key, v, cleanupFuncs = []) {
         s === "SELECT" && cleanupFuncs.push(bind2(select(e), v))
       }
     }, 0)
-  } else
-  if (k === 'data') {
-    if (typeof v === 'object')
-      for(s in v) e.dataset[s] = v[s]
-    else error('data property should be passed as an object')
-  } else if (k === 'multiple') {
-    e.multiple = !!v
-  } else if (k === 'selected') {
-    e.defaultSelected = !!v
-  } else if (k === 'checked') {
-    e.defaultChecked = !!v
-  } else if (k === 'value') {
-    e.defaultValue = e.value = v
-  } else if (k === 'for') {
-    e.htmlFor = v
-  } else if (k === 'class') {
-    if (v) {
-      o = e.classList
-      if (Array.isArray(v)) for (s of v) s && o.add(s)
-      else o.add(v)
-    }
-  } else if ((i  = (k === 'on')) || k === 'before') {
-    // 'before' is used to denote the capture phase of event propagation
-    // see: http://stackoverflow.com/a/10654134 to understand the capture / bubble phases
-    // before: {click: (do) => something}
-    if (typeof v === 'object') {
-      for (s in v)
-        if (typeof (o = v[s]) === 'function')
-          add_event.call(cleanupFuncs, e, s, o, i ? false : true)
-    }
-  } else if (k === 'html') {
-    e.innerHTML = v
-  } else if (k === 'observe') {
-    // I believe the set-timeout here is to allow the element time to be added to the dom.
-    // it is likely that this is undesirable most of the time (because it can create a sense of a value 'popping' into the dom)
-    // so, likely I'll want to move the whole thing out to a function which is called sometimes w/ set-timeout and sometimes not.
-    setTimeout(((obj, e) => {
-      for (s in obj) ((s, v) => {
-        // observable
-        switch (s) {
-          case 'input':
-            cleanupFuncs.push(attribute(e, obj[s+'.attr'], obj[s+'.on'])(v))
-            break
-          case 'hover':
-            cleanupFuncs.push(hover(e)(v))
-            break
-          case 'focus':
-            cleanupFuncs.push(focus(e)(v))
-            break
-          case 'select':
-            cleanupFuncs.push(select(e)(v))
-            break
-          case 'boink':
-            do_boink.call(cleanupFuncs, e, v)
-            break
-          case 'press':
-            do_press.call(cleanupFuncs, e, v)
-            break
-          default:
-          // case 'keyup':
-          // case 'keydown':
-          // case 'touchstart':
-          // case 'touchend':
-            if (!~s.indexOf('.')) {
-              if (typeof v !== 'function') error('observer must be a function')
-              cleanupFuncs.push(event(e, obj[s+'.attr'], obj[s+'.on'] || s, obj[s+'.event'])(v))
-            }
-        }
-      })(s, v[s])
-    }).bind(e, v, e), 0)
-  } else if (k === 'style') {
-    if (typeof v === 'string') {
-      e.style.cssText = v
-    } else {
-      set_style(e, v, cleanupFuncs)
-    }
-  // no longer necessary because the setAttribute is always used (e[k] is no longer set directly)
-  // } else if (k.substr(0, 5) === "data-") {
-  //   e.setAttribute(k, v)
-} else if (typeof v !== 'undefined') {
-    // for namespaced attributes, such as xlink:href
-    // (I'm really not aware of any others than xlink... PRs accepted!)
-    // ref: http://stackoverflow.com/questions/7379319/how-to-use-creatensresolver-with-lookupnamespaceuri-directly
-    // ref: https://developer.mozilla.org/en-US/docs/Web/API/Document/createNSResolver
-    if (~(i = k.indexOf(':'))) {
-      if (k.substr(0, i) === 'xlink') {
-        e.setAttributeNS('http://www.w3.org/1999/xlink', k.substr(++i), v)
-      } else {
-        error('unknown namespace for attribute: ' + k)
+  } else {
+    if (k === 'data') {
+      if (typeof v === 'object')
+        for(s in v) e.dataset[s] = v[s]
+      else error('data property should be passed as an object')
+    } else if (k === 'multiple') {
+      e.multiple = !!v
+    } else if (k === 'selected') {
+      e.defaultSelected = !!v
+    } else if (k === 'checked') {
+      e.defaultChecked = !!v
+    } else if (k === 'value') {
+      e.defaultValue = e.value = v
+    } else if (k === 'for') {
+      e.htmlFor = v
+    } else if (k === 'class') {
+      if (v) {
+        o = e.classList
+        if (Array.isArray(v)) for (s of v) s && o.add(s)
+        else o.add(v)
       }
-    } else {
-      // this won't work for svgs. for example, s('rect', {cx: 5}) will fail, as cx is a read-only property
-      // however, it is worth noting that setAttribute is about 30% slower than setting the property directly
-      // https://jsperf.com/setattribute-vs-property-assignment/7
-      // should check memory requirements, but because of the weirdness associated with mixing property and value,
-      // it may be prudent to use property access unless it's a svg (or some other non-standard) context.
-      // e[k] = v
-      e.setAttribute(k, v)
+    } else if ((i  = (k === 'on')) || k === 'before') {
+      // 'before' is used to denote the capture phase of event propagation
+      // see: http://stackoverflow.com/a/10654134 to understand the capture / bubble phases
+      // before: {click: (do) => something}
+      if (typeof v === 'object') {
+        for (s in v)
+          if (typeof (o = v[s]) === 'function')
+            add_event.call(cleanupFuncs, e, s, o, i ? false : true)
+      }
+    } else if (k === 'html') {
+      e.innerHTML = v
+    } else if (k === 'observe') {
+      // I believe the set-timeout here is to allow the element time to be added to the dom.
+      // it is likely that this is undesirable most of the time (because it can create a sense of a value 'popping' into the dom)
+      // so, likely I'll want to move the whole thing out to a function which is called sometimes w/ set-timeout and sometimes not.
+      setTimeout(observe.bind(cleanupFuncs, e, v), 0)
+      // observe.call(cleanupFuncs, e, v)
+    } else if (k === 'style') {
+      if (typeof v === 'string') {
+        e.style.cssText = v
+      } else {
+        set_style(e, v, cleanupFuncs)
+      }
+    // no longer necessary because the setAttribute is always used (e[k] is no longer set directly)
+    // } else if (k.substr(0, 5) === "data-") {
+    //   e.setAttribute(k, v)
+    } else if (typeof v !== 'undefined') {
+      // for namespaced attributes, such as xlink:href
+      // (I'm really not aware of any others than xlink... PRs accepted!)
+      // ref: http://stackoverflow.com/questions/7379319/how-to-use-creatensresolver-with-lookupnamespaceuri-directly
+      // ref: https://developer.mozilla.org/en-US/docs/Web/API/Document/createNSResolver
+      if (~(i = k.indexOf(':'))) {
+        if (k.substr(0, i) === 'xlink') {
+          e.setAttributeNS('http://www.w3.org/1999/xlink', k.substr(++i), v)
+        } else {
+          error('unknown namespace for attribute: ' + k)
+        }
+      } else {
+        // this won't work for svgs. for example, s('rect', {cx: 5}) will fail, as cx is a read-only property
+        // however, it is worth noting that setAttribute is about 30% slower than setting the property directly
+        // https://jsperf.com/setattribute-vs-property-assignment/7
+        // should check memory requirements, but because of the weirdness associated with mixing property and value,
+        // it may be prudent to use property access unless it's a svg (or some other non-standard) context.
+        // e[k] = v
+        e.setAttribute(k, v)
+      }
     }
   }
 }
@@ -412,7 +422,7 @@ export function offsetOf (child) {
 export var special_elements = {}
 Object.defineProperty(special_elements, 'define', {value: (name, fn, args) => {
   // if (DEBUG) console.log('defining', name, args)
-  win.customElements.define(name, fn)
+  customElements.define(name, fn)
   special_elements[name] = typeof args === 'number' ? args : Array.isArray(args) ? args.length : fn.length || 0
 }})
 
