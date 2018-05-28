@@ -1,7 +1,8 @@
 import pluginBoilerplate from '../lib/plugins/plugin-boilerplate'
+import { win } from '../lib/dom/hyper-hermes'
 import { value, transform, compute, modify } from '../lib/dom/observable'
 
-function plugger (starting_panel, C = {}, D = {}) {
+win.plugger = (starting_panel, C = {}, D = {}) => {
   let beginner = ({G, C}) => {
     // this stupid shit is required because making contexts is super supid and needs to be rethought.
     // I need to provide a 'lib' to the plugin with the following (and other) important functions.
@@ -16,14 +17,11 @@ function plugger (starting_panel, C = {}, D = {}) {
   pluginBoilerplate(null, 'id', C, D, {}, beginner)
 }
 
-function callback ({G, C}) {
-  return h('poem-frame', {base: C.base}, router)
-}
-
 // consent is not imposing your will on someone and having them just, not resist
 // consent means the other person wants to be doing the thing that you're doing.
 // -vox 2016
 
+/*
 function plugin_demo ({G, C}) {
   const {h, t, c, v, m} = G
   let lala = v(C.lala)
@@ -35,11 +33,11 @@ function plugin_demo ({G, C}) {
   let w1 = v()
   let w2 = v()
   // TEMPORARY CACA: (lol)
-  G.E.win.document.querySelector('style').innerHTML += `
+  G.E.body.aC(h('style', `
     h1, h3 { text-align: center }
     h1 { color: #900 }
     h3 { color: #600 }
-  `
+  `))
   let tpl_cod = () => h('div.tpl_cod',
     'condition (lala) is:', lala, ' + (num) = ', sum
   )
@@ -101,3 +99,4 @@ function plugin_demo ({G, C}) {
 }
 
 plugger(plugin_demo, {lala: 1234})
+*/

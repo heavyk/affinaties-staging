@@ -1,10 +1,10 @@
 defmodule Affinaty.Plugin do
   use TimeMachine
 
-  template :tpl_cod do
-    div '.tpl_cod' do
+  template :tpl_cdn do
+    div '.tpl_cdn' do
       "condition (lala) is:"
-      ~o(lala)
+      ~c(lala)
       " + (num) = "
       ~o(sum)
     end
@@ -12,11 +12,11 @@ defmodule Affinaty.Plugin do
 
   template :tpl_obv do
     div '.tpl_obv' do
-      'num is:'
+      "num is:"
       ~o(num)
       div '.click' do
-        button "num++", boink: ~o(num) + 1
-        button "num--", boink: ~o(num) - 1
+        button "num++", boink: ~o(num) <- ~o(num) + 1
+        button "num--", boink: ~o(num) <- ~o(num) - 1
       end
     end
   end
@@ -73,7 +73,7 @@ defmodule Affinaty.Plugin do
       h1 "simple plugin demo"
       hr()
       h3 "conditions, numbers, and transformations"
-      tpl_cod()
+      tpl_cdn()
       tpl_obv()
       hr()
       h3 "mouse / touch events"
