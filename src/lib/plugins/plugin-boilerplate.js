@@ -1,6 +1,4 @@
-// get rid of me
-// import defaults from '../lodash/defaultsDeep'
-import { mergeDeep } from '../utils'
+import { mergeDeep, objJSON } from '../utils'
 
 import { value, transform, compute, modify } from '../dom/observable'
 import ResizeSensor from '../dom/resize-sensor'
@@ -10,16 +8,9 @@ import { doc, body, win, IS_LOCAL, basePath } from '../dom/hyper-hermes'
 import { new_context, el_context } from '../dom/hyper-hermes' // I think some cleanup is is order, lol
 import { makeNode } from '../dom/hyper-hermes'
 
-function parseJson (s) {
-  try {
-    return typeof s === 'string' ? JSON.parse(s) : s
-  } catch (e) {}
-  return {}
-}
-
 function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) {
   var tmp, mutationObserver, G, E, _width, _height, _dpr, set_data, set_config, args
-  var C = mergeDeep({}, parseJson(_config), DEFAULT_CONFIG)
+  var C = mergeDeep({}, objJSON(_config), DEFAULT_CONFIG)
 
   if (IS_LOCAL) {
     tmp = body.style
@@ -151,5 +142,5 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
 
 // re-exported
 export { doc, body, win, IS_LOCAL }
-export { parseJson, pluginBoilerplate }
+export { pluginBoilerplate }
 export default pluginBoilerplate

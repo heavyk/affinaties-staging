@@ -78,6 +78,13 @@ export function parseJSON (string) {
   }
 }
 
+export function objJSON (s) {
+  try {
+    return typeof s === 'string' ? JSON.parse(s) : s
+  } catch (e) {}
+  return {}
+}
+
 export function parseUri (uri) {
   var parts = uri.match(/^(?:([\w+.-]+):\/\/([^/]+))?([^?#]*)?(\?[^#]*)?(#.*)?/)
 
