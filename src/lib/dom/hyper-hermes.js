@@ -7,7 +7,8 @@
 //       however, when building the plugin library, an errorless version should be created (to reduce size)
 //       additionally, other things unnecessary (old/unused) things can be omitted as wel, for further savings.
 
-import { observe, add_event, is_obv } from './observable'
+import { is_obv } from './observable'
+import { observe, add_event } from './observable-event'
 import { define_getter, define_value, error } from '../utils'
 
 // commonly used globals exported (to save a few bytes)
