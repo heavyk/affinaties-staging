@@ -7,7 +7,7 @@
 //       however, when building the plugin library, an errorless version should be created (to reduce size)
 //       additionally, other things unnecessary (old/unused) things can be omitted as wel, for further savings.
 
-import { attribute, hover, focus, select, event, on, off, bind2, listen, is_obv } from './observable'
+import { observe, add_event, is_obv } from './observable'
 import { define_getter, define_value, error } from '../utils'
 
 // commonly used globals exported (to save a few bytes)
@@ -27,32 +27,6 @@ export var common_tags = []
 // shortcut document creation functions
 export const txt = (t) => doc.createTextNode(t)
 export const comment = (t) => doc.createComment(t)
-
-// here's an idea: set cleanupFuncs as `this` in the function, and move these to another file
-// then, call like this `add_event.call(cleanupFuncs, el, listener, opts)`
-// furthermore, it may be wise to make the `cleanupFuncs = this` for all these type of functions
-export function add_event (e, event, listener, opts) {
-  on(e, event, listener, opts)
-  this.push(() => { off(e, event, listener, opts) })
-}
-// https://www.html5rocks.com/en/mobile/touchandmouse/
-// https://www.html5rocks.com/en/mobile/touch/
-// look into `passive: true` as a replacement for the `preventDefault` functionality.
-export function do_boink (el, obv) {
-  this.push(
-    listen(el, 'click', false, () => { is_obv(obv) ? obv(!obv()) : obv() }),
-    listen(el, 'touchstart', false, (e) => { e && e.preventDefault(); is_obv(obv) ? obv(!obv()) : obv() })
-  )
-}
-
-export function do_press (el, obv, pressed = true, normal = false) {
-  this.push(
-    listen(el, 'mouseup', false, () => { obv(normal) }),
-    listen(el, 'mousedown', false, () => { obv(pressed) }),
-    listen(el, 'touchend', false, (e) => { e && e.preventDefault(); obv(normal) }),
-    listen(el, 'touchstart', false, (e) => { e && e.preventDefault(); obv(pressed) })
-  )
-}
 
 function context (createElement) {
   var cleanupFuncs = []
@@ -145,42 +119,6 @@ function context (createElement) {
   return h
 }
 
-export function observe (e, observe_obj) {
-  var s, cleanupFuncs = this
-  for (s in observe_obj) ((s, v) => {
-    // observable
-    switch (s) {
-      case 'input':
-        cleanupFuncs.push(attribute(e, obj[s+'.attr'], obj[s+'.on'])(v))
-        break
-      case 'hover':
-        cleanupFuncs.push(hover(e)(v))
-        break
-      case 'focus':
-        cleanupFuncs.push(focus(e)(v))
-        break
-      case 'select':
-        cleanupFuncs.push(select(e)(v))
-        break
-      case 'boink':
-        do_boink.call(cleanupFuncs, e, v)
-        break
-      case 'press':
-        do_press.call(cleanupFuncs, e, v)
-        break
-      default:
-      // case 'keyup':
-      // case 'keydown':
-      // case 'touchstart':
-      // case 'touchend':
-        if (!~s.indexOf('.')) {
-          if (typeof v !== 'function') error('observer must be a function')
-          cleanupFuncs.push(event(e, obj[s+'.attr'], obj[s+'.on'] || s, obj[s+'.event'])(v))
-        }
-    }
-  })(s, observe_obj[s])
-}
-
 export function set_attr (e, key_, v, cleanupFuncs = []) {
   // convert short attributes to long versions. s -> style, c -> className
   var s, o, i, k = short_attrs[key_] || key_
@@ -190,6 +128,14 @@ export function set_attr (e, key_, v, cleanupFuncs = []) {
         observe.call(cleanupFuncs, e, {boink: v})
       } else if (k === 'press') {
         observe.call(cleanupFuncs, e, {press: v})
+      } else if (k === 'hover') {
+        observe.call(cleanupFuncs, e, {hover: v})
+      } else if (k === 'focused') {
+        observe.call(cleanupFuncs, e, {focus: v})
+      } else if (k === 'selected') {
+        observe.call(cleanupFuncs, e, {select: v})
+      } else if (k === 'input') {
+        observe.call(cleanupFuncs, e, {input: v})
       } else if (k.substr(0, 2) === 'on') {
         add_event.call(cleanupFuncs, e, k.substr(2), v, false)
       } else if (k.substr(0, 6) === 'before') {
@@ -204,8 +150,8 @@ export function set_attr (e, key_, v, cleanupFuncs = []) {
           if (v != null) e.setAttribute(k, v)
         }))
         s = e.nodeName
-        s === "INPUT" && cleanupFuncs.push(bind2(attribute(e), v))
-        s === "SELECT" && cleanupFuncs.push(bind2(select(e), v))
+        s === "INPUT" && observe.call(cleanupFuncs, e, {input: v})
+        s === "SELECT" && observe.call(cleanupFuncs, e, {select: v})
       }
     }, 0)
   } else {
