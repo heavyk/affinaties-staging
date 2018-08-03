@@ -1,6 +1,5 @@
 
 import { value } from '../lib/dom/observable'
-import { MixinEmitter } from '../lib/drip/MixinEmitter'
 import { win, basePath, comment } from '../lib/dom/hyper-hermes'
 
 import RoadTrip from '../roadtrip/roadtrip'

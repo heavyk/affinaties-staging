@@ -22,6 +22,26 @@ export const origin = location.protocol + '//' + location.hostname + (location.p
 
 // add your own (or utilise this to make your code smaller!)
 export var short_attrs = { s: 'style', c: 'class' }
+
+// can be used to save bytes:
+// h(1,{value:11})
+//     vs.
+// h('input',{value:11})
+// when common_tags = ['div','input']
+//
+// however, it's less efficient if either a class or id has to be specified:
+// h(0,{c:'lala'})
+//     vs.
+// h('div.lala')
+//
+// this does not currently work (but it could):
+// h('0.lala')
+//     vs.
+// h('div.lala')
+//
+// however this does:
+// h(2)
+// when common_tags = ['div','input','div.lala']
 export var common_tags = []
 
 // shortcut document creation functions
@@ -54,25 +74,6 @@ function context (createElement) {
         }
       }
 
-      // enable a byte saving optimisation:
-      // h(1,{value:11})
-      //     vs.
-      // h('input',{value:11})
-      // when common_tags = ['div','input']
-      //
-      // however, it's less efficient if either a class or id is specified:
-      // h(0,{c:'lala'})
-      //     vs.
-      // h('div.lala')
-      //
-      // though, maybe this idea can be further expanded to:
-      // h('0.lala')
-      //     vs.
-      // h('div.lala')
-      //     or,
-      // h(2)
-      // when common_tags = ['div','input','div.lala']
-
       if (!e && typeof l === 'number' && l < common_tags.length) e = parseSelector(common_tags[l])
 
       if (l != null)
@@ -92,8 +93,6 @@ function context (createElement) {
       } else if (isNode(l) || l instanceof win.Text) {
         e.aC(r = l)
       } else if (typeof l === 'object') {
-        // TODO: it may be prudent to move out the set_attribute stuff into a function (this is already a function anyway)
-        //       so that different behaviour can be used for svg/normal use, eg. setAttribute for svg and property access for normal
         for (k in l) set_attr(e, k, l[k], cleanupFuncs)
       } else if (typeof l === 'function') {
         r = obvNode(e, l, cleanupFuncs)
