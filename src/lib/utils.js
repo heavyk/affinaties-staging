@@ -13,7 +13,11 @@ export function forEach (arr, fn) {
 }
 
 export function forEachReverse (arr, fn) {
-  for (var i = arr.length - 1; i >= 0; i--) fn(arr[i], i)
+  for (var i = arr.length - 1; i >= 0; i--) fn.call(arr, arr[i], i)
+}
+
+export function callEach (arr) {
+  for (var i = 0; i < arr.length; ++i) arr[i].call(arr)
 }
 
 export function parents (el, name) {
