@@ -54,7 +54,7 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
   els (els) {
     var i, j, k, e, self = this, shadow = self.shadow
 
-    var empty_shadow = () => { if (e = shadow.lastChild) do { if (!e.é) shadow.removeChild(e) } while (e = e.previousSibling) }
+    var empty_shadow = () => { if (e = shadow.lastChild) do { if (!e.__s) shadow.removeChild(e) } while (e = e.previousSibling) }
 
     if (els == null) return shadow ? empty_shadow() : null
     if (!shadow) shadow = self.shadow = shadow === false ? self : self.attachShadow({mode: 'open'})
@@ -140,7 +140,7 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
     var shadow = self.shadow
     var e = ~txt.indexOf('://') ? h('link', {href: txt}) : h('style', txt)
     if (!shadow) shadow = self.shadow = shadow === false ? self : self.attachShadow({mode: 'open'})
-    e.é = 1 // set this, so the node won't be removed when the shadow is emptied (stupid hack... obviously)
+    e.__s = 1 // set this, so the node won't be removed when the shadow is emptied (stupid hack... obviously)
     shadow.appendChild(e)
   }
 
