@@ -11,11 +11,12 @@ import { noop, slasher, which } from '../lib/utils'
 import isEqual from '../lib/isEqual'
 
 const sameOrigin = (href) => typeof href === 'string' && href.indexOf(origin) === 0
-const isSameRoute = (routeA, routeB, dataA, dataB) => routeA === routeB && (
-    dataA.hash === dataB.hash &&
-    isEqual(dataA.params, dataB.params) &&
-    isEqual(dataA.query, dataB.query)
-  )
+const isSameRoute = (routeA, routeB, dataA, dataB) => (
+  routeA === routeB &&
+  dataA.hash === dataB.hash &&
+  isEqual(dataA.params, dataB.params) &&
+  isEqual(dataA.query, dataB.query)
+)
 
 export default class RoadTrip {
   constructor (base = '') {
@@ -179,41 +180,39 @@ export default class RoadTrip {
   //  - allow the link watching to be contained to an element (workaround for document level passive listeners)
 
   watchLinks (container_el) {
+    const ev_goto = (event, path, options) => {
+      // preventDefault on document level ecents is no longer possible starting with chrome 56
+      // (all document level event listeners are considered passive by default)
+      // https://www.chromestatus.com/feature/5093566007214080
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      return this.goto(path, options)
+    }
     const click_handler = (event) => {
-      let w = which(event)
-      if (w !== 1 && w !== 0) return
-      if (event.metaKey || event.ctrlKey || event.shiftKey) return
-      if (event.defaultPrevented) return
+      // TODO: hopefully uglify merges the return statements into one statement. if not, merge them reducing the number of return statements
+      let w  = which(event), el, path, goto_path
+      if (
+          (w !== 1 && w !== 0) ||
+          (event.metaKey || event.ctrlKey || event.shiftKey) ||
+          (event.defaultPrevented)
+        ) return
 
       // ensure target is a link
-      let el = event.composed ? event.composedPath()[0] : event.target
-      while (el && el.nodeName !== 'A') {
-        el = el.parentNode
-      }
+      el = event.composed ? event.composedPath()[0] : event.target
+      while (el && el.nodeName !== 'A') el = el.parentNode
 
-      if (!el || el.nodeName !== 'A') return
-
-      // Ignore if tag has
-      // 1. 'download' attribute
-      // 2. rel='external' attribute
-      if (el.hasAttribute('download') || el.getAttribute('rel') === 'external') return
-
-      // ensure non-hash for the same path
-
-      // Check for mailto: in the href
-      if (~el.href.indexOf('mailto:')) return
-
-      // check target
-      if (el.target) return
-
-      // x-origin
-      if (!sameOrigin(el.href)) {
-        console.warn('navigating outside of this origin. TODO: x-origin navigation function (which can do tracking or cancel the event)')
-        return
-      }
+      if (
+          !el ||
+          el.nodeName !== 'A' ||
+          el.hasAttribute('download') ||
+          el.getAttribute('rel') === 'external' ||
+          ~el.href.indexOf('mailto:') ||
+          el.target ||
+          !sameOrigin(el.href) // TODO: x-origin navigation function (which can do tracking or cancel the event)
+        ) return
 
       // rebuild path
-      let path = el.pathname + el.search + (el.hash || '')
+      path = el.pathname + el.search + (el.hash || '')
 
       // strip leading '/[drive letter]:' on NW.js on Windows
       if (typeof process !== 'undefined' && path.match(/^\/[a-zA-Z]:\//)) {
@@ -221,16 +220,7 @@ export default class RoadTrip {
       }
 
       // same page
-      var goto_path = path
-      // when 404ing, it's also necessary to preventDefault to prevent navigation.
-      const _goto = (path, options) => {
-        // preventDefault on document level ecents is no longer possible starting with chrome 56
-        // (all document level event listeners are considered passive by default)
-        // https://www.chromestatus.com/feature/5093566007214080
-        event.preventDefault()
-        event.stopImmediatePropagation()
-        return this.goto(path, options)
-      }
+      goto_path = path
 
       if (this.base) {
         if (path.indexOf(this.base) === 0) path = path.substr(this.base.length)
@@ -243,10 +233,10 @@ export default class RoadTrip {
 
       // no match? allow navigation if this._404 isn't set
       if (!this.routes.some(route => route.matches(goto_path)) && !this._404) {
-        return _goto(goto_path, {code: 404})
+        return ev_goto(event, goto_path, {code: 404})
       }
 
-      _goto(goto_path, {code: 200})
+      ev_goto(event, goto_path, {code: 200})
     }
 
     const popstate_handler = (event) => {
