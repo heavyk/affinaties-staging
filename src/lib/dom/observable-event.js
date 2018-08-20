@@ -1,6 +1,5 @@
 
-// import { on, off } from './observable'
-
+import { is_obv } from './observable'
 
 // register a listener
 export function on (emitter, event, listener, opts = false) {
@@ -119,7 +118,7 @@ export function observe (e, observe_obj) {
     // observable
     switch (s) {
       case 'input':
-        cleanupFuncs.push(attribute(e, obj[s+'.attr'], obj[s+'.on'])(v))
+        cleanupFuncs.push(attribute(e, observe_obj[s+'.attr'], observe_obj[s+'.on'])(v))
         break
       case 'hover':
         cleanupFuncs.push(hover(e)(v))
@@ -131,14 +130,18 @@ export function observe (e, observe_obj) {
         cleanupFuncs.push(select(e)(v))
         break
       case 'boink':
+        // do_boink is only called here:
         // do_boink.call(cleanupFuncs, e, v)
+        // inlined...
         cleanupFuncs.push(
           listen(e, 'click', false, () => { is_obv(v) ? v(!v()) : v() }),
           listen(e, 'touchstart', false, (e) => { e && e.preventDefault(); is_obv(v) ? v(!v()) : v() })
         )
         break
       case 'press':
+        // do_press is only called here:
         // do_press.call(cleanupFuncs, e, v)
+        // inlined...
         cleanupFuncs.push(
           listen(e, 'mouseup', false, () => { v(false) }),
           listen(e, 'mousedown', false, () => { v(true) }),

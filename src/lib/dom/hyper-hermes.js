@@ -243,13 +243,8 @@ export function set_style (e, style, cleanupFuncs = []) {
   })(s, style[s])
 }
 
-export function isNode (el) {
-  return el && el.nodeType
-}
-
-export function isText (el) {
-  return el && el.nodeType == 3
-}
+export const isNode = (el) => el && el.nodeType
+export const isText = (el) => el && el.nodeType == 3
 
 export function arrayFragment (e, arr, cleanupFuncs) {
   var v, frag = doc.createDocumentFragment()
@@ -378,7 +373,6 @@ export function new_dom_context (no_cleanup) {
   //  -- and, turn the context fn into a class??
   var ctx = context((el, args) => {
     var i
-
     return !~el.indexOf('-') ? doc.createElement(el)
       : (i = special_elements[el]) !== undefined ? new (customElements.get(el))(...args.splice(0, i))
       : new (customElements.get(el))

@@ -2,7 +2,7 @@ import { mergeDeep, forEach } from '../lib/utils'
 import hsl2rgb from '../lib/color/hsl2rgb'
 import rgba2color from '../lib/color/rgba2color'
 import { hex } from '../lib/parse/number'
-import { s } from '../lib/dom/hyper-hermes'
+import { h, s } from '../lib/dom/hyper-hermes'
 
 // knicked from http://github.com/stewartlord/identicon.js
 // removed png rendering and implemented svg rendering as default
