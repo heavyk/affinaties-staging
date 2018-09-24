@@ -2,16 +2,14 @@
 import { is_obv } from './observable'
 
 // register a listener
-export function on (emitter, event, listener, opts = false) {
+export const on = (emitter, event, listener, opts = false) =>
   (emitter.on || emitter.addEventListener)
     .call(emitter, event, listener, opts)
-}
 
 // unregister a listener
-export function off (emitter, event, listener, opts = false) {
-  (emitter.removeListener || emitter.removeEventListener || emitter.off)
+export const off = (emitter, event, listener, opts = false) =>
+  (emitter.off || emitter.removeListener || emitter.removeEventListener)
     .call(emitter, event, listener, opts)
-}
 
 export function listen (element, event, attr, listener) {
   function onEvent (e) {
@@ -28,7 +26,7 @@ export function listen (element, event, attr, listener) {
 export function attribute (element, _attr, _event) {
   var attr = _attr !== void 0 ? _attr : 'value'
   var event = _event !== void 0 ? _event : 'input'
-  observable.observable = 'attribute'
+  observable._obv = 'attribute'
   return observable
 
   function observable (val) {
@@ -51,7 +49,7 @@ export function select (element) {
       if (element.options[i].value == val) element.selectedIndex = i
     }
   }
-  observable.observable = 'select'
+  observable._obv = 'select'
   return observable
 
   function observable (val) {
@@ -66,7 +64,7 @@ export function select (element) {
 //toggle based on an event, like mouseover, mouseout
 export function toggle (el, up_event, down_event) {
   var _val = false
-  observable.observable = 'toggle'
+  observable._obv = 'toggle'
   return observable
 
   function observable (val) {

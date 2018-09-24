@@ -9,14 +9,14 @@ import { define_value, forEach, error } from '../utils'
 // * change from object traversal to arrays
 //  * change all() from `for (var k in ary) ary[k](val)` -> `for (var i = 0; i < ary.length; i++) ary[i](val)`
 //  * then, in remove() use `.splice` instead of `delete`. however, to avoid the case that a listener is removed from inside of a listener, the value is set to null and only compacted after 10 listeners have been removed
-// * add .observable property to all returned functions (necessary for hyper-hermes to know that it's an observable instead of a context)
+// * add `.observable` property to all returned functions (necessary for hyper-hermes to know that it's an observable instead of a context)
 // * changed `value` to only propagate when the value has actually changed. to force all liseners to receive the current value, `call observable.set()` or `observable.set(observable())`
+// * changed `.observable` property name to `._obv`
 // (TODO) use isEqual function to compare values before setting the observable (this may not be necessary actually because objects should not really be going into observables)
 // (TODO) add better documentation for each function
 
-
-export function expect_obv (obv) {
-  if (typeof obv !== 'function')
+export function ensure_obv (obv) {
+  if (typeof obv !== 'function' || typeof obv._obv !== 'string')
     error('expected an observable')
 }
 
@@ -66,7 +66,7 @@ export function remove (ary, item) {
 // An observable that stores a value.
 export function value (initialValue) {
   // if the value is already an observable, then just return it
-  if (typeof initialValue === 'function' && initialValue.observable === 'value') return initialValue
+  if (typeof initialValue === 'function' && initialValue._obv === 'value') return initialValue
   var _val = initialValue, listeners = []
   observable.set = (val) => emit(listeners, _val, _val = val === undefined ? _val : val)
   observable.once = (fn, imm) => {
@@ -76,7 +76,7 @@ export function value (initialValue) {
     }, imm)
     return remove
   }
-  observable.observable = 'value'
+  observable._obv = 'value'
   return observable
 
   function observable (val, imm) {
@@ -93,13 +93,13 @@ export function value (initialValue) {
 // An observable that stores a number value.
 export function number (initialValue) {
   // if the value is already an observable, then just return it
-  if (typeof initialValue === 'function' && initialValue.observable === 'value') return initialValue
+  if (typeof initialValue === 'function' && initialValue._obv === 'value') return initialValue
   var _val = initialValue, listeners = []
   // TODO: it would probably be better to figure out a way to make these a part of the prototype (or figure out some weird way where a function can be a class)
   observable.set = (val) => emit(listeners, _val, _val = val === undefined ? _val : val)
   observable.add = (val) => observable(_val + (typeof val === 'function' ? val() : val))
   observable.mul = (val) => observable(_val * (typeof val === 'function' ? val() : val))
-  observable.observable = 'value'
+  observable._obv = 'value'
   return observable
 
   function observable (val, imm) {
@@ -116,7 +116,7 @@ export function number (initialValue) {
 // an observable object
 export function obv_obj (initialValue, _keys) {
   // if the value is already an observable, then just return it
-  if (initialValue && initialValue.observable === 'object') return initialValue
+  if (initialValue && initialValue._obv === 'object') return initialValue
 
   var obj = {}
   var obvs = {}
@@ -134,8 +134,8 @@ export function obv_obj (initialValue, _keys) {
   for (let k of Array.isArray(_keys) ? _keys : Object.keys(initialValue)) {
     let _obv, v = initialValue[k]
     if (v !== undefined) {
-      if (v.observable === 'value') obvs[k] = v, keys.push(k)
-      else if (v.observable) props[k] = define_value(v)
+      if (v._obv === 'value') obvs[k] = v, keys.push(k)
+      else if (v._obv) props[k] = define_value(v)
       else keys.push(k)
     }
   }
@@ -156,7 +156,7 @@ could change this to work with backbone Model - but it would become ugly.
 */
 
 export function property (model, key) {
-  observable.observable = 'property'
+  observable._obv = 'property'
   return observable
 
   function observable (val) {
@@ -171,9 +171,9 @@ export function property (model, key) {
 }
 
 export function transform (obv, down, up) {
-  expect_obv(obv)
+  ensure_obv(obv)
 
-  observable.observable = 'value'
+  observable._obv = 'value'
   return observable
 
   function observable (val, imm) {
@@ -185,8 +185,9 @@ export function transform (obv, down, up) {
   }
 }
 
-export function modify (o, fn = (v) => !v) {
-  return (evt) => o(fn(o(), evt))
+export function modify (obv, fn = (v) => !v) {
+  ensure_obv(obv)
+  return (evt) => obv(fn(obv(), evt))
 }
 
 export var _px = (v) => typeof v === 'string' && ~v.indexOf('px') ? v : v + 'px'
@@ -208,12 +209,13 @@ export function compute (observables, compute_fn) {
         if (prev !== v && is_init === false) observable(compute_fn.apply(null, cur))
       }))
     } else {
+      // items in the observable array can also be literals
       cur[i] = fn
     }
   }
 
   _val = compute_fn.apply(null, cur)
-  observable.observable = 'value'
+  observable._obv = 'value'
   is_init = false
 
   return observable
@@ -243,7 +245,7 @@ export function event (element, attr, event, truthy) {
   event = event || 'keyup'
   truthy = truthy || ((ev) => ev.which === 13 && !ev.shiftKey)
   attr = attr || 'value'
-  observable.observable = 'event'
+  observable._obv = 'event'
   return observable
 
   function observable (val) {
@@ -259,7 +261,7 @@ export function event (element, attr, event, truthy) {
 }
 
 export function is_obv (obv, type = null) {
-  return typeof obv === 'function' && ((!type && obv.observable) || obv.observable === type)
+  return typeof obv === 'function' && ((!type && obv._obv) || obv._obv === type)
 }
 
 export function observable_property (obj, key, o) {
