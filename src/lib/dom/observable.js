@@ -35,9 +35,9 @@ export function bind2 (l, r) {
 }
 
 //trigger all listeners
-function emit (ary, val2, val) {
+function emit (ary, val, old_val) {
   for (var fn, c = 0, i = 0; i < ary.length; i++)
-    if (fn = ary[i]) fn(val, val2)
+    if (fn = ary[i]) fn(val, old_val)
     else c++
 
   if (c > 10) setTimeout(compactor, 1, ary)
@@ -68,22 +68,22 @@ export function value (initialValue) {
   // if the value is already an observable, then just return it
   if (typeof initialValue === 'function' && initialValue._obv === 'value') return initialValue
   var _val = initialValue, listeners = []
-  observable.set = (val) => emit(listeners, _val, _val = val === undefined ? _val : val)
-  observable.once = (fn, imm) => {
+  observable.set = (val) => emit(listeners, _val = val === undefined ? _val : val, _val)
+  observable.once = (fn, do_immediately) => {
     var remove = observable((val, prev) => {
       fn(val, prev)
       remove()
-    }, imm)
+    }, do_immediately)
     return remove
   }
   observable._obv = 'value'
   return observable
 
-  function observable (val, imm) {
+  function observable (val, do_immediately) {
     return (
       val === undefined ? _val                                                               // getter
     : typeof val !== 'function' ? (_val === val ? void 0 : emit(listeners, _val, _val = val), val) // setter only sets if the value has changed (won't work for byref things like objects or arrays)
-    : (listeners.push(val), (_val === undefined || imm === false ? _val : val(_val)), () => {                 // listener
+    : (listeners.push(val), (_val === undefined || do_immediately === false ? _val : val(_val)), () => {                 // listener
         remove(listeners, val)
       })
     )
@@ -96,17 +96,17 @@ export function number (initialValue) {
   if (typeof initialValue === 'function' && initialValue._obv === 'value') return initialValue
   var _val = initialValue, listeners = []
   // TODO: it would probably be better to figure out a way to make these a part of the prototype (or figure out some weird way where a function can be a class)
-  observable.set = (val) => emit(listeners, _val, _val = val === undefined ? _val : val)
+  observable.set = (val) => emit(listeners, _val = val === undefined ? _val : val, _val)
   observable.add = (val) => observable(_val + (typeof val === 'function' ? val() : val))
   observable.mul = (val) => observable(_val * (typeof val === 'function' ? val() : val))
   observable._obv = 'value'
   return observable
 
-  function observable (val, imm) {
+  function observable (val, do_immediately) {
     return (
       val === undefined ? _val                                                               // getter
-    : typeof val !== 'function' ? (_val === val ? void 0 : emit(listeners, _val, _val = val), val) // setter only sets if the value has changed (won't work for byref things like objects or arrays)
-    : (listeners.push(val), (_val === undefined || imm === false ? _val : val(_val)), () => {                 // listener
+    : typeof val !== 'function' ? (_val === val ? void 0 : emit(listeners, _val = val, _val), val) // setter only sets if the value has changed (won't work for byref things like objects or arrays)
+    : (listeners.push(val), (_val === undefined || do_immediately === false ? _val : val(_val)), () => {                 // listener
         remove(listeners, val)
       })
     )
@@ -176,11 +176,11 @@ export function transform (obv, down, up) {
   observable._obv = 'value'
   return observable
 
-  function observable (val, imm) {
+  function observable (val, do_immediately) {
     return (
       val === undefined ? down(obv())
     : typeof val !== 'function' ? obv((up || down)(val))
-    : obv((_val, old) => { val(down(_val, old)) }, imm)
+    : obv((_val, old) => { val(down(_val, old)) }, do_immediately)
     )
   }
 }
@@ -220,11 +220,11 @@ export function compute (observables, compute_fn) {
 
   return observable
 
-  function observable (val, imm) {
+  function observable (val, do_immediately) {
     return (
       val === undefined ? _val                                                               // getter
-    : typeof val !== 'function' ? (_val === val ? void 0 : emit(listeners, _val, _val = val), val) // setter (the new way - only sets if the value has changed)
-    : (listeners.push(val), (_val === undefined || imm === false ? _val : val(_val)), () => {                 // listener
+    : typeof val !== 'function' ? (_val === val ? void 0 : emit(listeners, _val = val, _val), val) // setter (the new way - only sets if the value has changed)
+    : (listeners.push(val), (_val === undefined || do_immediately === false ? _val : val(_val)), () => {                 // listener
         remove(listeners, val)
         for (fn of removables) _val()
       })
