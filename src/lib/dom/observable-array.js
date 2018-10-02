@@ -187,38 +187,6 @@ export class ObservableArray extends MixinEmitter(Array) {
     return this
   }
 
-  quiksort_old (compare) {
-    // DJ quiksort :D
-    // ripped from http://stackoverflow.com/questions/5185864/javascript-quicksort
-    // slight speed tradeoff. another way: copy the array, use native sort, and compare the results to re-order the elements
-    var _quikSort = (t, s, e, sp, ep) => {
-      if (s >= e) return
-      while (sp < ep && compare(t[sp], t[e]) < 0) sp++
-      if (sp === e) _quikSort(t, s, e - 1, s, e - 1)
-      else {
-        while (compare(t[ep], t[e]) >= 0 && sp < ep) ep--
-        var temp
-        if (sp === ep) {
-          this.emit('change', {type: 'swap', from: sp, to: e })
-          temp = t[sp]
-          t[sp] = t[e]
-          t[e] = temp
-          if (s !== sp) _quikSort(t, s, sp - 1, s, sp - 1)
-          _quikSort(t, sp + 1, e, sp + 1, e)
-        } else {
-          this.emit('change', {type: 'swap', from: sp, to: ep })
-          temp = t[sp]
-          t[sp] = t[ep]
-          t[ep] = temp
-          _quikSort(t, s, e, sp + 1, ep)
-        }
-      }
-    }
-
-    _quikSort(this, 0, this.length - 1, 0, this.length - 1)
-    return this
-  }
-
   empty () {
     if (this.length > 0) {
       this.emit('change', { type: 'empty' })
@@ -297,6 +265,7 @@ export class ObservableArray extends MixinEmitter(Array) {
   }
 }
 
+// this function is to replicate changes made to one obv arr to another one(s)
 export function ObservableArrayApply (oarr, ...arr) {
   oarr.on('change', (e) => {
     var a, t
@@ -547,7 +516,7 @@ export class RenderingArray extends ObservableArray {
 }
 
 let proto = RenderingArray.prototype
-for (let p of ['swap','move','set','unshift','push','splice','remove','replace','insert','sort','empty','pop','reverse','shift', 'setPath'])
+for (let p of ['swap','move','set','unshift','push','splice','remove','replace','insert','sort','empty','pop','reverse','shift','setPath'])
   proto[p] = function () { return this.d[p].apply(this.d, arguments) }
 
 // ==========================================

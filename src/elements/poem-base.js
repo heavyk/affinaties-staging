@@ -1,5 +1,6 @@
 
-import { value, transform, event, observable_property } from '../lib/dom/observable'
+import { value, transform, observable_property } from '../lib/dom/observable'
+import { obv_event } from '../lib/dom/observable-event'
 import { ObservableArray } from '../lib/dom/observable-array'
 import { MixinEmitter } from '../lib/drip/MixinEmitter'
 // TODO: remove h, s (should be retreived from the context)

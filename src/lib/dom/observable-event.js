@@ -22,6 +22,28 @@ export function listen (element, event, attr, listener) {
   return () => off(element, event, onEvent)
 }
 
+// observe any event, reading any attribute
+export function obv_event (element, attr, event, truthy) {
+  event = event || 'keyup'
+  truthy = typeof truthy === 'function' ? truthy
+    : ((ev) => ev.which === 13 && !ev.shiftKey)
+  attr = attr || 'value'
+  observable._obv = 'event'
+  return observable
+
+  function observable (val) {
+    function listener (ev) { if (truthy(ev)) val(element[attr], ev) }
+    return (
+      val === undefined ? val
+    : typeof val !== 'function' ? undefined //read only
+    : (on(element, event, listener), () => {
+        off(element, event, listener)
+      })
+    )
+  }
+}
+
+
 //observe html element - aliased as `input`
 export function attribute (element, _attr, _event) {
   var attr = _attr !== void 0 ? _attr : 'value'
@@ -154,7 +176,7 @@ export function observe (e, observe_obj) {
       // case 'touchend':
         if (!~s.indexOf('.')) {
           if (typeof v !== 'function') error('observer must be a function')
-          cleanupFuncs.push(event(e, obj[s+'.attr'], obj[s+'.on'] || s, obj[s+'.event'])(v))
+          cleanupFuncs.push(obv_event(e, observe_obj[s+'.attr'], (observe_obj[s+'.on'] || s), observe_obj[s+'.event'])(v))
         }
     }
   })(s, observe_obj[s])
