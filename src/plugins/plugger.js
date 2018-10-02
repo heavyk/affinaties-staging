@@ -1,6 +1,8 @@
 import pluginBoilerplate from '../lib/plugins/plugin-boilerplate'
 import { win } from '../lib/dom/hyper-hermes'
 import { value, transform, compute, modify } from '../lib/dom/observable'
+import { ObservableArray, RenderingArray } from '../lib/dom/observable-array'
+// import RoadTrip from '../roadtrip/roadtrip.js'
 
 win.plugger = (starting_panel, C = {}, D = {}) => {
   let beginner = ({G, C}) => {
@@ -17,11 +19,11 @@ win.plugger = (starting_panel, C = {}, D = {}) => {
   pluginBoilerplate(null, 'id', C, D, {}, beginner)
 }
 
-// consent is not imposing your will on someone and having them just, not resist
+// consent is not imposing your will on someone and having them just, not resist.
 // consent means the other person wants to be doing the thing that you're doing.
 // -vox 2016
 
-/*
+///*
 function plugin_demo ({G, C}) {
   const {h, t, c, v, m} = G
   let lala = v(C.lala)
@@ -32,6 +34,9 @@ function plugin_demo ({G, C}) {
   let selected = v()
   let w1 = v()
   let w2 = v()
+  let item_text = v()
+  let my_list = new ObservableArray('one', 'two', 'three')
+  win.list = my_list
   // TEMPORARY CACA: (lol)
   G.E.body.aC(h('style', `
     h1, h3 { text-align: center }
@@ -79,6 +84,17 @@ function plugin_demo ({G, C}) {
     h('input', {type: 'text', value: selected, placeholder: 'nothing selected yet...'}),
     ' selected: ', h('b', selected)
   )
+  let tpl_list = () => h('div.tpl_list',
+    h('div.my-list', new RenderingArray(G, my_list, (it, idx, {h}) => {
+      return h('div', 'item: ', it)
+    })),
+    h('div.list-input',
+      h('input', {type: 'text', value: item_text, placeholder: 'add an item...', observe: {keyup: (val) => {
+        my_list.push(item_text())
+        item_text('')
+      }}})
+    )
+  )
 
   return h('div',
     h('h1', 'simple plugin demo'),
@@ -94,9 +110,13 @@ function plugin_demo ({G, C}) {
     tpl_words(),
     h('hr'),
     h('h3', 'select boxes'),
-    tpl_select()
+    tpl_select(),
+    h('hr'),
+    h('h3', 'list types'),
+    tpl_list()
   )
 }
 
 plugger(plugin_demo, {lala: 1234})
-*/
+
+//*/
