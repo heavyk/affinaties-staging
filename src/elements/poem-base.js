@@ -4,7 +4,7 @@ import { obv_event } from '../lib/dom/observable-event'
 import { ObservableArray } from '../lib/dom/observable-array'
 import { MixinEmitter } from '../lib/drip/MixinEmitter'
 // TODO: remove h, s (should be retreived from the context)
-import { h, s, isNode, txt, set_style } from '../lib/dom/hyper-hermes'
+import { h, s, isNode, txt, set_style, set_attr } from '../lib/dom/hyper-hermes'
 import { new_context, el_context } from '../lib/dom/hyper-hermes'
 
 import { parseUri, parseQS, parseHash, parseJSON, camelize, define_getter } from '../lib/utils'
@@ -47,7 +47,7 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
 
     for (i = 0; i < keys.length; i++) ((k) => {
       observables[camelize(k)](function (v) {
-        if (v != null) self.setAttribute(k, v)
+        if (v != null) set_attr(self, k, v)
       })
     })(keys[i])
   }
@@ -115,7 +115,7 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
     o = observables[kc] = is_obv ? v : value(v)
     observable_property(self, kc, o)
     if (!hidden) o(function (v) {
-      if (v != null) self.setAttribute(k, v)
+      if (v != null) set_attr(self, k, v)
     })
     return o
   }

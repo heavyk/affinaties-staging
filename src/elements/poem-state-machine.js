@@ -71,8 +71,7 @@ export default class PoemStateMachine extends PathEmitter(HTMLElement) {
     for (i = 0; i < keys.length; i++) (function (k) {
       observables[camelize(k)](function (v) {
         // console.log('new value', k, v)
-        // self[k] = v
-        if (v != null) self.setAttribute(k, v)
+        if (v != null) set_attr(self, k, v)
       })
     })(keys[i])
   }
@@ -193,7 +192,7 @@ export default class PoemStateMachine extends PathEmitter(HTMLElement) {
     o = observables[kc] = is_obv ? v : value(v)
     observable_property(self, kc, o)
     if (!hidden) o(function (v) {
-      if (v != null) self.setAttribute(k, v)
+      if (v != null) set_attr(self, k, v)
     })
     return o
   }

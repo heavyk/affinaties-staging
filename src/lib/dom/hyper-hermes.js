@@ -22,7 +22,7 @@ export const basePath = location.pathname
 export const origin = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '')
 
 // add your own (or utilise this to make your code smaller!)
-export var short_attrs = { s: 'style', c: 'class' }
+export var short_attrs = { s: 'style', c: 'className', class: 'className', for: 'htmlFor' }
 
 // can be used to save bytes:
 // h(1,{value:11})
@@ -67,7 +67,7 @@ function context (createElement) {
               if ((k = v[0]) === '.' || k === '#') {
                 if (s = v.substring(1, i)) {
                   if (k === '.') e.classList.add(s)
-                  else e.setAttribute('id', s)
+                  else e.id = s
                 }
               }
             }
@@ -141,13 +141,14 @@ export function set_attr (e, key_, v, cleanupFuncs = []) {
       } else if (k.substr(0, 6) === 'before') {
         add_event.call(cleanupFuncs, e, k.substr(6), v, true)
       } else {
-        // setAttribute is used here, primarily because of svg support.
+        // setAttribute was used here, primarily for svg support.
+        // we may need to make a second version or something which works well with svg, perhaps instead using setAttributeNode
         // however, as mentioned in this article it may be desirable to use property access instead
         // https://stackoverflow.com/questions/22151560/what-is-happening-behind-setattribute-vs-attribute
         // observable (write-only) value
-        if ((s = v()) != null) e.setAttribute(k, s)
+        if ((s = v()) != null) e[k] = s
         cleanupFuncs.push(v((v) => {
-          if (v != null) e.setAttribute(k, v)
+          set_attr(e, k, v, cleanupFuncs)
         }))
         s = e.nodeName
         s === "INPUT" && observe.call(cleanupFuncs, e, {input: v})
@@ -198,9 +199,9 @@ export function set_attr (e, key_, v, cleanupFuncs = []) {
       } else {
         set_style(e, v, cleanupFuncs)
       }
-    // no longer necessary because the setAttribute is always used (e[k] is no longer set directly)
-    // } else if (k.substr(0, 5) === "data-") {
-    //   e.setAttribute(k, v)
+    } else if (~k.indexOf('-')) {
+      // in weird cases with stuff like data- or other attrs containing hyphens, use setAttribute
+      e.setAttribute(k, v)
     } else if (typeof v !== 'undefined') {
       // for namespaced attributes, such as xlink:href
       // (I'm really not aware of any others than xlink... PRs accepted!)
@@ -218,8 +219,8 @@ export function set_attr (e, key_, v, cleanupFuncs = []) {
         // https://jsperf.com/setattribute-vs-property-assignment/7
         // should check memory requirements, but because of the weirdness associated with mixing property and value,
         // it may be prudent to use property access unless it's a svg (or some other non-standard) context.
-        // e[k] = v
-        e.setAttribute(k, v)
+        e[k] = v
+        // e.setAttribute(k, v)
       }
     }
   }
@@ -227,20 +228,24 @@ export function set_attr (e, key_, v, cleanupFuncs = []) {
 
 export function set_style (e, style, cleanupFuncs = []) {
   // if I use setProperty, then, 'borderRadius' will not work. (which is nice when using LiveScript, cause then the property does not need to be quoted)
-  for (var s in style) ((s, v) => {
-    if (typeof v === 'function') {
-      // observable
-      // e.style.setProperty(s, v())
-      e.style[s] = v()
-      cleanupFuncs.push(v((val) => {
-        // e.style.setProperty(s, val)
-        e.style[s] = val
-      }))
-    } else {
-      // e.style.setProperty(s, v)
-      e.style[s] = v
-    }
-  })(s, style[s])
+  if (typeof style === 'object') {
+    for (var s in style) ((s, v) => {
+      if (typeof v === 'function') {
+        // observable
+        // e.style.setProperty(s, v())
+        e.style[s] = v()
+        cleanupFuncs.push(v((val) => {
+          // e.style.setProperty(s, val)
+          e.style[s] = val
+        }))
+      } else {
+        // e.style.setProperty(s, v)
+        e.style[s] = v
+      }
+    })(s, style[s])
+  } else {
+    e.setAttribute('style', style)
+  }
 }
 
 export const isNode = (el) => el && el.nodeType
