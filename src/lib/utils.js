@@ -7,6 +7,12 @@ export function error (message) {
   throw new Error(message)
 }
 
+export function __debug (msg) {
+  if (msg) console.log('entering the debugger. reason:\n    ' + msg)
+  if (typeof DEBUG !== 'undefined') debugger
+  else console.warn('continuing... (debug not enabled)')
+}
+
 // micro-optimization: http://jsperf.com/for-vs-foreach/292
 export function forEach (arr, fn) {
   for (var i = 0; i < arr.length; ++i) fn.call(arr, arr[i], i)
@@ -30,6 +36,8 @@ export function parents (el, name) {
     : null
 }
 
+export const random_id = () => Math.random().toString(32).substr(2)
+
 export const isEmpty = (value) => (!value || typeof value !== 'object') ? !value : !Object.keys(value).length
 
 export function joinPaths (...parts) {
@@ -48,7 +56,7 @@ export function compact (array) {
       if (index !== ++resIndex) array[resIndex] = value
     }
   }
-  array.length = resIndex+1
+  array.length = resIndex + 1
   return array
 }
 
@@ -137,15 +145,15 @@ export function pick (object, keys) {
   return data
 }
 
+export const isNode = (el) => el && el.nodeType
+export const isText = (el) => el && el.nodeType == 3
+
 export function scrollTo (id_or_el) {
-  if (!id_or_el) return
   var el = typeof id_or_el === 'string' ? document.getElementById(id_or_el) : id_or_el
 
-  if (el) {
-    window.scrollBy(0, el.getBoundingClientRect().top)
-  } else {
-    window.scrollTo(0, 0)
-  }
+  return !el ? null : isNode(el)
+    ? window.scrollBy(0, el.getBoundingClientRect().top)
+    : window.scrollTo(0, 0)
 }
 
 export const stringify = (value) => (!value || typeof value !== 'object') ? value : JSON.stringify(value)

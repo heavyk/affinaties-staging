@@ -43,7 +43,7 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
     }
   })).observe(frame.parentNode, { childList: true })
 
-  win.G = G = frame._G = new_context({h, s})
+  win.G = G = frame._G = new_context({h, s}, 'global')
   G.E = E = { frame: frame, body: doc.body, win: win }
 
   // TODO: get device orientation

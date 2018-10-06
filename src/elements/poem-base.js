@@ -4,10 +4,11 @@ import { obv_event } from '../lib/dom/observable-event'
 import { ObservableArray } from '../lib/dom/observable-array'
 import { MixinEmitter } from '../lib/drip/MixinEmitter'
 // TODO: remove h, s (should be retreived from the context)
-import { h, s, isNode, txt, set_style, set_attr } from '../lib/dom/hyper-hermes'
+import { h, s, txt, set_style, set_attr } from '../lib/dom/hyper-hermes'
 import { new_context, el_context } from '../lib/dom/hyper-hermes'
 
-import { parseUri, parseQS, parseHash, parseJSON, camelize, define_getter } from '../lib/utils'
+import { parseUri, parseQS, parseHash, parseJSON, camelize } from '../lib/utils'
+import { define_getter, isNode, __debug } from '../lib/utils'
 import { pathVars, pathToRegExp, pathToStrictRegExp } from '../lib/router-utils'
 
 export const _observables = new WeakMap
@@ -135,7 +136,7 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
   set style (txt) {
     var self = this
     if (typeof txt === 'object') {
-      if (!self.context().cleanupFuncs) debugger
+      if (!self.context().cleanupFuncs) __debug()
       return set_style(self, txt, self.context().cleanupFuncs)
     }
     var shadow = self.shadow
@@ -147,7 +148,8 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
 
   context (ns = '_ctx') {
     var ctx
-    return this[ns] || (this[ns] = ctx = new_context({h, s}), h.cleanupFuncs.push(() => { ctx.cleanup() }), ctx)
+    return this[ns] || (this[ns] = ctx = new_context({h, s}),
+      h.cleanupFuncs.push(() => { ctx.cleanup() }), ctx) // return the ctx, not the return value of push
   }
 
   get observables () {

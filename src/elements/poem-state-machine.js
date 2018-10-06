@@ -2,9 +2,9 @@
 import { value, transform, event, observable_property } from '../lib/dom/observable'
 import { ObservableArray } from '../lib/dom/observable-array'
 import { PathEmitter } from '../lib/drip/PathEmitter'
-import { win, h, s, isNode, txt, arrayFragment, new_context } from '../lib/dom/hyper-hermes'
+import { win, h, s, txt, arrayFragment, new_context } from '../lib/dom/hyper-hermes'
 
-import { parseUri, parseQS, parseHash, parseJSON, camelize, define_getter } from '../lib/utils'
+import { parseUri, parseQS, parseHash, parseJSON, camelize, define_getter, isNode } from '../lib/utils'
 import { pathVars, pathToRegExp, pathToStrictRegExp } from '../lib/router-utils'
 
 import { _observables } from './poem-base'
