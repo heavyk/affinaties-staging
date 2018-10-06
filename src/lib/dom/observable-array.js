@@ -1,6 +1,6 @@
 import MixinEmitter from '../drip/MixinEmitter'
 import { value, obv_obj, observable_property } from './observable'
-import { new_context } from './hyper-hermes'
+import { new_ctx } from './hyper-ctx'
 import isEqual from '../isEqual'
 import invoke from '../lodash/invoke'
 import set from '../lodash/set'
@@ -496,7 +496,7 @@ export class RenderingArray extends ObservableArray {
       var _d = this._d[idx] || (this._d[idx] = typeof d === 'object' ? obv_obj(d) : value(d))
       if (fl === 1) return fn(_d)
       else {
-        var _ctx = this._ctx[idx] || (this._ctx[idx] = new_context(this.G))
+        var _ctx = this._ctx[idx] || (this._ctx[idx] = new_ctx(this.G))
         if (fl === 2) return fn(_d, _ctx)
         else { //if (fl === 3) {
           // TODO: check to see if this observable needs to be cleaned up (I don't think so, anyway, but maybe I'm wrong)

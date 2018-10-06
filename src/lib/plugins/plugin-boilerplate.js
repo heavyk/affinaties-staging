@@ -5,7 +5,7 @@ import ResizeSensor from '../dom/resize-sensor'
 
 import { h, s } from '../dom/hyper-hermes'
 import { doc, body, win, IS_LOCAL, basePath } from '../dom/hyper-hermes'
-import { new_context, el_context } from '../dom/hyper-hermes' // I think some cleanup is is order, lol
+import { new_ctx, el_ctx } from '../dom/hyper-ctx'
 import { makeNode } from '../dom/hyper-hermes'
 
 function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) {
@@ -43,7 +43,7 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
     }
   })).observe(frame.parentNode, { childList: true })
 
-  win.G = G = frame._G = new_context({h, s}, 'global')
+  win.G = G = frame._G = new_ctx({h, s}, 'global')
   G.E = E = { frame: frame, body: doc.body, win: win }
 
   // TODO: get device orientation

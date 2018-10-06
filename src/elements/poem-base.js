@@ -5,7 +5,7 @@ import { ObservableArray } from '../lib/dom/observable-array'
 import { MixinEmitter } from '../lib/drip/MixinEmitter'
 // TODO: remove h, s (should be retreived from the context)
 import { h, s, txt, set_style, set_attr } from '../lib/dom/hyper-hermes'
-import { new_context, el_context } from '../lib/dom/hyper-hermes'
+import { new_ctx, el_ctx } from '../lib/dom/hyper-ctx'
 
 import { parseUri, parseQS, parseHash, parseJSON, camelize } from '../lib/utils'
 import { define_getter, isNode, __debug } from '../lib/utils'
@@ -148,7 +148,7 @@ export default class PoemBase extends MixinEmitter(HTMLElement) {
 
   context (ns = '_ctx') {
     var ctx
-    return this[ns] || (this[ns] = ctx = new_context({h, s}),
+    return this[ns] || (this[ns] = ctx = new_ctx({h, s}),
       h.cleanupFuncs.push(() => { ctx.cleanup() }), ctx) // return the ctx, not the return value of push
   }
 
