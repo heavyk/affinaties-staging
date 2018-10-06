@@ -34,18 +34,20 @@ function plugin_demo ({G, C}) {
   let selected = v()
   let w1 = v()
   let w2 = v()
-  let item_text = v()
-  let my_list = new ObservableArray('one', 'two', 'three')
-  win.list = my_list
+  let static_list = new ObservableArray('#1 static one', '#2 static two', '#3 static three')
+  let editable_list = new ObservableArray('first editable', 'second editable', 'third editable')
+
   // TEMPORARY CACA: (lol)
   G.E.body.aC(h('style', `
     h1, h3 { text-align: center }
     h1 { color: #900 }
     h3 { color: #600 }
   `))
+
   let tpl_cod = () => h('div.tpl_cod',
     'condition (lala) is:', lala, ' + (num) = ', sum
   )
+
   let tpl_obv = ({num}) => h('div.tpl_obv',
     'num is:', num,
     h('div.click',
@@ -53,6 +55,7 @@ function plugin_demo ({G, C}) {
       h('button', {observe: {boink: m(num, num => num - 1)}}, 'num--')
     )
   )
+
   let tpl_boink = ({num}) => h('div.tpl_boink',
     h('div.boink',
       h('span', 'boinked: ', t(boinked, (v) => v ? 'YES!' : 'no...')),
@@ -62,6 +65,7 @@ function plugin_demo ({G, C}) {
       h('button', {observe: {press: pressed}}, 'press me')
     )
   )
+
   let tpl_words = () => h('div.tpl_words',
     h('div.word-input',
       h('input', {type: 'text', value: w1, placeholder: 'type a name...'}),
@@ -72,6 +76,7 @@ function plugin_demo ({G, C}) {
     h('div', h('b', w2), ' stays home'),
     h('div', h('b', w1), ' and ', h('b', w2), ' are not at the zoo')
   )
+
   let tpl_select = () => h('div.tpl_select',
     'selector: ',
     h('select.selector', {value: selected},
@@ -84,15 +89,64 @@ function plugin_demo ({G, C}) {
     h('input', {type: 'text', value: selected, placeholder: 'nothing selected yet...'}),
     ' selected: ', h('b', selected)
   )
-  let tpl_list = () => h('div.tpl_list',
-    h('div.my-list', new RenderingArray(G, my_list, (it, idx, {h}) => {
-      return h('div', 'item: ', it)
-    })),
-    h('div.list-input',
+
+  let frag_list_input = (list, item_text = v(), opts = {}) => {
+    return h('div.list-input',
       h('input', {type: 'text', value: item_text, placeholder: 'add an item...', observe: {keyup: (val) => {
-        my_list.push(item_text())
+        list.push(item_text())
         item_text('')
       }}})
+    )
+  }
+
+
+  let tpl_static_list = (list) => h('div.tpl_list',
+    h('div.my-list', new RenderingArray(G, list, (it, idx, {h}) => {
+      return h('div', 'item: ', it)
+    }, { plain: true })),
+    frag_list_input(list)
+  )
+
+  let tpl_editable_list = (list) => h('div.tpl_list',
+    h('div.my-list', new RenderingArray(G, list, (it, idx, {h}) => {
+      var tbox, editing = value(false)
+      return h('div', 'item: ',
+        t(editing, (_editing) =>_editing
+          // @MemoryLeak: this transformation has a potential memory leak.
+          //              every time `editing` changes to true, a new input box will be created
+          //              and the textbox value listener adds a new listener on to `it`,
+          //              so I don't believe that the dom will clean itself up until the `it`
+          //              observable and its listeners are garbage collected
+          ? tbox =
+            h('input', {
+              type: 'text',
+              autofocus: true,
+              value: it,
+              placeholder: it(),
+              observe: {
+                focus: (focused) => (focused ? tbox.select() : tbox.blur(), editing(focused)),
+                keyup: (val) => {
+                  it(val)
+                  editing(!editing())
+                  tbox.blur()
+                }
+              }})
+          : h('span', { observe: { boink: () => { editing(!editing()) }}}, it)
+        )
+      )
+    })),
+    frag_list_input(list)
+  )
+
+  let tpl_sections = () => h('div.tpl_sections',
+    h('div.tabs',
+      h('span.tab', 'one'),
+      h('span.tab', 'two'),
+      h('span.tab', 'three')
+    ),
+    h('div.sections',
+      h('span.section-left', 'TODO(1)'),
+      h('span.section-right', 'TODO(2)')
     )
   )
 
@@ -112,8 +166,13 @@ function plugin_demo ({G, C}) {
     h('h3', 'select boxes'),
     tpl_select(),
     h('hr'),
-    h('h3', 'list types'),
-    tpl_list()
+    h('h3', 'static (variable) list'),
+    tpl_static_list(static_list),
+    h('h3', 'editable (observable) list'),
+    tpl_editable_list(editable_list),
+    h('hr'),
+    h('h3', 'sections / tabs'),
+    tpl_sections()
   )
 }
 
