@@ -1,5 +1,4 @@
-import './plugger'
-import { value, transform, compute, modify } from '../lib/dom/observable'
+import '../lib/plugins/plugger'
 import { ObservableArray, RenderingArray } from '../lib/dom/observable-array'
 // import RoadTrip from '../roadtrip/roadtrip.js'
 
@@ -98,7 +97,7 @@ function plugin_demo ({G, C}) {
 
   let tpl_editable_list = (list) => h('div.tpl_list',
     h('div.my-list', new RenderingArray(G, list, (it, idx, {h}) => {
-      var tbox, editing = value(false)
+      var tbox, editing = v(false)
       return h('div', 'item: ',
         t(editing, (_editing) =>_editing
           // @MemoryLeak: this transformation has a potential memory leak.
