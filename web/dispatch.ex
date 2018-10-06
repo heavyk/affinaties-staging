@@ -15,7 +15,7 @@ defmodule Affinaty.Dispatch do
         link rel: "stylesheet", href: Routes.static_path(@conn, "/plugins/" <> @name <> ".css")
       end
       body do
-        div
+        div "loading..."
         script src: Routes.static_path(@conn, "/plugins/plugger.js")
         script do
           render @name, assigns
@@ -42,6 +42,9 @@ defmodule Affinaty.Dispatch do
     """}
   end
 
+  defp number_or_string("null"), do: nil
+  defp number_or_string("true"), do: true
+  defp number_or_string("false"), do: false
   defp number_or_string(str) do
     try do
       String.to_integer(str)
