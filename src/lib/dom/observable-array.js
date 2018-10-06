@@ -327,10 +327,10 @@ function swap (o, to, from) {
 }
 
 export class RenderingArray extends ObservableArray {
-  constructor (G, data, fn) {
+  constructor (G, data, fn, opts = { plain: false }) {
     super()
     this.fn = typeof data === 'function' ? (fn = data) : fn
-    var fl = this.fl = fn.length
+    let k, fl = this.fl = fn.length
     this.G = G
     this.d = data instanceof ObservableArray ? data : (data = new ObservableArray)
     // this should have cleanupFuncs in the context (which adds h/s cleanup to the list when it makes the context)
@@ -340,6 +340,9 @@ export class RenderingArray extends ObservableArray {
     if (fl >= 1) this._d = []
     if (fl >= 2) this._ctx = []
     if (fl >= 3) this._idx = []
+
+    // assigns options to `this`
+    for (k in opts) this[k] = opts[k]
 
     // lastly, if data has length, then render and add each of them
     this.data(data)
@@ -490,17 +493,18 @@ export class RenderingArray extends ObservableArray {
   }
 
   fn_call (d, idx) {
-    var fl = this.fl, fn = this.fn, ret
+    var fl = this.fl, fn = this.fn
+    var _d, _ctx, _idx
     if (fl === 0) return fn()
     else {
-      var _d = this._d[idx] || (this._d[idx] = typeof d === 'object' ? obv_obj(d) : value(d))
+      _d = this._d[idx] || (this._d[idx] = this.plain ? d : typeof d === 'object' ? obv_obj(d) : value(d))
       if (fl === 1) return fn(_d)
       else {
-        var _ctx = this._ctx[idx] || (this._ctx[idx] = new_ctx(this.G))
+        _ctx = this._ctx[idx] || (this._ctx[idx] = new_ctx(this.G))
         if (fl === 2) return fn(_d, _ctx)
         else { //if (fl === 3) {
           // TODO: check to see if this observable needs to be cleaned up (I don't think so, anyway, but maybe I'm wrong)
-          var _idx = this._idx[idx] || (this._idx[idx] = value(idx))
+          _idx = this._idx[idx] || (this._idx[idx] = value(idx))
           return fn(_d, _idx, _ctx)
         }
       }
