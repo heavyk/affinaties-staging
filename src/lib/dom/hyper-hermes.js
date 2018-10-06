@@ -163,6 +163,16 @@ export function set_attr (e, key_, v, cleanupFuncs = []) {
       else error('data property should be passed as an object')
     } else if (k === 'multiple') {
       e.multiple = !!v
+    } else if (k === 'contenteditable') {
+      e.contentEditable = !!v
+    } else if (k === 'autofocus') {
+      setTimeout(() => e.focus(), 10)
+    } else if (k === 'autoselect') {
+      setTimeout(() => {
+        e.focus()
+        var range = [v[0] || 0, v[1] || -1]
+        e.setSelectionRange.apply(e, range)
+      }, 10)
     } else if (k === 'selected') {
       e.defaultSelected = !!v
     } else if (k === 'checked') {

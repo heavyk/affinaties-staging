@@ -90,6 +90,11 @@ function plugin_demo ({G, C}) {
     ' selected: ', h('b', selected)
   )
 
+  let tpl_autoselect = () => h('div.tpl_autoselect',
+    h('div', 'first 5 chars selected'),
+    h('div', h('input', {type: 'text', value: '123456', autoselect: [0, 4], autofocus: true}))
+  )
+
   let frag_list_input = (list, item_text = v(), opts = {}) => {
     return h('div.list-input',
       h('input', {type: 'text', value: item_text, placeholder: 'add an item...', observe: {keyup: (val) => {
@@ -162,6 +167,9 @@ function plugin_demo ({G, C}) {
     h('hr'),
     h('h3', 'text input'),
     tpl_words(),
+    h('hr'),
+    h('h3', 'text autoselect / focus'),
+    tpl_autoselect(),
     h('hr'),
     h('h3', 'select boxes'),
     tpl_select(),
