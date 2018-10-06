@@ -23,16 +23,16 @@ export function listen (element, event, attr, listener) {
 }
 
 // observe any event, reading any attribute
-export function obv_event (element, attr, event, truthy) {
+export function obv_event (element, attr, event, is_valid) {
   event = event || 'keyup'
-  truthy = typeof truthy === 'function' ? truthy
+  is_valid = typeof is_valid === 'function' ? is_valid
     : ((ev) => ev.which === 13 && !ev.shiftKey)
   attr = attr || 'value'
   observable._obv = 'event'
   return observable
 
   function observable (val) {
-    function listener (ev) { if (truthy(ev)) val(element[attr], ev) }
+    const listener = (ev) => is_valid(ev) ? (val(element[attr], ev), ev.preventDefault(), true) : false
     return (
       val === undefined ? val
     : typeof val !== 'function' ? undefined //read only
@@ -45,6 +45,7 @@ export function obv_event (element, attr, event, truthy) {
 
 
 //observe html element - aliased as `input`
+export { attribute as input }
 export function attribute (element, _attr, _event) {
   var attr = _attr !== void 0 ? _attr : 'value'
   var event = _event !== void 0 ? _event : 'input'
@@ -91,20 +92,25 @@ export function toggle (el, up_event, down_event) {
 
   function observable (val) {
     function onUp() {
-      _val || val(i = true)
+      _val || val.call(el, _val = true)
     }
     function onDown () {
-      _val && val(i = false)
+      _val && val.call(el, _val = false)
     }
     return (
       val === undefined ? _val
     : typeof val !== 'function' ? undefined //read only
-    : (on(el, up_event, onUp), on(el, down_event || up_event, onDown), val(i), () => {
+    : (on(el, up_event, onUp), on(el, down_event || up_event, onDown), () => {
         off(el, up_event, onUp); off(el, down_event || up_event, onDown)
       })
     )
   }
 }
+
+export function hover (e) { return toggle(e, 'mouseover', 'mouseout')}
+export function touch (e) { return toggle(e, 'touchstart', 'touchend')}
+export function mousedown (e) { return toggle(e, 'mousedown', 'mouseup')}
+export function focus (e) { return toggle(e, 'focus', 'blur')}
 
 // call like this `add_event.call(cleanupFuncs, el, listener, opts)`
 // furthermore, it may be wise to make the `cleanupFuncs = this` for all these type of functions
@@ -176,7 +182,9 @@ export function observe (e, observe_obj) {
       // case 'touchend':
         if (!~s.indexOf('.')) {
           if (typeof v !== 'function') error('observer must be a function')
-          cleanupFuncs.push(obv_event(e, observe_obj[s+'.attr'], (observe_obj[s+'.on'] || s), observe_obj[s+'.event'])(v))
+          // if (s === 'edit') debugger
+          cleanupFuncs.push(obv_event(e, observe_obj[s+'.attr'], (observe_obj[s+'.event'] || s), observe_obj[s+'.valid'])(v))
+          // if (s === 'edit') debugger
         }
     }
   })(s, observe_obj[s])

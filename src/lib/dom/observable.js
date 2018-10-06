@@ -251,11 +251,4 @@ export function observable_property (obj, key, o) {
   Object.defineProperty(obj, key, { set: (v) => { o(v) }, get: () => o() })
 }
 
-export function hover (e) { return toggle(e, 'mouseover', 'mouseout')}
-export function touch (e) { return toggle(e, 'touchstart', 'touchend')}
-export function mousedown (e) { return toggle(e, 'mousedown', 'mouseup')}
-export function focus (e) { return toggle(e, 'focus', 'blur')}
-
-export { attribute as input }
-
 export default value
