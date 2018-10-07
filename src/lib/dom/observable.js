@@ -1,6 +1,6 @@
 'use strict'
 
-import { define_value, forEach, error } from '../utils'
+import { define_prop, define_value, forEach, error } from '../utils'
 
 // knicked from: https://github.com/dominictarr/observable/blob/master/index.js
 // mostly unmodified...
@@ -118,13 +118,15 @@ export function number (initialValue) {
 // an observable object
 export function obv_obj (initialValue, _keys) {
   // if the value is already an observable, then just return it
+  // this is actually incorrect, because maybe we want a new object that observes different keys
+  // this kind of needs a little more thought, I think :)
   if (initialValue && initialValue._obv === 'object') return initialValue
 
   var obj = {}
   var obvs = {}
   var keys = []
   var props = {
-    observable: define_value('object'),
+    _obv: define_value('object'),
     // TODO: implement get/set,on/off for compatibility with scuttlebutt?
     set: define_value((v) => {
       for (let k of keys) {
@@ -142,12 +144,14 @@ export function obv_obj (initialValue, _keys) {
     }
   }
 
-  for (let k of keys) props[k] = {
-    get: () => (obvs[k] || (obvs[k] = value(initialValue[k])))(),
-    set: (v) => obvs[k](v)
-  }
-  Object.defineProperties(obj, props)
+  for (let k of keys) props[k] = define_getter(              // define_getter defaults to allow the prop to be enumerable and reconfigurable
+    () => (obvs[k] || (obvs[k] = value(initialValue[k])))(), // get
+    (v) => obvs[k](v)                                        // set
+  )
 
+  // @Incomplete - needs to have cleanup. what's the point of observing something if you can't listen to its changes...
+  //               which means you'll need to stop listening at some point, too
+  Object.defineProperties(obj, props)
   return obj
 }
 
@@ -248,7 +252,8 @@ export function is_obv (obv, type = null) {
 }
 
 export function observable_property (obj, key, o) {
-  Object.defineProperty(obj, key, { set: (v) => { o(v) }, get: () => o() })
+  define_prop(obj, key, define_getter((v) => { o(v) }, () => o()))
+  return () => { define_prop(obj, key, define_value(o(), true)) }
 }
 
 export default value

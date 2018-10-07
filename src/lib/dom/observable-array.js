@@ -1,5 +1,6 @@
 import MixinEmitter from '../drip/MixinEmitter'
 import { value, obv_obj, observable_property } from './observable'
+import { define_prop, define_getter } from '../utils'
 import { new_ctx } from './hyper-ctx'
 import isEqual from '../isEqual'
 import invoke from '../lodash/invoke'
@@ -12,10 +13,7 @@ export class ObservableArray extends MixinEmitter(Array) {
     super(...v)
     this.observable = 'array'
     if (this._o_length) this._o_length(this.length)
-    Object.defineProperty(this, 'obv_len', {
-      configurable: true,
-      get: () => this._o_length || (this._o_length = value(this.length))
-    })
+    define_prop(this, 'obv_len', define_getter(() => this._o_length || (this._o_length = value(this.length))))
   }
 
   pop () {
@@ -485,7 +483,7 @@ export class RenderingArray extends ObservableArray {
       if (this._o_length) this._o_length(len)
       this.d.off('change', onchange)
       this.d = data
-      Object.defineProperty(this, 'obv_len', { configurable: true, get: () => this.d.obv_len })
+      define_prop(this, 'obv_len', define_getter(() => this.d.obv_len))
       data.on('change', onchange)
     }
 

@@ -183,8 +183,10 @@ export function stringifyQS (data) {
 export const camelize = (k) => ~k.indexOf('-') ? k.replace(/-+(.)?/g, (tmp, c) => (c || '').toUpperCase()) : k
 
 // I imagine that something better can be done than this...
-export const define_getter = (get, configurable = true) => ({ get, configurable })
-export const define_value = (value, writable = false, configurable = true) => ({ value, writable, configurable })
+export const define_getter = (get, set = void 0, enumerable = true, configurable = true) => ({ get, set, enumerable, configurable })
+export const define_value = (value, writable = false, enumerable = true, configurable = true) => ({ value, writable, enumerable, configurable })
+export const define_prop = (obj, prop, def) => Object.defineProperty(obj, prop, def)
+export const define_props = (obj, prop_defs) => Object.defineProperties(obj, prop_defs)
 
 export function slasher (_path, strip_leading) {
   // strip trailing slash

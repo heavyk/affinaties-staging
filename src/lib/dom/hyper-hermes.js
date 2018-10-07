@@ -9,7 +9,7 @@
 
 import { is_obv } from './observable'
 import { observe, add_event } from './observable-event'
-import { define_getter, define_value, error, isNode } from '../utils'
+import { define_prop, define_value, error, isNode } from '../utils'
 import { new_ctx } from './hyper-ctx'
 
 // commonly used globals exported (to save a few bytes)
@@ -374,11 +374,11 @@ export function offsetOf (child) {
 }
 
 export var special_elements = {}
-Object.defineProperty(special_elements, 'define', {value: (name, fn, args) => {
+define_prop(special_elements, 'define', define_value((name, fn, args) => {
   // if (DEBUG) console.log('defining', name, args)
   customElements.define(name, fn)
   special_elements[name] = typeof args === 'number' ? args : Array.isArray(args) ? args.length : fn.length || 0
-}})
+}))
 
 export var h = new_dom_context(1)
 export function new_dom_context (no_cleanup) {
