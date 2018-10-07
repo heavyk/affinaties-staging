@@ -1,6 +1,6 @@
-import { pluginBoilerplate } from '../lib/plugins/plugin-boilerplate'
-import { value, transform, compute, modify } from '../lib/dom/observable'
-import { win } from '../lib/dom/hyper-hermes'
+import { pluginBoilerplate } from '../plugins/plugin-boilerplate'
+import { value, transform, compute, modify } from '../dom/observable'
+import { win } from '../dom/hyper-hermes'
 
 win.plugger = (starting_panel, C = {}, D = {}) => {
   let beginner = ({G, C}) => {
