@@ -34,26 +34,23 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
     }))
   }
 
-  (mutationObserver = new MutationObserver(function (mutations) {
-    var i, j, removed, len
-    for (i = 0; i < mutations.length; ++i) {
-      for (j = 0, len = (removed = mutations[i].removedNodes).length; j < len; ++j) {
-        if (removed[j] === frame) frame.cleanup()
-      }
-    }
+  (mutationObserver = new MutationObserver((mutations) => {
+    // since we only want to know if frame is detached, this is a better, more efficient way:
+    if (!frame.parentNode) frame.cleanup(), mutationObserver.disconnect(), mutationObserver = null
   })).observe(frame.parentNode, { childList: true })
 
   win.G = G = frame._G = new_ctx({h, s}, 'global')
   G.E = E = { frame: frame, body: doc.body, win: win }
 
-  // TODO: get device orientation
+  // @Incomplete - device orientation
   // https://crosswalk-project.org/documentation/tutorials/screens.html
   // https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model/Managing_screen_orientation
+  tmp = screen.orientation
+  G.orientation = value(tmp.type.split('-').concat(tmp.angle))
+  tmp.onchange = function (e) { G.orientation((tmp = e.target).type.split('-').concat(tmp.angle)) }
+
   // TODO: add device motion events
   // https://developers.google.com/web/fundamentals/native-hardware/device-orientation/
-  tmp = screen.orientation
-  tmp.onchange = function (e) { G.orientation((tmp = e.target).type.split('-').concat(tmp.angle)) }
-  G.orientation = value(tmp.type.split('-').concat(tmp.angle))
 
   G.width = value(_width = frame.clientWidth || C.width || 300)
   G.height = value(_height = frame.clientHeight || C.height || 300)
