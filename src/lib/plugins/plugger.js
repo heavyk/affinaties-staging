@@ -13,7 +13,14 @@ win.plugger = (starting_panel, C = {}, D = {}) => {
     G.v = value
     G.c = compute
     G.m = modify
-    return starting_panel({G, C})
+
+    // this should only happen in production env, and it should report the error or something.
+    // for now, it's bad because it doesn't pause the debugger
+    try {
+      return starting_panel({G, C})
+    } catch (e) {
+      console.error('error in the plugin:', e)
+    }
   }
-  pluginBoilerplate(null, 'id', C, D, {}, beginner)
+  pluginBoilerplate(starting_panel.name, null, C, D, {}, beginner)
 }

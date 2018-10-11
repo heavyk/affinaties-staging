@@ -1,6 +1,7 @@
 import { error, __debug } from '../utils'
 import { define_getter, define_value } from '../utils'
 import { random_id } from '../utils'
+import { h, s } from './hyper-hermes' // I don't think this is the best way to do this...
 
 const global_ctx = () => new_ctx({h, s}, 'global')
 

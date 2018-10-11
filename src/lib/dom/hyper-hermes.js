@@ -12,8 +12,8 @@ import { observe, add_event } from './observable-event'
 import { define_prop, define_value, error } from '../utils'
 import { new_ctx } from './hyper-ctx'
 
-import { win, customElements } from './dom-base'
-import { isNode } from './dom-base'
+import { win, doc, customElements } from './dom-base'
+import { isNode, txt, comment } from './dom-base'
 
 // add your own (or utilise this to make your code smaller!)
 export var short_attrs = { s: 'style', c: 'className', class: 'className', for: 'htmlFor' }

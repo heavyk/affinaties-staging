@@ -2,6 +2,7 @@
 export const win = window
 export const doc = win.document
 export const body = doc.body
+export const getComputedStyle = win.getComputedStyle
 export const customElements = win.customElements
 export const location = doc.location
 export const IS_LOCAL = ~location.host.indexOf('localhost')
@@ -22,4 +23,11 @@ export function scrollTo (id_or_el) {
   return !el ? null : isNode(el)
     ? win.scrollBy(0, el.getBoundingClientRect().top)
     : win.scrollTo(0, 0)
+}
+
+export function getStyleProperty (element, prop) {
+  var st = element.currentStyle
+  return st ? st[prop]
+    : getComputedStyle ? getComputedStyle(element, null).getPropertyValue(prop)
+    : element.style[prop]
 }

@@ -1,15 +1,16 @@
-import { mergeDeep, objJSON } from '../utils'
+import { mergeDeep, objJSON, random_id } from '../utils'
 
 import { value, transform, compute, modify } from '../dom/observable'
 import ResizeSensor from '../dom/resize-sensor'
 
 import { h, s } from '../dom/hyper-hermes'
-import { doc, body, win, IS_LOCAL, basePath } from '../dom/hyper-hermes'
+import { doc, body, win, IS_LOCAL, basePath } from '../dom/dom-base'
+import { isNode, getElementById } from '../dom/dom-base'
 import { new_ctx, el_ctx } from '../dom/hyper-ctx'
-import { makeNode } from '../dom/hyper-hermes'
+// import { makeNode } from '../dom/hyper-hermes'
 
-function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) {
-  var tmp, mutationObserver, G, E, _width, _height, _dpr, set_data, set_config, args
+function pluginBoilerplate (frame, parentNode, _config, _data, DEFAULT_CONFIG, _onload) {
+  var tmp, mutationObserver, id, G, E, _width, _height, _dpr, set_data, set_config, args
   var C = mergeDeep({}, objJSON(_config), DEFAULT_CONFIG)
 
   if (IS_LOCAL) {
@@ -19,27 +20,34 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
     tmp.padding = tmp.margin = 0
   }
 
-  if (!frame) {
-    body.aC(frame = h('div#frame', {
-      s: {
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        bottom: 0,
-        right: 0,
-        // width: '100%',
-        // height: '100%',
-        overflow: 'hidden'
-      }
-    }))
-  }
+  id = typeof frame === 'string'
+    ? ((tmp = getElementById(id)) && tmp.id) || frame
+    : random_id()
 
-  (mutationObserver = new MutationObserver((mutations) => {
-    // since we only want to know if frame is detached, this is a better, more efficient way:
-    if (!frame.parentNode) frame.cleanup(), mutationObserver.disconnect(), mutationObserver = null
-  })).observe(frame.parentNode, { childList: true })
+  frame = isNode(frame) ? frame : h('div#'+id, {
+    s: {
+      position: 'fixed',
+      left: 0,
+      top: 0,
+      bottom: 0,
+      right: 0,
+      // width: '100%',
+      // height: '100%',
+      overflow: 'hidden'
+    }
+  })
 
-  win.G = G = frame._G = new_ctx({h, s}, 'global')
+  if (!isNode(parentNode)) parentNode = body
+  parentNode.aC(frame)
+
+  console.log('appended', frame)
+
+  // (mutationObserver = new MutationObserver((mutations) => {
+  //   // since we only want to know if frame is detached, this is a better, more efficient way:
+  //   if (!frame.parentNode) frame.cleanup()
+  // })).observe(parentNode, { childList: true })
+
+  win.G = G = frame._G = new_ctx(void 0, id)
   G.E = E = { frame: frame, body: doc.body, win: win }
 
   // @Incomplete - device orientation
@@ -65,9 +73,10 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
 
   ;(function (_cleanup) {
     frame.cleanup = () => {
-      var p = frame.parentNode
+      parentNode = frame.parentNode
       mutationObserver.disconnect()
-      if (p) p.removeChild(frame)
+      mutationObserver = null
+      if (parentNode) parentNode.removeChild(frame)
       if (typeof _cleanup === 'function') _cleanup()
     }
   })(frame.cleanup)
@@ -127,7 +136,7 @@ function pluginBoilerplate (frame, id, _config, _data, DEFAULT_CONFIG, _onload) 
         G.width(_width = frame.clientWidth)
         G.height(_height = frame.clientHeight)
       })
-      h.cleanupFuncs.push(() => resize.detach())
+      G.cleanupFuncs.push(() => resize.detach())
     }
 
     if (doc.body) setTimeout(loader, 1)
