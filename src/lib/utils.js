@@ -128,33 +128,23 @@ export function parseQS (qs, keys) {
 }
 
 export function pick (object, keys) {
-  var data = {}
+  var x, data = {}
 
   if (typeof keys === 'function') {
-    for (var x in object) {
+    for (x in object) {
       if (object.hasOwnProperty(x) && keys(object[x], x)) {
         data[x] = object[x]
       }
     }
   } else {
-    for (var i = 0, c = keys.length; i < c; i++) {
-      data[keys[i]] = object[keys[i]]
+    for (x = 0; x < keys.length; x++) {
+      data[keys[x]] = object[keys[x]]
     }
   }
 
   return data
 }
 
-export const isNode = (el) => el && el.nodeType
-export const isText = (el) => el && el.nodeType == 3
-
-export function scrollTo (id_or_el) {
-  var el = typeof id_or_el === 'string' ? document.getElementById(id_or_el) : id_or_el
-
-  return !el ? null : isNode(el)
-    ? window.scrollBy(0, el.getBoundingClientRect().top)
-    : window.scrollTo(0, 0)
-}
 
 export const stringify = (value) => (!value || typeof value !== 'object') ? value : JSON.stringify(value)
 

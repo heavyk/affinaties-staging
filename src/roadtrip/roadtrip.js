@@ -6,7 +6,7 @@
 //  - 404 route
 
 import Route from './Route.js'
-import { win, location, origin, basePath } from '../lib/dom/hyper-hermes'
+import { win, location, origin, basePath } from '../lib/dom/dom-base'
 import { noop, slasher, which } from '../lib/utils'
 import isEqual from '../lib/isEqual'
 

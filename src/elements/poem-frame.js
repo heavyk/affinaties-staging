@@ -1,6 +1,6 @@
 
 import { value } from '../lib/dom/observable'
-import { win, basePath, comment } from '../lib/dom/hyper-hermes'
+import { win, basePath, comment } from '../lib/dom/dom-base'
 
 import RoadTrip from '../roadtrip/roadtrip'
 import PoemBase from './poem-base'

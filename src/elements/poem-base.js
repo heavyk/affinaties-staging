@@ -4,11 +4,12 @@ import { obv_event } from '../lib/dom/observable-event'
 import { ObservableArray } from '../lib/dom/observable-array'
 import { MixinEmitter } from '../lib/drip/MixinEmitter'
 // TODO: remove h, s (should be retreived from the context)
-import { h, s, txt, set_style, set_attr } from '../lib/dom/hyper-hermes'
+import { h, s, set_style, set_attr } from '../lib/dom/hyper-hermes'
+import { isNode, txt } from '../lib/dom/dom-base'
 import { new_ctx, el_ctx } from '../lib/dom/hyper-ctx'
 
 import { parseUri, parseQS, parseHash, parseJSON, camelize } from '../lib/utils'
-import { define_getter, isNode, __debug } from '../lib/utils'
+import { define_getter, __debug } from '../lib/utils'
 import { pathVars, pathToRegExp, pathToStrictRegExp } from '../lib/router-utils'
 
 export const _observables = new WeakMap

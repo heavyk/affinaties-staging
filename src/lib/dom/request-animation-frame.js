@@ -1,4 +1,4 @@
-import { win } from './hyper-hermes'
+import { win } from './dom-base'
 
 var requestAnimationFrame = win.requestAnimationFrame ||
   win.mozRequestAnimationFrame ||

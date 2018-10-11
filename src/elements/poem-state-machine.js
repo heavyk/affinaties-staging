@@ -3,9 +3,10 @@ import { value, transform, event, observable_property } from '../lib/dom/observa
 import { ObservableArray } from '../lib/dom/observable-array'
 import { PathEmitter } from '../lib/drip/PathEmitter'
 import { win, h, s, txt, arrayFragment } from '../lib/dom/hyper-hermes'
+import { isNode, txt } from '../lib/dom/dom-base'
 import { new_ctx } from '../lib/dom/hyper-ctx'
 
-import { parseUri, parseQS, parseHash, parseJSON, camelize, define_getter, isNode } from '../lib/utils'
+import { parseUri, parseQS, parseHash, parseJSON, camelize, define_getter } from '../lib/utils'
 import { pathVars, pathToRegExp, pathToStrictRegExp } from '../lib/router-utils'
 
 import { _observables } from './poem-base'

@@ -1,5 +1,6 @@
 
-import { h, doc } from './dom/hyper-hermes'
+import { h } from './dom/hyper-hermes'
+import { doc } from './dom/dom-base'
 
 function load_sdk (_id, v, cb) {
   if (typeof v === 'function') cb = v, v = null

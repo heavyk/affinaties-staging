@@ -9,18 +9,11 @@
 
 import { is_obv } from './observable'
 import { observe, add_event } from './observable-event'
-import { define_prop, define_value, error, isNode } from '../utils'
+import { define_prop, define_value, error } from '../utils'
 import { new_ctx } from './hyper-ctx'
 
-// commonly used globals exported (to save a few bytes)
-export const win = window
-export const doc = win.document
-export const body = doc.body
-export const customElements = win.customElements
-export const location = doc.location
-export const IS_LOCAL = ~location.host.indexOf('localhost')
-export const basePath = location.pathname
-export const origin = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '')
+import { win, customElements } from './dom-base'
+import { isNode } from './dom-base'
 
 // add your own (or utilise this to make your code smaller!)
 export var short_attrs = { s: 'style', c: 'className', class: 'className', for: 'htmlFor' }
@@ -45,10 +38,6 @@ export var short_attrs = { s: 'style', c: 'className', class: 'className', for: 
 // h(2)
 // when common_tags = ['div','input','div.lala']
 export var common_tags = []
-
-// shortcut document creation functions
-export const txt = (t) => doc.createTextNode(t)
-export const comment = (t) => doc.createComment(t)
 
 function context (createElement) {
   var cleanupFuncs = []
