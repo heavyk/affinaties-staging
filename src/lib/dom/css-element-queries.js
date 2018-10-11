@@ -6,6 +6,10 @@
 
 import requestAnimationFrame from './request-animation-frame'
 import ResizeSensor from './resize-sensor'
+import { doc, getComputedStyle } from './dom-base'
+
+// TODO: make a universal dom-loaded event to listen to (and delete the one contained here)
+// TODO: use doc/win from dom-base
 
 /**
  *
@@ -15,7 +19,6 @@ import ResizeSensor from './resize-sensor'
 var ElementQueries = function () {
   var trackingActive = false
   var elements = []
-  var doc_el = document.documentElement
 
   /**
    *
@@ -24,9 +27,9 @@ var ElementQueries = function () {
    */
   function getEmSize (element) {
     if (!element) {
-      element = doc_el
+      element = doc
     }
-    var fontSize = window.getComputedStyle(element, null).fontSize
+    var fontSize = getComputedStyle(element, null).fontSize
     return parseFloat(fontSize) || 16
   }
 
@@ -53,13 +56,13 @@ var ElementQueries = function () {
       // According to http://quirksmode.org/mobile/tableViewport.html
       // documentElement.clientWidth/Height gets us the most reliable info
       case 'vw':
-        return value * doc_el.clientWidth / 100
+        return value * doc.clientWidth / 100
       case 'vh':
-        return value * doc_el.clientHeight / 100
+        return value * doc.clientHeight / 100
       case 'vmin':
       case 'vmax':
-        var vw = doc_el.clientWidth / 100
-        var vh = doc_el.clientHeight / 100
+        var vw = doc.clientWidth / 100
+        var vh = doc.clientHeight / 100
         var chooser = Math[units === 'vmin' ? 'min' : 'max']
         return value * chooser(vw, vh)
       default:
@@ -174,7 +177,7 @@ var ElementQueries = function () {
 
   function getQuery () {
     var query
-    if (document.querySelectorAll) query = document.querySelectorAll.bind(document)
+    if (doc.querySelectorAll) query = doc.querySelectorAll.bind(doc)
     if (!query && 'undefined' !== typeof $$) query = $$
     if (!query && 'undefined' !== typeof jQuery) query = jQuery
 
@@ -372,9 +375,9 @@ var ElementQueries = function () {
   this.init = function (withTracking) {
     trackingActive = typeof withTracking === 'undefined' ? false : withTracking
 
-    for (var i = 0, j = document.styleSheets.length; i < j; i++) {
+    for (var i = 0, j = doc.styleSheets.length; i < j; i++) {
       try {
-        readRules(document.styleSheets[i].cssRules || document.styleSheets[i].rules || document.styleSheets[i].cssText)
+        readRules(doc.styleSheets[i].cssRules || doc.styleSheets[i].rules || doc.styleSheets[i].cssText)
       } catch(e) {
         if (e.name !== 'SecurityError') {
           throw e
@@ -383,10 +386,10 @@ var ElementQueries = function () {
     }
 
     if (!defaultCssInjected) {
-      var style = document.createElement('style')
-      style.type = 'text/css'
-      style.innerHTML = '[responsive-image] > img, [data-responsive-image] {overflow: hidden; padding: 0; } [responsive-image] > img, [data-responsive-image] > img { width: 100%;}'
-      document.getElementsByTagName('head')[0].appendChild(style)
+      doc.getElementsByTagName('head')[0].appendChild(h('style', {
+        type: 'text/css',
+        html: '[responsive-image] > img, [data-responsive-image] {overflow: hidden; padding: 0; } [responsive-image] > img, [data-responsive-image] > img { width: 100%;}'
+      }))
       defaultCssInjected = true
     }
 

@@ -6,6 +6,7 @@
 
 import requestAnimationFrame from './request-animation-frame'
 import { h } from './hyper-hermes'
+import { getStyleProperty } from './dom-base'
 
 
 /**
@@ -71,26 +72,6 @@ var ResizeSensor = function (element, callback) {
     }
   }
 
-  /**
-   * @param {HTMLElement} element
-   * @param {String}      prop
-   * @returns {String|Number}
-   */
-  function getComputedStyle (element, prop) {
-    if (element.currentStyle) {
-      return element.currentStyle[prop]
-    }
-    if (window.getComputedStyle) {
-      return window.getComputedStyle(element, null).getPropertyValue(prop)
-    }
-
-    return element.style[prop]
-  }
-  function getComputedStyle (element, prop) {
-    return element.currentStyle ? element.currentStyle[prop]
-      : window.getComputedStyle ? window.getComputedStyle(element, null).getPropertyValue(prop)
-      : element.style[prop]
-  }
 
   /**
    *
@@ -135,7 +116,7 @@ var ResizeSensor = function (element, callback) {
     //   '</div>'
     element.appendChild(element.resizeSensor)
 
-    if (getComputedStyle(element, 'position') == 'static') {
+    if (getStyleProperty(element, 'position') == 'static') {
       element.style.position = 'relative'
     }
 
