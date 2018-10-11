@@ -9,7 +9,7 @@ import { isNode, getElementById } from '../dom/dom-base'
 import { new_ctx, el_ctx } from '../dom/hyper-ctx'
 // import { makeNode } from '../dom/hyper-hermes'
 
-function pluginBoilerplate (frame, parentNode, _config, _data, DEFAULT_CONFIG, _onload) {
+function pluginBoilerplate (frame, parentNode, _config, _data, DEFAULT_CONFIG, _onload, _afterload) {
   var tmp, mutationObserver, id, G, E, _width, _height, _dpr, set_data, set_config, args
   var C = mergeDeep({}, objJSON(_config), DEFAULT_CONFIG)
 
@@ -39,8 +39,6 @@ function pluginBoilerplate (frame, parentNode, _config, _data, DEFAULT_CONFIG, _
 
   if (!isNode(parentNode)) parentNode = body
   parentNode.aC(frame)
-
-  console.log('appended', frame)
 
   // (mutationObserver = new MutationObserver((mutations) => {
   //   // since we only want to know if frame is detached, this is a better, more efficient way:
@@ -99,16 +97,6 @@ function pluginBoilerplate (frame, parentNode, _config, _data, DEFAULT_CONFIG, _
     })
   }
 
-  // https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Mutation_events
-  // this is SUPER SLOW
-  // instead, convert this to MutationObserver and don't listen to subtree modifications
-  // https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
-  // win.addEventListener('DOMNodeRemoved', (e) => {
-  //   // TODO: make this passive??
-  //   if (e.target === frame) frame.cleanup()
-  // }, false)
-
-
   args = { C, G, set_config, set_data, v: value, t: transform, c: compute, m: modify}
 
   ;(function (onload) {
@@ -129,6 +117,7 @@ function pluginBoilerplate (frame, parentNode, _config, _data, DEFAULT_CONFIG, _
         // frame.aC(e)
         if (e = onload(args)) {
           frame.aC(e)
+          if (typeof _afterload === 'function') _afterload(frame, e)
         }
       }
 
