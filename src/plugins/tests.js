@@ -44,9 +44,9 @@ function word_input ({G, C}) {
   )
 }
 
-test_panel(word_input, { lala: 1234 }, {}, (panel) => {
-  const input = panel.get_all('input')
-  const st3 = panel.get('div#st3')
+panel_fixture(word_input, { lala: 1234 }, {}, (panel) => {
+  const input = panel.find_all('input')
+  const st3 = panel.find('div#st3')
 
   panel.test("input text into two boxes and concatenate the strings", (t) => {
     panel
@@ -88,11 +88,11 @@ class FixtureInteraction extends PromiseQueue {
     this.el = this.fixture = el
   }
 
-  get (sel) {
+  find (sel) {
     return this.fixture.querySelector(sel)
   }
 
-  get_all (sel) {
+  find_all (sel) {
     return this.fixture.querySelectorAll(sel)
   }
 
@@ -147,7 +147,7 @@ class FixtureInteraction extends PromiseQueue {
   }
 
   // TODO
-  // move (txt) {
+  // move_cursor (from, to, duration) {
   //   this.stack.push(new Promise((resolve) => {
   //     syn('_type', this.el, txt, resolve)
   //   }))
@@ -201,7 +201,7 @@ class FixtureInteraction extends PromiseQueue {
   }
 }
 
-function test_fixture (testing_panel, C = {}, D = {}, test_runner) {
+function panel_fixture (testing_panel, C = {}, D = {}, test_runner) {
   let beginner = ({G, C}) => {
     // temporary, for now...
     // this stupid shit is required because making contexts is super supid and needs to be rethought.
