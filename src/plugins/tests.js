@@ -78,6 +78,7 @@ panel_fixture(word_input, { lala: 1234 }, {}, (panel) => {
 
   panel.test("clicking on input selects all text by default", (t) => {
     panel
+    .blur()
     .click(input[0])
     .type('\b', () => {
       t.equal(input[0].value, '')
@@ -116,6 +117,14 @@ class FixtureInteraction extends PromiseQueue {
 
   find_all (sel) {
     return this.fixture.querySelectorAll(sel)
+  }
+
+  blur () {
+    var input = hh('input')
+    body.aC(input)
+    input.focus()
+    body.rC(input)
+    return this
   }
 
   test (desc, test_fn) {
