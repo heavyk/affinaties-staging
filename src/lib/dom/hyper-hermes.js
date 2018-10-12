@@ -235,6 +235,7 @@ export function set_style (e, style, cleanupFuncs = []) {
         // e.style.setProperty(s, v())
         e.style[s] = v()
         cleanupFuncs.push(v((val) => {
+          // console.log(e, 'style:', s, e.style[s], '->', val)
           // e.style.setProperty(s, val)
           e.style[s] = val
         }))

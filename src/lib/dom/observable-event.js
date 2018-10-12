@@ -11,14 +11,13 @@ export const off = (emitter, event, listener, opts = false) =>
   (emitter.off || emitter.removeListener || emitter.removeEventListener)
     .call(emitter, event, listener, opts)
 
-export function listen (element, event, attr, listener) {
+export function listen (element, event, attr, listener, do_immediately) {
   function onEvent (e) {
     listener(typeof attr === 'function' ? attr() : attr ? element[attr] : e)
   }
   on(element, event, onEvent)
-  // TODO: I realllllly need testing on this libary to guarantee intended functionality...
-  // I don't know why onEvent is called when listening. I think it's to automatically automatically give the listener its value
-  attr && onEvent()
+  // TODO: test listen with do_immediately enabled for stuff like attributes and selects
+  do_immediately && attr && onEvent()
   return () => off(element, event, onEvent)
 }
 
@@ -52,17 +51,20 @@ export function attribute (element, _attr, _event) {
   observable._obv = 'attribute'
   return observable
 
-  function observable (val) {
+  function observable (val, do_immediately) {
     return (
       val === undefined ? element[attr]
-    : typeof val !== 'function' ? element[attr] = val
-    : listen(element, event, attr, val)
+    : typeof val !== 'function' ? (element[attr] = val, element.dispatchEvent(new Event(event)), val)
+    : listen(element, event, attr, val, do_immediately)
     )
   }
 }
 
 // observe a select element
 export function select (element) {
+  observable._obv = 'select'
+  return observable
+
   function _attr () {
     var idx = element.selectedIndex
     return ~idx ? element.options[idx].value : null
@@ -72,14 +74,11 @@ export function select (element) {
       if (element.options[i].value == val) element.selectedIndex = i
     }
   }
-  observable._obv = 'select'
-  return observable
-
-  function observable (val) {
+  function observable (val, do_immediately) {
     return (
       val === undefined ? element.options[element.selectedIndex].value
     : typeof val !== 'function' ? _set(val)
-    : listen(element, 'change', _attr, val)
+    : listen(element, 'change', _attr, val, do_immediately)
     )
   }
 }
