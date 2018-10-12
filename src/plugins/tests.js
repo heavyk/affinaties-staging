@@ -9,17 +9,17 @@ import requestAnimationFrame from '../lib/dom/request-animation-frame'
 
 import PromiseQueue from '../lib/promise-queue'
 
-const { module, test, start } = require('qunit')
+const qunit = require('qunit')
 const syn = require('syn')
 
 var _fixture = hh('div#qunit-fixture', {s: {visibility: 'hidden'}})
 
 body.aC([ hh('div#qunit'), _fixture ])
 
-module('testing tests module')
+qunit.module('testing tests module')
 
 // a traditional test
-test("setTimeout", t => {
+qunit.test("setTimeout", t => {
   const done = t.async()
   setTimeout(() => {
     t.ok('yay')
@@ -44,11 +44,13 @@ function word_input ({G, C}) {
   )
 }
 
-// test_fixture(testing_panel, C, D, (assert, fixture) => {})
-test_fixture(word_input, { lala: 1234 }, {}, (t, fixture) => {
+// test_fixture(testing_panel, C, D, (fixture) => {})
+test_fixture(word_input, { lala: 1234 }, {}, (fixture) => {
   var input = fixture.get_all('input')
   const st3 = fixture.get('div#st3')
-  fixture
+
+  fixture.test("input text into two boxes and concatenate the strings", (t) => {
+    fixture
     .click(input[0])
     .type('sally', () => {
       t.equal(input[0].value, 'sally')
@@ -59,11 +61,20 @@ test_fixture(word_input, { lala: 1234 }, {}, (t, fixture) => {
       t.equal(input[1].value, 'jane')
       t.equal(st3.innerText, "sally and jane are not at the zoo")
     })
+  })
+
+  fixture.test("clicking on input selects all text by default", (t) => {
+    fixture
+    .click(input[0])
+    .type('\b', () => {
+      t.equal(input[0].value, '')
+    })
+  })
 })
 
 
 
-start()
+qunit.start()
 
 // ================================
 // ================================
@@ -72,8 +83,9 @@ start()
 
 
 class FixtureInteraction extends PromiseQueue {
-  constructor (el) {
+  constructor (fn, el) {
     super()
+    this.fn = fn
     this.el = this.fixture = el
   }
 
@@ -83,6 +95,20 @@ class FixtureInteraction extends PromiseQueue {
 
   get_all (sel) {
     return this.fixture.querySelectorAll(sel)
+  }
+
+  test (desc, test_fn) {
+    this.add(() => new Promise((resolve) => {
+      qunit.test(desc, t => {
+        this.pause()
+        const test_done = t.async()
+        test_fn(t, this)
+        this.then(test_done)
+        this.resume()
+      })
+      resolve()
+    }))
+    return this
   }
 
   click (el, options) {
@@ -198,15 +224,11 @@ function test_fixture (testing_panel, C = {}, D = {}, test_runner) {
   }
 
   let after_created = (frame) => {
-    test(testing_panel.name, t => {
-      const test_done = t.async()
-      const interact = new FixtureInteraction(frame)
-      interact.pause()
-      test_runner(t, interact)
-      interact.then(test_done)
-      interact.resume()
-      // debugger
-    })
+    const fixture = new FixtureInteraction(testing_panel, frame)
+    fixture.pause()
+    qunit.module(testing_panel.name)
+    test_runner(fixture)
+    fixture.resume()
   }
 
   pluginBoilerplate(testing_panel.name, _fixture, C, D, {}, beginner, after_created)
