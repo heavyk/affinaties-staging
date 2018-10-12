@@ -19,13 +19,18 @@ var _show_fixture = hh('input#show-fixture', {type: 'checkbox'})
 var _swapper = hh('div#fixture-swap', {s: {color: '#09a0ff', position: 'fixed', top: '10px', right: '10px'}},
   _show_fixture, hh('label', {for: 'show-fixture'}, 'Show Fixture')
 )
-var _show_fixture_checked = _show_fixture(check, 'checked')
-var _fixture = hh('div#qunit-fixture', {s: {visibility: transform(_show_fixture_checked, (val) => val ? 'visible' : 'hidden')}})
-var _output = hh('div#qunit', {s: {visibility: transform(_show_fixture_checked, (val) => !val ? 'visible' : 'hidden')}})
+var _show_fixture_checked = attribute(_show_fixture, 'checked')
+// qunit clones the fixture and remakes it when beginning the tests.
+// we prefer to do this ourselves, considering one of the tested features is the cleanup action.
+// as a result, the specific id, `qunit-fixture` cannot be used
+// var qunit_fixture = hh('div#qunit-fixture', 'unused')
+var _fixture = hh('div#fixturez', {s: {visibility: transform(_show_fixture_checked, (val) => val ? 'visible' : 'hidden')}})
+
+var _output = hh('div#qunit', {s: {visibility: transform(_show_fixture_checked, (val) => val ? 'hidden' : 'visible')}})
 
 body.aC([ _output, _fixture, _swapper ])
 
-qunit.module('testing tests module')
+qunit.module('random tests')
 
 // a traditional test
 qunit.test("setTimeout", t => {
@@ -43,7 +48,7 @@ function word_input ({G, C}) {
 
   return h('div.tpl_words',
     h('div.word-input',
-      h('input', {type: 'text', value: w1, placeholder: 'type a name...', autofocus: true}),
+      h('input', {type: 'text', value: w1, placeholder: 'type a name...'}),
       h('span', ' and '),
       h('input', {type: 'text', value: w2, placeholder: 'type a name...'})
     ),
@@ -62,7 +67,7 @@ panel_fixture(word_input, { lala: 1234 }, {}, (panel) => {
     .click(input[0])
     .type('sally', () => {
       t.equal(input[0].value, 'sally')
-      t.equal(st3.innerText, "sally and  are not at the zoo")
+      t.equal(st3.innerText, "sally and are not at the zoo")
     })
     .click(input[1])
     .type('jane', () => {
@@ -81,8 +86,16 @@ panel_fixture(word_input, { lala: 1234 }, {}, (panel) => {
 })
 
 
+qunit.begin((details) => {
+  _show_fixture_checked(true)
+})
+
+qunit.done((failed, passed, total, runtime) => {
+  _show_fixture_checked(false)
+})
 
 qunit.start()
+
 
 // ================================
 // ================================
