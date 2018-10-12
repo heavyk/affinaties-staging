@@ -27,7 +27,7 @@ qunit.test("setTimeout", t => {
   }, 10)
 })
 
-// a fixture test
+// a panel test
 function word_input ({G, C}) {
   const {h, t, c, v, m} = G
   var w1 = v(), w2 = v()
@@ -44,13 +44,12 @@ function word_input ({G, C}) {
   )
 }
 
-// test_fixture(testing_panel, C, D, (fixture) => {})
-test_fixture(word_input, { lala: 1234 }, {}, (fixture) => {
-  var input = fixture.get_all('input')
-  const st3 = fixture.get('div#st3')
+test_panel(word_input, { lala: 1234 }, {}, (panel) => {
+  const input = panel.get_all('input')
+  const st3 = panel.get('div#st3')
 
-  fixture.test("input text into two boxes and concatenate the strings", (t) => {
-    fixture
+  panel.test("input text into two boxes and concatenate the strings", (t) => {
+    panel
     .click(input[0])
     .type('sally', () => {
       t.equal(input[0].value, 'sally')
@@ -63,8 +62,8 @@ test_fixture(word_input, { lala: 1234 }, {}, (fixture) => {
     })
   })
 
-  fixture.test("clicking on input selects all text by default", (t) => {
-    fixture
+  panel.test("clicking on input selects all text by default", (t) => {
+    panel
     .click(input[0])
     .type('\b', () => {
       t.equal(input[0].value, '')
