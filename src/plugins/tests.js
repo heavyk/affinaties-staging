@@ -6,15 +6,24 @@ import { body, doc } from '../lib/dom/dom-base'
 
 import { getElementById } from '../lib/dom/dom-base'
 import requestAnimationFrame from '../lib/dom/request-animation-frame'
+import { attribute } from '../lib/dom/observable-event'
 
 import PromiseQueue from '../lib/promise-queue'
 
 const qunit = require('qunit')
 const syn = require('syn')
 
-var _fixture = hh('div#qunit-fixture', {s: {visibility: 'hidden'}})
+// THIS IS SO UGLY!
+// ideally, I'd rather something much more Ractive. I think the ractive parser may come to see some use soon :)
+var _show_fixture = hh('input#show-fixture', {type: 'checkbox'})
+var _swapper = hh('div#fixture-swap', {s: {color: '#09a0ff', position: 'fixed', top: '10px', right: '10px'}},
+  _show_fixture, hh('label', {for: 'show-fixture'}, 'Show Fixture')
+)
+var _show_fixture_checked = _show_fixture(check, 'checked')
+var _fixture = hh('div#qunit-fixture', {s: {visibility: transform(_show_fixture_checked, (val) => val ? 'visible' : 'hidden')}})
+var _output = hh('div#qunit', {s: {visibility: transform(_show_fixture_checked, (val) => !val ? 'visible' : 'hidden')}})
 
-body.aC([ hh('div#qunit'), _fixture ])
+body.aC([ _output, _fixture, _swapper ])
 
 qunit.module('testing tests module')
 
