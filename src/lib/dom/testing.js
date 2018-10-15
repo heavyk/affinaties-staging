@@ -255,12 +255,12 @@ export function panel_fixture (testing_panel, C = {}, D = {}, test_runner) {
     else try {
       return testing_panel(args)
     } catch (e) {
-      console.error('error in the test panel:', e)
+      console.error('error in test panel('+name+'):', e)
     }
   }
 
   let after_created = (frame) => {
-    if (fixtures[name]) error(`fixture with name (${name}) has already been defined. please use a unique name.`)
+    if (fixtures[name]) error(`panel fixture (${name}) has already been defined. please use a unique name.`)
     const fixture = new FixtureInteraction(testing_panel, frame)
     fixtures[name] = fixture
     fixture.pause()

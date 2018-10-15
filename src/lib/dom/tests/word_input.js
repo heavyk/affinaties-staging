@@ -1,7 +1,6 @@
 import { panel_fixture } from '../testing'
 
-function word_input ({G, C}) {
-  const {h, t, c, v, m} = G // this line should go away. instead, it'll all be passed in on the main args, like so:
+function word_input ({G, C, h, t, c, v, m}) {
   var w1 = v(), w2 = v()
 
   return h('div.word_input',
@@ -17,8 +16,7 @@ function word_input ({G, C}) {
 }
 
 // TODO
-// function word_input_preinit ({G, C, D}) {
-//   const {h, t, c, v, m} = G
+// function word_input_preinit ({G, C, D, h, t, c, v, m}) {
 //
 //   return h('div.word_input',
 //     h('div.word-input',
@@ -64,7 +62,7 @@ panel_fixture(word_input, {}, {}, (panel) => {
     const input = panel.find('input')
     // input.value = 'test'
     t.ok(input)
-    debugger
+    // debugger
 
     panel
     .click(input)

@@ -1,4 +1,6 @@
 import '../lib/plugins/plugger'
+// eventually, ObservableArray and RenderingArray, along with RoadTrip will become a part of the 'lib' automatically tailored for the plugin
+// by time_machine
 import { ObservableArray, RenderingArray } from '../lib/dom/observable-array'
 // import RoadTrip from '../roadtrip/roadtrip.js'
 
@@ -7,8 +9,7 @@ import { ObservableArray, RenderingArray } from '../lib/dom/observable-array'
 // -vox 2016
 
 ///*
-function plugin_demo ({G, C}) {
-  const {h, t, c, v, m} = G
+function plugin_demo ({G, C, h, t, c, v, m}) {
   let lala = v(C.lala)
   let num = v(11)
   let sum = c([num, lala], (num, lala) => num + lala)

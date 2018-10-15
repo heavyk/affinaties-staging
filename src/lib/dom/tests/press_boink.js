@@ -1,7 +1,6 @@
 import { panel_fixture } from '../testing'
 
-function press_boink ({G, C}) {
-  const {h, t, c, v, m} = G
+function press_boink ({G, C, h, t, c, v, m}) {
   var boinked = v(false)
   var pressed = v(false)
 
@@ -29,5 +28,4 @@ function press_boink ({G, C}) {
       )
     )
   )
-
 }

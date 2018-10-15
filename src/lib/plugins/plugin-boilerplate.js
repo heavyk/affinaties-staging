@@ -97,14 +97,25 @@ function pluginBoilerplate (frame, parentNode, _config, _data, DEFAULT_CONFIG, _
     })
   }
 
-  args = { C, G, set_config, set_data, v: value, t: transform, c: compute, m: modify}
+  // this is kinda a hacky way to be doing `args` -- really, args should be the `ctx`, with all the obvs and everything
+  args = { C, G, set_config, set_data, v: value, t: transform, c: compute, m: modify, h: G.h, s: G.s }
+
+  // next thing is, `onload` should operate exactly the same as `reload`
+  // it's just the function that is called which will return a working vdom.
+  // the only difference between onload and reload is that cleanup is supposed to have been called between the two.
+
 
   ;(function (onload) {
     function loader () {
       var e, i = 0, resize
-      while (e = frame.childNodes[0]) frame.removeChild(e)
+      // remove everything inside of the frame
+      while (e = frame.firstChild)
+        frame.removeChild(e)
+
+      // set the data (not really sure why it's done before comments are removed from the body)
       if (_data) set_data(_data)
 
+      // remove all html comments from the body (I rememeber they caused problems, but I don't remember exatly what..)
       while (e = body.childNodes[i])
         if (e.nodeName[0] === '#') body.removeChild(e)
         else i++

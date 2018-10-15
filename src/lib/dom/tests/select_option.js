@@ -1,7 +1,6 @@
 import { panel_fixture } from '../testing'
 
-function select_option ({G, C}) {
-  const {h, t, c, v, m} = G
+function select_option ({G, C, h, t, c, v, m}) {
   var selected = v()
 
   return h('div.select_option',
