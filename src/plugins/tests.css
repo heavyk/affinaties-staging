@@ -1,2 +1,27 @@
 
-@import 'node_modules/qunit/qunit/qunit.css'
+@import 'node_modules/qunit/qunit/qunit.css';
+
+.tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  top: -5px;
+  left: 50%;
+  margin-left: -8px;
+  border-width: 0 5px 5px;
+  border-bottom-color: #000;
+}
+.tooltip-outer {
+  z-index: 100;
+}
+.tooltip-inner {
+  max-width: 200px;
+  padding: 3px 8px;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  background-color: #000;
+  border-radius: 4px;
+}
