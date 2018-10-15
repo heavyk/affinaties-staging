@@ -1,5 +1,5 @@
 
-import { is_obv } from './observable'
+import { is_obv, bind2 } from './observable'
 
 // register a listener
 export const on = (emitter, event, listener, opts = false) =>
@@ -12,26 +12,22 @@ export const off = (emitter, event, listener, opts = false) =>
     .call(emitter, event, listener, opts)
 
 export function listen (element, event, attr, listener, do_immediately) {
-  function onEvent (e) {
-    listener(typeof attr === 'function' ? attr() : attr ? element[attr] : e)
-  }
+  let onEvent = (e) => { listener(typeof attr === 'function' ? attr() : attr ? element[attr] : e) }
   on(element, event, onEvent)
-  // TODO: test listen with do_immediately enabled for stuff like attributes and selects
   do_immediately && attr && onEvent()
   return () => off(element, event, onEvent)
 }
 
 // observe any event, reading any attribute
-export function obv_event (element, attr, event, filter_event) {
-  event = event || 'keyup'
-  filter_event = typeof filter_event === 'function' ? filter_event
+export function obv_event (element, attr = 'value', event = 'keyup', event_filter) {
+  event_filter = typeof event_filter === 'function' ? event_filter
     : ((ev) => ev.which === 13 && !ev.shiftKey)
-  attr = attr || 'value'
+  const listener = (ev) => event_filter(ev) ? (val(element[attr], ev), ev.preventDefault(), true) : false
+
   observable._obv = 'event'
   return observable
 
   function observable (val) {
-    const listener = (ev) => filter_event(ev) ? (val(element[attr], ev), ev.preventDefault(), true) : false
     return (
       val === undefined ? val
     : typeof val !== 'function' ? undefined //read only
@@ -45,9 +41,7 @@ export function obv_event (element, attr, event, filter_event) {
 
 //observe html element - aliased as `input`
 export { attribute as input }
-export function attribute (element, _attr, _event) {
-  var attr = _attr !== void 0 ? _attr : 'value'
-  var event = _event !== void 0 ? _event : 'input'
+export function attribute (element, attr = 'value', event = 'input') {
   observable._obv = 'attribute'
   return observable
 
@@ -61,24 +55,27 @@ export function attribute (element, _attr, _event) {
 }
 
 // observe a select element
-export function select (element) {
+export function select (element, attr = 'value', event = 'change') {
+  const get_attr = (idx = element.selectedIndex) => ~idx ? element.options[idx][attr] : null
+  const set_attr = (val) => {
+    var options = element.options, i = 0
+    for (; i < options.length; i++) {
+      if (options[i][attr] == val) {
+        element.selectedIndex = i
+        element.dispatchEvent(new Event(event))
+        return get_attr(i)
+      }
+    }
+  }
+
   observable._obv = 'select'
   return observable
 
-  function _attr () {
-    var idx = element.selectedIndex
-    return ~idx ? element.options[idx].value : null
-  }
-  function _set(val) {
-    for (var i = 0; i < element.options.length; i++) {
-      if (element.options[i].value == val) element.selectedIndex = i
-    }
-  }
   function observable (val, do_immediately) {
     return (
-      val === undefined ? element.options[element.selectedIndex].value
-    : typeof val !== 'function' ? _set(val)
-    : listen(element, 'change', _attr, val, do_immediately)
+      val === undefined ? element.options[element.selectedIndex][attr]
+    : typeof val !== 'function' ? set_attr(val)
+    : listen(element, event, get_attr, val, do_immediately)
     )
   }
 }
@@ -86,16 +83,13 @@ export function select (element) {
 //toggle based on an event, like mouseover, mouseout
 export function toggle (el, up_event, down_event) {
   var _val = false
+  const onUp = () => _val || val.call(el, _val = true)
+  const onDown = () => _val && val.call(el, _val = false)
+
   observable._obv = 'toggle'
   return observable
 
   function observable (val) {
-    function onUp() {
-      _val || val.call(el, _val = true)
-    }
-    function onDown () {
-      _val && val.call(el, _val = false)
-    }
     return (
       val === undefined ? _val
     : typeof val !== 'function' ? undefined //read only
@@ -151,22 +145,36 @@ export function observe (e, observe_obj) {
       case 'focus':
         cleanupFuncs.push(focus(e)(v))
         break
-      case 'select':
-        cleanupFuncs.push(select(e)(v))
+      case 'select_label':
+        s = select(e, 'label')
+        cleanupFuncs.push(
+          is_obv(v)
+            ? bind2(s, v)
+            : s(v)
+        )
+        break
+      case 'select': // default setter: by value
+      case 'select_value':
+        s = select(e)
+        cleanupFuncs.push(
+          is_obv(v)
+            ? bind2(s, v)
+            : s(v)
+        )
         break
       case 'boink':
-        // do_boink is only called here:
+        // do_boink was only called here:
         // do_boink.call(cleanupFuncs, e, v)
-        // inlined...
+        // so, it got inlined...
         cleanupFuncs.push(
           listen(e, 'click', false, () => { is_obv(v) ? v(!v()) : v() }),
           listen(e, 'touchstart', false, (e) => { e && e.preventDefault(); is_obv(v) ? v(!v()) : v() })
         )
         break
       case 'press':
-        // do_press is only called here:
+        // do_press was only called here:
         // do_press.call(cleanupFuncs, e, v)
-        // inlined...
+        // so, it got inlined...
         cleanupFuncs.push(
           listen(e, 'mouseup', false, () => { v(false) }),
           listen(e, 'mousedown', false, () => { v(true) }),

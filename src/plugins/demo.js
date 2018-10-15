@@ -21,7 +21,8 @@ function plugin_demo ({G, C, h, t, c, v, m}) {
   let sum = c([num, lala], (num, lala) => num + lala)
   let boinked = v(false)
   let pressed = v(false)
-  let selected = v()
+  let selected_label = v()
+  let selected_value = v()
   let w1 = v()
   let w2 = v()
   let static_list = new ObservableArray('#1 static one', '#2 static two', '#3 static three')
@@ -69,19 +70,23 @@ function plugin_demo ({G, C, h, t, c, v, m}) {
 
   let tpl_select = () => h('div.tpl_select',
     'selector: ',
-    h('select.selector', {value: selected},
+    h('select.selector', {value: selected_value, label: selected_label},
       h('option', {disabled: true, selected: true, value: ''}, 'please select...'),
       h('option', {value: 1}, 'one'),
       h('option', {value: 2}, 'two'),
       h('option', {value: 3}, 'three'),
       h('option', {value: 4}, 'four')
     ),
-    h('input', {type: 'text', value: selected, placeholder: 'nothing selected yet...'}),
-    ' selected: ', h('b', selected)
+    h('.selected-text',
+      'selected text: ', h('input', {type: 'text', value: selected_label, placeholder: 'nothing selected yet...'})
+    ),
+    h('.selected-value',
+      'selected value: ', h('input', {type: 'number', value: selected_value, placeholder: 'nothing selected yet...'})
+    )
   )
 
   let tpl_autoselect = () => h('div.tpl_autoselect',
-    h('div', 'first 5 chars selected'),
+    h('div', 'first 4 chars selected'),
     h('div', h('input', {type: 'text', value: '123456', autoselect: [0, 4], autofocus: true}))
   )
 

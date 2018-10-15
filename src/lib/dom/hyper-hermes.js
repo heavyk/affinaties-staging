@@ -142,7 +142,7 @@ export function set_attr (e, key_, v, cleanupFuncs = []) {
         }))
         s = e.nodeName
         s === "INPUT" && observe.call(cleanupFuncs, e, {input: v})
-        s === "SELECT" && observe.call(cleanupFuncs, e, {select: v})
+        s === "SELECT" && observe.call(cleanupFuncs, e, k === 'label' ? {select_label: v} : {select: v})
       }
     }, 0)
   } else {
