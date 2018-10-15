@@ -8,6 +8,12 @@ import { ObservableArray, RenderingArray } from '../lib/dom/observable-array'
 // consent means the other person wants to be doing the thing that you're doing.
 // -vox 2016
 
+
+// SOME THINGS
+// - option selector should be able to type 'four' and it will get the value '4' (it matches by value and text)
+// - scrolling is totally broken. I get that the panel is designed for "games" --
+//   but at least the section of that interface should be able to scroll when overflowing the screen size
+
 ///*
 function plugin_demo ({G, C, h, t, c, v, m}) {
   let lala = v(C.lala)
