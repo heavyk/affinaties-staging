@@ -22,16 +22,16 @@ export function listen (element, event, attr, listener, do_immediately) {
 }
 
 // observe any event, reading any attribute
-export function obv_event (element, attr, event, is_valid) {
+export function obv_event (element, attr, event, filter_event) {
   event = event || 'keyup'
-  is_valid = typeof is_valid === 'function' ? is_valid
+  filter_event = typeof filter_event === 'function' ? filter_event
     : ((ev) => ev.which === 13 && !ev.shiftKey)
   attr = attr || 'value'
   observable._obv = 'event'
   return observable
 
   function observable (val) {
-    const listener = (ev) => is_valid(ev) ? (val(element[attr], ev), ev.preventDefault(), true) : false
+    const listener = (ev) => filter_event(ev) ? (val(element[attr], ev), ev.preventDefault(), true) : false
     return (
       val === undefined ? val
     : typeof val !== 'function' ? undefined //read only

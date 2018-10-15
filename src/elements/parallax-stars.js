@@ -118,31 +118,6 @@ export default class ParallaxStars extends PoemBase {
     })
   }
 
-  prompt (msg, options, _answer) {
-    var self = this
-    var ctx = self._ctx = self.context()
-    var h = ctx.h
-    var tipW = self.attr('tip-w')
-    var tipH = self.attr('tip-h')
-    var answer = (a) => {
-      if (!_answer(a)) self.close() // remove all elements if answer did not return truthy
-    }
-    var innerTip = self.fn(ctx, msg, options, answer)
-    var inner, outer = h('#tooltip-outer', {s: {left: self.attrx('x', _px), top: self.attrx('y', _px)}},
-      h('#tooltip-arrow'),
-      // inner = h('#tooltip-inner', innerTip)
-      inner = h('#tooltip-inner', h('slot'))
-    )
-    self.els(outer)
-    self.aC(innerTip)
-    setTimeout(() => {
-      tipW(inner.clientWidth / 2)
-      tipH(inner.clientHeight / 2)
-      inner.style.visibility = 'visible'
-      if (typeof options.onfocus === 'function') options.onfocus(inner)
-    }, 0)
-  }
-
   close () {
     var ctx = this._ctx
     if (ctx) ctx.cleanup()
