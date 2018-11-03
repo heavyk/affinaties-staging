@@ -10,7 +10,8 @@ require! path: \Path
 require! fs: \Fs
 
 # es6 module support
-require = (require '@std/esm')(module, cjs: true, esm: "js")
+# require = (require 'esm')(module, cjs: true, esm: "js")
+require = (require 'esm')(module, cjs: true)
 
 merge-deep-array = require './src/lib/utils' .merge-deep-array
 
@@ -56,6 +57,12 @@ poems =
         }
         # new (require 'html-webpack-inline-source-plugin')
         ...
+  'plugins/tests.js':
+    dest: 'plugins/tests.js'
+    css: 'plugins/tests.css'
+    # css: 'plugins/qunit.css'
+  'plugins/plugger.js':
+    dest: 'plugins/plugger.js'
   'plugins/demo.js':
     dest: 'plugins/demo.js'
     webpack:
@@ -63,6 +70,16 @@ poems =
         new (require 'html-webpack-plugin') {
           inline-source: /.(js|css)$/
           filename: 'demo.html'
+        }
+        # new (require 'html-webpack-inline-source-plugin')
+        ...
+  'plugins/friqi.js':
+    dest: 'plugins/friqi.js'
+    webpack:
+      plugins:
+        new (require 'html-webpack-plugin') {
+          inline-source: /.(js|css)$/
+          filename: 'friqi.html'
         }
         # new (require 'html-webpack-inline-source-plugin')
         ...
@@ -153,38 +170,61 @@ POSTCSS_PLUGINS = [
 #       sander.rimraf test-file
 # , 2000ms
 
+# acornInjectPlugins: [require('acorn-static-class-property-initializer/inject')]
+
 rollup_cache = {}
 rollup_opts =
-  format: \umd
+  input: null
   plugins: [ rollup-plugin-buble {
     jsx: \h
     transforms:
       # for now we are going to use all ES6 features
       # TODO: generate different bundles for different browsers with their capabilites (and serve accordingly)
+      # NOTE: dunno why it doesn't recognise the getterSetter, asyncAwait, and objectRestSpread properties...
+      # based off of https://github.com/Rich-Harris/buble/blob/9a791224f92eef5004e5c4a6c5da0a51037a3165/src/support.js
+      # --------
+      # getterSetter: false
       arrow: false
       classes: false
-      collections: false
       computedProperty: false
       conciseMethodProperty: false
-      constLoop: false
-      dangerousForOf: false
-      dangerousTaggedTemplateString: false
       defaultParameter: false
       destructuring: false
       forOf: false
       generator: false
       letConst: false
-      modules: false
+      moduleExport: false
+      moduleImport: false
       numericLiteral: false
       parameterDestructuring: false
-      reservedProperties: false
       spreadRest: false
       stickyRegExp: false
       templateString: false
       unicodeRegExp: false
+
+      # ES 2016
+      exponentiation: false
+
+      # additional transforms, not from
+      # https://featuretests.io
+      reservedProperties: false
+
+      trailingFunctionCommas: false
+      # asyncAwait: false
+      # objectRestSpread: false
   } ]
-  source-map: true
   module-context: {}
+  acorn:
+    ecma-version: 10
+  #   plugins:
+  #     # jsx: true
+  #     # static-class-property-initializer: true
+  #     acorn-static-class-features: true
+  # acornInjectPlugins: [
+  #   # (require 'acorn-jsx')
+  #   # (require 'acorn-static-class-property-initializer/inject')
+  #   (require 'acorn-static-class-features')
+  # ]
 
 webpack_compilers = {}
 webpack_opts =
@@ -194,6 +234,7 @@ webpack_opts =
   # devtool: \cheap-source-map
   # devtool: \eval
   devtool: false
+  mode: \development
   performance:
     max-asset-size: 500_000
     max-entrypoint-size: 500_000
@@ -356,7 +397,10 @@ process_src = (path, resume) ->*
     yield Fs.write-file dest, new_txt, resume!
 
 process_css = (path, resume) ->*
-  # not used. NEEEDS IMPROVEMENT!!!
+  if Array.is-array path
+    return yield from for p in path
+      process_css p, resume.gen!
+
   switch ext = Path.extname path
   | \.css =>
     src = Path.join tmp_dir, path
@@ -397,9 +441,14 @@ process_poem = (path, resume) ->*
   #   dest: webpack_src
   # }
   opts = {} <<< rollup_opts <<< {
-    entry: src
+    input: src
     cache: cache
-    dest: webpack_src
+    output:
+      file: webpack_src
+      sourcemap: true
+      # sourcemap-file: webpack_src + '.map'
+      format: \esm #\umd #\iife \cjs
+      # name: poem.name
   }
 
   try
@@ -408,7 +457,7 @@ process_poem = (path, resume) ->*
       (cb) !-> mkdirp (Path.dirname webpack_src), (err) !-> if err and err.code is \EEXIST => cb! else cb err
     ]
     rollup_cache[path] = bundle
-    output = bundle.generate opts
+    output = yield bundle.generate opts
     # add source map url to the last line of code
     code = output.code + "\n//# sourceMappingURL=#{Path.basename webpack_src}.map\n"
     # code = output.code + "\n//# sourceMappingURL=#{Path.basename dest}.map\n"
@@ -516,11 +565,14 @@ genny.run (resume) ->*
         console.log 'found poem!', path, p
         to_process[p] = true
 
-      if poem.css is path or ~p.index-of epath
+      if Array.is-array poem.css
+        for _path in poem.css
+          if _path is path or ~p.index-of epath
+            to_process[p] = true
+      else if poem.css is path or ~p.index-of epath
         to_process[p] = true
 
     for p, bundle of rollup_cache
-
       # using for-each because of the splice
       bundle.modules.for-each (m, idx) !->
         if m.id is tmp_dir_path
