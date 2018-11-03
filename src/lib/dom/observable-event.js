@@ -11,6 +11,15 @@ export const off = (emitter, event, listener, opts = false) =>
   (emitter.off || emitter.removeListener || emitter.removeEventListener)
     .call(emitter, event, listener, opts)
 
+// dispatch an event
+// reading simulant source, it appears to be a bit more complicated than just this:
+//  (but I'm not worrying about supporting old browsers). this is designed for modern browsers
+// right now, val is simply being passed through... obviously it should set the correct fields though...
+// which I'm going to just ignore for the time being...
+export const dispatch_event = (element, event, val) => (element.dispatchEvent(new Event(event)), val)
+
+export const prevent_default = (e) => e && e.preventDefault()
+
 export function listen (element, event, attr, listener, do_immediately) {
   let onEvent = (e) => { listener(typeof attr === 'function' ? attr() : attr ? element[attr] : e) }
   on(element, event, onEvent)
@@ -21,8 +30,8 @@ export function listen (element, event, attr, listener, do_immediately) {
 // observe any event, reading any attribute
 export function obv_event (element, attr = 'value', event = 'keyup', event_filter) {
   event_filter = typeof event_filter === 'function' ? event_filter
-    : ((ev) => ev.which === 13 && !ev.shiftKey)
-  const listener = (ev) => event_filter(ev) ? (val(element[attr], ev), ev.preventDefault(), true) : false
+    : ((e) => e.which === 13 && !e.shiftKey)
+  const listener = (e) => event_filter(e) ? (val(element[attr], e), prevent_default(e), true) : false
 
   observable._obv = 'event'
   return observable
@@ -48,7 +57,7 @@ export function attribute (element, attr = 'value', event = 'input') {
   function observable (val, do_immediately) {
     return (
       val === undefined ? element[attr]
-    : typeof val !== 'function' ? (element[attr] = val, element.dispatchEvent(new Event(event)), val)
+    : typeof val !== 'function' ? dispatch_event(element, event, element[attr] = val)
     : listen(element, event, attr, val, do_immediately)
     )
   }
@@ -61,9 +70,8 @@ export function select (element, attr = 'value', event = 'change') {
     var options = element.options, i = 0
     for (; i < options.length; i++) {
       if (options[i][attr] == val) {
-        element.selectedIndex = i
-        element.dispatchEvent(new Event(event))
-        return get_attr(i)
+        // TODO: don't dispatch if the value is the same?
+        return dispatch_event(element, event, get_attr(element.selectedIndex = i))
       }
     }
   }
@@ -100,6 +108,11 @@ export function toggle (el, up_event, down_event) {
   }
 }
 
+// TODO: maybe implement?
+// it would be cool to be able to set these programatically. it's possible too.
+// it's a little complicated though (see simulant).
+// it could be useful for indicating to the user where they should bo looking next.
+
 export function hover (e) { return toggle(e, 'mouseover', 'mouseout')}
 export function touch (e) { return toggle(e, 'touchstart', 'touchend')}
 export function mousedown (e) { return toggle(e, 'mousedown', 'mouseup')}
@@ -118,7 +131,7 @@ export function add_event (e, event, listener, opts) {
 export function do_boink (el, obv) {
   this.push(
     listen(el, 'click', false, () => { is_obv(obv) ? obv(!obv()) : obv() }),
-    listen(el, 'touchstart', false, (e) => { e && e.preventDefault(); is_obv(obv) ? obv(!obv()) : obv() })
+    listen(el, 'touchstart', false, (e) => { prevent_default(e); is_obv(obv) ? obv(!obv()) : obv() })
   )
 }
 
@@ -126,8 +139,8 @@ export function do_press (el, obv, pressed = true, normal = false) {
   this.push(
     listen(el, 'mouseup', false, () => { obv(normal) }),
     listen(el, 'mousedown', false, () => { obv(pressed) }),
-    listen(el, 'touchend', false, (e) => { e && e.preventDefault(); obv(normal) }),
-    listen(el, 'touchstart', false, (e) => { e && e.preventDefault(); obv(pressed) })
+    listen(el, 'touchend', false, (e) => { prevent_default(e); obv(normal) }),
+    listen(el, 'touchstart', false, (e) => { prevent_default(e); obv(pressed) })
   )
 }
 
@@ -168,7 +181,7 @@ export function observe (e, observe_obj) {
         // so, it got inlined...
         cleanupFuncs.push(
           listen(e, 'click', false, () => { is_obv(v) ? v(!v()) : v() }),
-          listen(e, 'touchstart', false, (e) => { e && e.preventDefault(); is_obv(v) ? v(!v()) : v() })
+          listen(e, 'touchstart', false, (e) => { prevent_default(e); is_obv(v) ? v(!v()) : v() })
         )
         break
       case 'press':
@@ -178,8 +191,8 @@ export function observe (e, observe_obj) {
         cleanupFuncs.push(
           listen(e, 'mouseup', false, () => { v(false) }),
           listen(e, 'mousedown', false, () => { v(true) }),
-          listen(e, 'touchend', false, (e) => { e && e.preventDefault(); v(false) }),
-          listen(e, 'touchstart', false, (e) => { e && e.preventDefault(); v(true) })
+          listen(e, 'touchend', false, (e) => { prevent_default(e); v(false) }),
+          listen(e, 'touchstart', false, (e) => { prevent_default(e); v(true) })
         )
         break
       default:
