@@ -26,6 +26,10 @@ export function callEach (arr) {
   for (var i = 0; i < arr.length; ++i) arr[i].call(arr)
 }
 
+export function obj_aliases (proto, aliases) {
+  for (let k in aliases) proto[k] = proto[aliases[k]]
+}
+
 export function parents (el, name) {
   while (el && el.nodeName.toLowerCase() !== name) {
     el = el.parentNode
@@ -39,6 +43,7 @@ export function parents (el, name) {
 export const random_id = () => Math.random().toString(32).substr(2)
 
 export const isEmpty = (value) => (!value || typeof value !== 'object') ? !value : !Object.keys(value).length
+export const is_func = (fn) => typeof fn === 'function'
 
 export function joinPaths (...parts) {
   return parts.join('/').replace(/\/+/g, '/')
