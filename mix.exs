@@ -25,6 +25,7 @@ defmodule Affinaty.Mixfile do
                     :logger,
                     :gettext,
                     :phoenix_ecto,
+                    :time_machine,
                     # :mongodb_ecto,
                     # :postgrex
                     ]]
@@ -47,7 +48,9 @@ defmodule Affinaty.Mixfile do
      {:marker, path: "../marker", override: true},
      {:phoenix_html, "~> 2.5"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
+     {:wallaby, "~> 0.20", only: :test},
      {:gettext, "~> 0.11"},
+     {:earmark, "~> 1.2"},
      {:cowboy, "~> 1.0"}]
   end
 
@@ -60,6 +63,6 @@ defmodule Affinaty.Mixfile do
   defp aliases do
     ["ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
      "ecto.reset": ["ecto.drop", "ecto.setup"],
-     "test": ["ecto.create --quiet", "ecto.migrate", "test"]]
+     test: ["ecto.create --quiet", "ecto.migrate", "test"]]
   end
 end
