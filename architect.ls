@@ -5,9 +5,12 @@
 # TODO:
 #  - move the file watchers into elixir/phoenix as to get rid of the enormous cpu usage while idle
 
+# LOOK AT THIS !!!!!!!!!!!!!!!!
+# https://github.com/henrikjoreteg/hjs-webpack
+# it has hot reload html generation and everything... just do something like that
 
-require! path: \Path
-require! fs: \Fs
+Path = require \path
+Fs = require \fs
 
 # es6 module support
 # require = (require 'esm')(module, cjs: true, esm: "js")
