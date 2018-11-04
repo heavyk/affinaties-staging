@@ -150,6 +150,7 @@
     "zeppelin-solidity": "^1.12.0"
   },
   "resolutions": {
-    "inherits": "2.0.3"
+    "inherits": "2.0.3",
+    "debug": "4.1.0"
   }
 }
